@@ -32,11 +32,10 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
 
 1. SSH:
    ```sh
-    git clone https://github.com/romanmikh/ft_irc.git
-    cd ft_irc
+    git clone https://github.com/kellyhayd/ft_irc.git ircserv
+    cd ircserv
     make
-    ./irc_server <port> <password>
-
+    ./ircserv <port> <password>
    ```
 
 2. Valgrind output saved in valgrind_out.txt after:
