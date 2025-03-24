@@ -27,6 +27,8 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
 
 - The server must be started as:
 `./ircserv <port> <password>`
+- `<port>`: The port number the server listens on.
+- `<password>`: The required password for client authentication.
 
 1. SSH:
    ```sh
@@ -43,13 +45,8 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
    make valgrind
    ```
 
-## Helpful Resources
-1. https://en.wikipedia.org/wiki/IRC 
-2. https://modern.ircdocs.horse/ (official IRC protocol guide)
-3. https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/ (high-level guide)
+<h2>  ✅ Features </h2>
 
-- `<port>`: The port number the server listens on.
-- `<password>`: The required password for client authentication.
 - The server should:
   - Support multiple clients simultaneously.
   - Handle **non-blocking** I/O operations using a **single poll() (or equivalent)**.
@@ -88,3 +85,15 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
 - **File transfer support** between clients.
 - **IRC bot** that can automate tasks.
 
+<h2> 📚 Helpful Resources </h2>
+
+1. https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/ (high-level guide)
+2. https://en.wikipedia.org/wiki/IRC
+3. https://modern.ircdocs.horse/ (official IRC protocol guide)
+4. https://stackoverflow.com/questions/10654286/why-should-i-use-non-blocking-or-blocking-sockets
+5. https://libera.chat/
+6. [IRC God](https://ircgod.com/) Blog about the ft_irc by 42 students
+7. [Medium ft_irc](https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9)
+8. [Channels and Command Management](https://medium.com/@mohamedsarda2001/ft-irc-channels-and-command-management-ff1ff3758a0b)
+9. [TCP Server](https://www.youtube.com/watch?v=cNdlrbZSkyQ&list=PLUJCSGGiox1Q-QvHfMMydtoyEa1IEzeLe&index=3) Creating the basic of a TCP server
+10. [Network Programming](https://www.youtube.com/watch?v=gntyAFoZp-E) Sockets
