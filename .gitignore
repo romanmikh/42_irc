@@ -398,3 +398,15 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# personal settings
+.vscode/
+
+# pushing without make fclean avoids clutter
+obj/
+
+# compiled binary
+ircserv
+
+# valgrind output
+valgrind_out.txt
