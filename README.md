@@ -28,6 +28,26 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
 - The server must be started as:
 `./ircserv <port> <password>`
 
+1. SSH:
+   ```sh
+    git clone https://github.com/romanmikh/ft_irc.git
+    cd ft_irc
+    make
+    ./irc_server <port> <password>
+
+   ```
+
+2. Valgrind output saved in valgrind_out.txt after:
+   ```sh
+   ulimit -n 1024 # necessary once only, to address 'file descriptor too high' error
+   make valgrind
+   ```
+
+## Helpful Resources
+1. https://en.wikipedia.org/wiki/IRC 
+2. https://modern.ircdocs.horse/ (official IRC protocol guide)
+3. https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/ (high-level guide)
+
 - `<port>`: The port number the server listens on.
 - `<password>`: The required password for client authentication.
 - The server should:
