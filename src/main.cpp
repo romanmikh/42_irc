@@ -20,5 +20,6 @@ int main(int ac, char **av) {
     if (checkInput(ac, av) != 0)
         return 1;
     printStr("Hello, World!", "G");
+
     return 0;
 }

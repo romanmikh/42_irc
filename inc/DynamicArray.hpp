@@ -14,11 +14,11 @@ class DynamicArray
 	public:
 		DynamicArray();
 		DynamicArray(int capacity);
-		DynamicArray&	operator=(const DynamicArray& other);
 		DynamicArray(const DynamicArray& other);
+		DynamicArray&	operator=(const DynamicArray& other);
 		~DynamicArray();
 
-		T&	operator[](unsigned int i);
+		T&		operator[](unsigned int i);
 		void	append(T data);
 		int		getCapacity();
 		T 		*getData();

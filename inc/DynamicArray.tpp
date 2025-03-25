@@ -51,7 +51,7 @@ void	DynamicArray<T>::append(T elem)
 		delete[] _data;
 		_data = newArray;
 	}
-	//append elem to list
+	//append elem to array
 	_data[_count] = elem;
 	_count++;
 }
@@ -79,5 +79,5 @@ T& DynamicArray<T>::operator[](unsigned int i)
 template<typename T>
 const char	*DynamicArray<T>::OutOfBoundsException::what() const throw()
 {
-	return ("Array index out of bounds!");
+	return ("DynamicArray index out of bounds!");
 }
