@@ -6,7 +6,7 @@
 /*   By: eamsalem <eamsalem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 15:30:54 by rocky             #+#    #+#             */
-/*   Updated: 2025/03/25 14:09:13 by eamsalem         ###   ########.fr       */
+/*   Updated: 2025/03/25 17:47:57 by eamsalem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,11 @@ unsigned int getUnsignedInt(const std::string& prompt) {
 }
 
 // why not just pass the colour as a MACRO directly and avoid the cascading if else ??
+// i.e.
+// void    printStr(const std::string &text, const std::string &colour) {
+//    std::cout << colour << text << "\033[0m" << std::endl;
+// }
+
 void    printStr(const std::string &text, const std::string &colour) {
     std::string code;
     
