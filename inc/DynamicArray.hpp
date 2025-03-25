@@ -21,6 +21,7 @@ class DynamicArray
 		T&		operator[](unsigned int i);
 		void	append(T data);
 		int		getCapacity();
+		int		getCount();
 		T 		*getData();
 	
 		class OutOfBoundsException : public std::exception

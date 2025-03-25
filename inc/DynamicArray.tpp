@@ -63,6 +63,12 @@ int	DynamicArray<T>::getCapacity()
 }
 
 template <typename T>
+int	DynamicArray<T>::getCount()
+{
+	return (_count);
+}
+
+template <typename T>
 T	*DynamicArray<T>::getData()
 {
 	return (_data);

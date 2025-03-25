@@ -39,6 +39,7 @@ int main(int ac, char **av) {
     sockets.append(test2);
 
     std::cout << "dynamic capacity = " << sockets.getCapacity() << std::endl;
-    std::cout << "socket[2].fd = " << sockets[2].fd << std::endl;
+    for (int i = 0; i < sockets.getCount(); i++)
+        std::cout << "socket[i].fd = " << sockets[i].fd << std::endl;
     return 0;
 }
