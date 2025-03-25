@@ -21,10 +21,8 @@ int main(int ac, char **av) {
         return 1;
     printStr("Hello, World!", GREEN);
 
-    // example usage of DynamicArray, will allow us to dynamically add new socket fds for
-    // each new client without any extra work
-    DynamicArray<pollfd> sockets(2);
-    std::cout << "initial capacity = " << sockets.getCapacity() << std::endl;
+    std::vector<pollfd> sockets;
+    std::cout << "initial capacity = " << sockets.capacity() << std::endl;
 
     struct pollfd client1;
     client1.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -35,15 +33,15 @@ int main(int ac, char **av) {
     struct pollfd client3;
     client3.fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    sockets.append(client1);
-    sockets.append(client2);
-    sockets.append(client3);
+    sockets.push_back(client1);
+    sockets.push_back(client2);
+    sockets.push_back(client3);
 
-    std::cout << "dynamic capacity = " << sockets.getCapacity() << std::endl;
-    for (int i = 0; i < sockets.getCount(); i++)
+    std::cout << "dynamic capacity = " << sockets.capacity() << std::endl;
+    for (unsigned int i = 0; i < sockets.size(); i++)
         std::cout << "socket[i].fd = " << sockets[i].fd << std::endl;
 
     // this is how we can then use it with poll()
-    poll(sockets.getData(), sockets.getCount(), 0);
+    poll(sockets.data(), sockets.size(), 0);
     return 0;
 }
