@@ -1,4 +1,5 @@
 #include "../inc/irc.hpp"
+#include "../inc/DynamicArray.hpp"
 
 int    checkInput(int ac, char **av) {
     if (ac != 3) {
