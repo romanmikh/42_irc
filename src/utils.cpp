@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rocky <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: eamsalem <eamsalem@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 15:30:54 by rocky             #+#    #+#             */
-/*   Updated: 2024/08/26 17:31:01 by rocky            ###   ########.fr       */
+/*   Updated: 2025/03/25 14:09:13 by eamsalem         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ unsigned int getUnsignedInt(const std::string& prompt) {
     return value;
 }
 
+// why not just pass the colour as a MACRO directly and avoid the cascading if else ??
 void    printStr(const std::string &text, const std::string &colour) {
     std::string code;
     
