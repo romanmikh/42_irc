@@ -10,16 +10,16 @@ CYAN		=	\033[0;96m
 WHITE		=	\033[0;97m
 
 # Program file name
-NAME	= ircserv
+NAME	:= ircserv
 
 # Compiler and compilation flags
-CC		= c++
-CFLAGS	= -Werror -Wextra -Wall -std=c++98
+CC		:= c++
+CFLAGS	:= -Werror -Wextra -Wall -std=c++98
 
 # Build files and directories
 SRC_PATH 	= ./src/
-OBJ_PATH	= ./obj/
-INC_PATH	= ./inc/
+OBJ_PATH	:= ./obj/
+INC_PATH	= ./include/
 SRC			= $(wildcard $(SRC_PATH)/*.cpp) $(wildcard $(SRC_PATH)/*/*.cpp) # CHANGE THIS BEFORE EVALUATION!! We can't use wildcards
 SRCS		= $(SRC)
 OBJ			= $(patsubst $(SRC_PATH)%, %, $(SRCS:.cpp=.o))
