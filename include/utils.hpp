@@ -1,24 +1,4 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   utils.hpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: krocha-h <krocha-h@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/26 15:26:49 by rocky             #+#    #+#             */
-/*   Updated: 2025/03/26 12:40:57 by krocha-h         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
-
-#define RESET	"\e[0m"
-#define RED		"\e[31m"
-#define GREEN	"\e[32m"
-#define YELLOW	"\e[33m"
-#define BLUE	"\e[34m"
-#define PURPLE	"\e[35m"
-#define CYAN	"\e[36m"
 
 /* Standard Input/Output */
 #include <iostream>
@@ -80,6 +60,29 @@
 
 void	        handleCtrlD(void);
 unsigned int    getUnsignedInt(const std::string& prompt);
-void            printStr(const std::string& text, const std::string& colour = "RESET");
+void            printStr(const std::string& text, const std::string& colour);
 int             isDigits(const std::string& s);
 int             isValidPort(const std::string& s);
+
+/* Colours */
+#define RESET   "\e[0m"
+#define RED     "\e[31m"
+#define GREEN   "\e[32m"
+#define YELLOW  "\e[33m"
+#define BLUE    "\e[34m"
+#define PURPLE  "\e[35m"
+#define CYAN    "\e[36m"
+#define WHITE   "\e[37m"
+#define BRED    "\e[1;31m"
+#define BGREEN  "\e[1;32m"
+#define BYELLOW "\e[1;33m"
+#define BBLUE   "\e[1;34m"
+#define BPURPLE "\e[1;35m"
+#define BCYAN   "\e[1;36m"
+#define BGR     "\e[41m"
+#define BGG     "\e[42m"
+#define BGY     "\e[43m"
+#define BGB     "\e[44m"
+#define BGP     "\e[45m"
+#define BGC     "\e[46m"
+#define BGW     "\e[47m"

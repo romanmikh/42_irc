@@ -1,5 +1,5 @@
-#include "irc.hpp"
-#include "DynamicArray.hpp"
+#include "../include/irc.hpp"
+#include "../include/Server.hpp"
 
 int    checkInput(int ac, char **av) {
     if (ac != 3) {
@@ -14,34 +14,33 @@ int    checkInput(int ac, char **av) {
     // ...
     return 0;
 }
+//  list of clients on the server
+//  list of channels
+//  server password
+//  
+
+// Client class
+//  username
+//  nickname
+//  fd for their socket
+//   
+
+// channel class/struct
+//  list of operators/  channel mode
+//  users in channel
+//  
 
 int main(int ac, char **av) {
 
     if (checkInput(ac, av) != 0)
         return 1;
-    printStr("Hello, World!", GREEN);
-
-    std::vector<pollfd> sockets;
-    std::cout << "initial capacity = " << sockets.capacity() << std::endl;
-
-    struct pollfd client1;
-    client1.fd = socket(AF_INET, SOCK_STREAM, 0);
     
-    struct pollfd client2;
-    client2.fd = socket(AF_INET, SOCK_STREAM, 0);
-    
-    struct pollfd client3;
-    client3.fd = socket(AF_INET, SOCK_STREAM, 0);
+    (void)ac;
+    int port_num = atoi(av[1]);
+    std::string passwd = av[2];
 
-    sockets.push_back(client1);
-    sockets.push_back(client2);
-    sockets.push_back(client3);
-
-    std::cout << "dynamic capacity = " << sockets.capacity() << std::endl;
-    for (unsigned int i = 0; i < sockets.size(); i++)
-        std::cout << "socket[i].fd = " << sockets[i].fd << std::endl;
-
-    // this is how we can then use it with poll()
-    poll(sockets.data(), sockets.size(), 0);
+    Server server(port_num, passwd);
+    server.run();
+    //poll(sockets.data(), sockets.size(), 0);
     return 0;
 }

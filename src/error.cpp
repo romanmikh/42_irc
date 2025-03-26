@@ -1,4 +1,4 @@
-#include "irc.hpp"
+#include "../include/irc.hpp"
 
 int errMsg(const std::string& detail, const std::string& str, int code)
 {
