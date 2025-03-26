@@ -1,4 +1,4 @@
-#include "../inc/libft.hpp"
+#include "libft.hpp"
 
 int isDigits(const std::string& s)
 {

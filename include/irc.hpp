@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../inc/libft.hpp"
+#include "libft.hpp"
 
 /* Macros */
 # define MAX_PORT 65535 // must be 16-bit unsigned integer

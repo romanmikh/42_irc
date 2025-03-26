@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: eamsalem <eamsalem@student.42.fr>          +#+  +:+       +#+        */
+/*   By: krocha-h <krocha-h@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 15:30:54 by rocky             #+#    #+#             */
-/*   Updated: 2025/03/25 18:05:40 by eamsalem         ###   ########.fr       */
+/*   Updated: 2025/03/26 12:21:39 by krocha-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/utils.hpp"
+#include "utils.hpp"
 
 void	handleCtrlD(void)
 {
