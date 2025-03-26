@@ -20,7 +20,7 @@ CFLAGS	= -Werror -Wextra -Wall -std=c++98
 SRC_PATH 	= ./src/
 OBJ_PATH	= ./obj/
 INC_PATH	= ./inc/
-SRC			= $(wildcard $(SRC_PATH)/*.cpp) $(wildcard $(SRC_PATH)/*/*.cpp)
+SRC			= $(wildcard $(SRC_PATH)/*.cpp) $(wildcard $(SRC_PATH)/*/*.cpp) # CHANGE THIS BEFORE EVALUATION!! We can't use wildcards
 SRCS		= $(SRC)
 OBJ			= $(patsubst $(SRC_PATH)%, %, $(SRCS:.cpp=.o))
 OBJS		= $(addprefix $(OBJ_PATH), $(OBJ))
