@@ -7,6 +7,7 @@ Server::Server(int port, std::string &passwd)
 
 	_port = port;
 	_password = passwd;
+
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
 	listeningSocket.events = POLLIN;
 	listeningSocket.revents = 0;
@@ -52,27 +53,33 @@ void Server::handleNewConnectionRequest()
 	std::cout << "New client connected: " << clientSocket.fd << std::endl;
 }
 
-void Server::handleClientMessage(Client &client, int i)
+void Server::handleClientMessage(Client &client)
 {
 	char	buffer[1024];
 	
 	size_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0)
 	{
-		disconnectClient(i);
+		disconnectClient(client.getFd());
 		return;
 	}
 	buffer[bytes_read] = '\0';
 	std::cout << "Received message: " << buffer << std::endl;
 }
 
-void Server::disconnectClient(int i)
+void Server::disconnectClient(int clientFd)
 {
-	std::cout << YELLOW << _clients[i].getUsername() << " disconnected!\n" << RESET;
+	std::cout << YELLOW << _clients[clientFd].getUsername() << " disconnected!\n" << RESET;
 
-	close(_sockets[i].fd);
-	_clients.erase(_sockets[i].fd);
-	_sockets.erase(_sockets.begin() + i);
+	close(clientFd);
+	_clients.erase(clientFd);
+	for (unsigned int i = 0; i < _sockets.size(); i++) {
+		if (_sockets[i].fd == clientFd)
+		{
+			_sockets.erase(_sockets.begin() + i);
+			break ;
+		}
+	}
 }
 
 void Server::run()
@@ -91,17 +98,16 @@ void Server::run()
 			}
 			// check client sockets for data
 			for (unsigned int i = 1; i < _sockets.size() && socketActivity > 0; i++)
-			{	
+			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
-					disconnectClient(i);
+					disconnectClient(_sockets[i].fd);
 					socketActivity--;
 					i--;
 				}
 				else if (_sockets[i].revents & POLLIN)
 				{
-					//std::cout << "socketActivity = " << socketActivity << std::endl;
-					handleClientMessage(_clients[_sockets[i].fd], i);
+					handleClientMessage(_clients[_sockets[i].fd]);
 					socketActivity--;
 				}
 			}

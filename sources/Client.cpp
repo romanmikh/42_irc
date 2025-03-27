@@ -2,14 +2,14 @@
 
 Client::Client()
 {
-	_nickname = "";
-	_username = "";
+	_nickname = "default";
+	_username = "default";
 }
 
 Client::Client(pollfd &clientSocket, sockaddr_in &clientAddr)
 {
-	_nickname = "";
-	_username = "";
+	_nickname = "default";
+	_username = "default";
 	_socket = clientSocket;
 	_Addr = clientAddr;
 }
