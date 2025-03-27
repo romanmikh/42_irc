@@ -35,7 +35,6 @@ void Server::handleNewConnectionRequest()
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
-	
 
 	clientSocket.events = POLLIN | POLLHUP | POLLERR;
 	clientSocket.revents = 0;
@@ -53,17 +52,14 @@ void Server::handleNewConnectionRequest()
 	std::cout << "New client connected: " << clientSocket.fd << std::endl;
 }
 
-void Server::handleClientMessage(Client &client)
+void Server::handleClientMessage(Client &client, int i)
 {
 	char	buffer[1024];
 	
 	size_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0)
 	{
-		std::cout << "Client disconnected or error reading.\n";
-		close(client.getFd());
-		_clients.erase(client.getFd());
-		_sockets.erase(_sockets.begin() + client.getFd());
+		disconnectClient(i);
 		return;
 	}
 	buffer[bytes_read] = '\0';
@@ -75,8 +71,8 @@ void Server::disconnectClient(int i)
 	std::cout << YELLOW << _clients[i].getUsername() << " disconnected!\n" << RESET;
 
 	close(_sockets[i].fd);
-	_sockets.erase(_sockets.begin() + i);
 	_clients.erase(_sockets[i].fd);
+	_sockets.erase(_sockets.begin() + i);
 }
 
 void Server::run()
@@ -105,10 +101,9 @@ void Server::run()
 				else if (_sockets[i].revents & POLLIN)
 				{
 					//std::cout << "socketActivity = " << socketActivity << std::endl;
-					handleClientMessage(_clients[_sockets[i - 1].fd]);
+					handleClientMessage(_clients[_sockets[i].fd], i);
 					socketActivity--;
 				}
-	
 			}
 		}
 	}

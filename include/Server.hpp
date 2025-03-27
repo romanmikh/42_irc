@@ -24,7 +24,7 @@ class Server
 
 		void run();
 		void handleNewConnectionRequest();
-		void handleClientMessage(Client &client);
+		void handleClientMessage(Client &client, int i);
 		void disconnectClient(int i);
 };
 
