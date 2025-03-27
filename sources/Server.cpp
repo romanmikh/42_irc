@@ -3,24 +3,27 @@
 
 Server::Server(int port, std::string &passwd) 
 {
+	pollfd listeningSocket;
+
 	_port = port;
 	_password = passwd;
-	_listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
-	_sockets.push_back(_listeningSocket);
+	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
+	_sockets.push_back(listeningSocket);
 
 	memset(&_serverAddr, 0, sizeof(_serverAddr));
     _serverAddr.sin_family = AF_INET;
     _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     _serverAddr.sin_port = htons(_port);
 
-	bind(_listeningSocket.fd, (struct sockaddr *)(&_serverAddr), sizeof(_serverAddr));
-	listen(_listeningSocket.fd, 10);
+	bind(_sockets[0].fd, (struct sockaddr *)(&_serverAddr), sizeof(_serverAddr));
+	listen(_sockets[0].fd, 10);
 	printStr("Listening...", YELLOW);
 }
 
 Server::~Server()
 {
-	close(_listeningSocket.fd);
+	for (unsigned int i = 0; i < _sockets.size(); i++)
+		close(_sockets[i].fd);
 }
 
 void Server::handleNewConnectionRequest()
@@ -32,7 +35,7 @@ void Server::handleNewConnectionRequest()
 	unsigned int	addrLen = sizeof(clientAddr);
 	
 	clientSocket.events = POLLIN | POLLHUP;
-	clientSocket.fd = accept(_listeningSocket.fd, (sockaddr *)&clientAddr, &addrLen);
+	clientSocket.fd = accept(_sockets[0].fd, (sockaddr *)&clientAddr, &addrLen);
 	if (clientSocket.fd < 0)
 	{
 		perror("New socket creation failed.\n");
@@ -72,10 +75,11 @@ void Server::run()
 		int socketActivity = poll(_sockets.data(), _sockets.size(), 0);
 		if (socketActivity > 0)
 		{
+			//printStr("Activity detected", YELLOW);
+			
 			// if data is at listening socket 
 			if (_sockets[0].revents & POLLIN)
 				handleNewConnectionRequest();
-			
 			// check client sockets for data
 			for (unsigned int i = 1; i < _sockets.size(); i++)
 			{

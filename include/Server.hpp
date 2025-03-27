@@ -12,7 +12,7 @@ class Server
 		//std::vector<Channel>	_channels;
 		std::string				_password;
 		unsigned int			_port;
-		pollfd			_listeningSocket;
+	//	pollfd			_listeningSocket;
 		sockaddr_in		_serverAddr;
 
 
