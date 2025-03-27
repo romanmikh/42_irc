@@ -1,5 +1,11 @@
 #include "./Client.hpp"
 
+Client::Client()
+{
+	_nickname = "";
+	_username = "";
+}
+
 Client::Client(pollfd &clientSocket, sockaddr_in &clientAddr)
 {
 	_nickname = "";

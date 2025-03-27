@@ -8,6 +8,7 @@ Server::Server(int port, std::string &passwd)
 	_port = port;
 	_password = passwd;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
+	listeningSocket.events = POLLIN;
 	_sockets.push_back(listeningSocket);
 
 	memset(&_serverAddr, 0, sizeof(_serverAddr));
@@ -34,27 +35,33 @@ void Server::handleNewConnectionRequest()
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
 	
-	clientSocket.events = POLLIN | POLLHUP;
+	clientSocket.events = POLLIN | POLLHUP | POLLERR | POLLPRI;
 	clientSocket.fd = accept(_sockets[0].fd, (sockaddr *)&clientAddr, &addrLen);
 	if (clientSocket.fd < 0)
 	{
+		close(_sockets[0].fd);
 		perror("New socket creation failed.\n");
 		return ;
 	}
 
 	Client newClient(clientSocket, clientAddr);
-	_clients.push_back(newClient);
-	_sockets.push_back(newClient.getSocket());
-
-	std::cout << BLUE << "Num of sockets: " << _sockets.size() << RESET;
+	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
+	_sockets.push_back(clientSocket);
+	std::cout << "New client connected: " << clientSocket.fd << std::endl;
 }
 
 void Server::handleClientMessage(Client &client)
 {
 	char	buffer[1024];
 	
-	printStr("Client message received", YELLOW);
+	std::cout << "checkpoint 1: " << buffer << std::endl;
 	size_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
+//	std::cout << "bytes read = " << bytes_read << std::endl;
+	if (bytes_read <= 0)
+	{
+		std::cout << "Client disconnected or error reading.\n";
+		return;
+	}
 	buffer[bytes_read] = '\0';
 	std::cout << "Received message: " << buffer << std::endl;
 }
@@ -62,9 +69,10 @@ void Server::handleClientMessage(Client &client)
 void Server::disconnectClient(int i)
 {
 	std::cout << YELLOW << _clients[i].getUsername() << " disconnected!\n" << RESET;
+
 	close(_sockets[i].fd);
 	_sockets.erase(_sockets.begin() + i);
-	_clients.erase(_clients.begin() + i);
+	_clients.erase(_sockets[i].fd);
 }
 
 void Server::run()
@@ -72,22 +80,48 @@ void Server::run()
 	printStr("Running...", YELLOW);
 	while (1)
 	{
-		int socketActivity = poll(_sockets.data(), _sockets.size(), 0);
-		if (socketActivity > 0)
+		int socketActivity = poll(_sockets.data(), _sockets.size(), -1);
+		if (socketActivity == 0)
+			continue ;
+		else if (socketActivity > 0)
 		{
 			//printStr("Activity detected", YELLOW);
-			
+
 			// if data is at listening socket 
 			if (_sockets[0].revents & POLLIN)
 				handleNewConnectionRequest();
 			// check client sockets for data
+			printStr("Checkpoint -1...", YELLOW);
 			for (unsigned int i = 1; i < _sockets.size(); i++)
 			{
+				std::cout << "_sockets[i].revents: " << _sockets[i].revents << std::endl;
+				printStr("Checkpoint 0...", YELLOW);
 				if (_sockets[i].revents & POLLIN)
-					handleClientMessage(_clients[i]);
-				else if (_sockets[i].revents & POLLHUP)
-					disconnectClient(i);	
+				{
+					printStr("Checkpoint 1...", YELLOW);
+					handleClientMessage(_clients[_sockets[i].fd]);
+				}
+				else if (_sockets[i].revents & (POLLHUP | POLLERR | POLLPRI))
+				{
+					printStr("Checkpoint 2...", YELLOW);
+					disconnectClient(i);
+					i--;
+				}
+				if (_sockets[i].revents & (POLLIN | POLLOUT))
+					break;
+				}
 			}
 		}
 	}
+}
+
+// ************************************************************************** //
+//                             Private Functions                              //
+// ************************************************************************** //
+pollfd Server::_makePollfd(int fd, short int events)
+{
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = events;
+	return pfd;
 }

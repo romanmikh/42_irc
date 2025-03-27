@@ -8,12 +8,14 @@ class Server
 {
 	private:
 		std::vector<pollfd>		_sockets;
-		std::vector<Client>		_clients;
+		std::map<int, Client>	_clients;
 		//std::vector<Channel>	_channels;
 		std::string				_password;
 		unsigned int			_port;
-	//	pollfd			_listeningSocket;
-		sockaddr_in		_serverAddr;
+		sockaddr_in				_serverAddr; // might not need this
+
+		/* Function Prototypes */
+		pollfd	_makePollfd(int fd, short int events);
 
 
 	public:

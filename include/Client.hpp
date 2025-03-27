@@ -13,6 +13,7 @@ class Client
 		sockaddr_in	_Addr;
 
 	public:
+		Client();
 		Client(pollfd &clientSocket, sockaddr_in &clientAddr);
 		~Client();
 
