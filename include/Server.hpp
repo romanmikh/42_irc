@@ -12,6 +12,7 @@ class Server
 		//std::vector<Channel>	_channels;
 		std::string				_password;
 		unsigned int			_port;
+		int						_serverActivity;
 		sockaddr_in				_serverAddr; // might not need this
 
 		/* Function Prototypes */

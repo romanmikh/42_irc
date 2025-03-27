@@ -51,6 +51,7 @@ void Server::handleNewConnectionRequest()
 	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
 	_sockets.push_back(clientSocket);
 	std::cout << "New client connected: " << clientSocket.fd << std::endl;
+	_serverActivity--;
 }
 
 void Server::handleClientMessage(Client &client)
@@ -65,6 +66,7 @@ void Server::handleClientMessage(Client &client)
 	}
 	buffer[bytes_read] = '\0';
 	std::cout << "Received message: " << buffer << std::endl;
+	_serverActivity--;
 }
 
 void Server::disconnectClient(int clientFd)
@@ -80,6 +82,7 @@ void Server::disconnectClient(int clientFd)
 			break ;
 		}
 	}
+	_serverActivity--;
 }
 
 void Server::run()
@@ -87,29 +90,23 @@ void Server::run()
 	printStr("Running...", YELLOW);
 	while (1)
 	{
-		int socketActivity = poll(_sockets.data(), _sockets.size(), -1);
-		if (socketActivity > 0)
+		_serverActivity = poll(_sockets.data(), _sockets.size(), -1);
+		if (_serverActivity > 0)
 		{
 			// if data is at listening socket 
 			if (_sockets[0].revents & POLLIN)
-			{
 				handleNewConnectionRequest();
-				socketActivity--;
-			}
+
 			// check client sockets for data
-			for (unsigned int i = 1; i < _sockets.size() && socketActivity > 0; i++)
+			for (unsigned int i = 1; i < _sockets.size() && _serverActivity > 0; i++)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					disconnectClient(_sockets[i].fd);
-					socketActivity--;
 					i--;
 				}
 				else if (_sockets[i].revents & POLLIN)
-				{
 					handleClientMessage(_clients[_sockets[i].fd]);
-					socketActivity--;
-				}
 			}
 		}
 	}
