@@ -61,6 +61,9 @@ void Server::handleClientMessage(Client &client)
 	if (bytes_read <= 0)
 	{
 		std::cout << "Client disconnected or error reading.\n";
+		close(client.getFd());
+		_clients.erase(client.getFd());
+		_sockets.erase(_sockets.begin() + client.getFd());
 		return;
 	}
 	buffer[bytes_read] = '\0';
@@ -92,18 +95,20 @@ void Server::run()
 			}
 			// check client sockets for data
 			for (unsigned int i = 1; i < _sockets.size() && socketActivity > 0; i++)
-			{
-				if (_sockets[i].revents & POLLIN)
-				{
-					handleClientMessage(_clients[_sockets[i - 1].fd]);
-					socketActivity--;
-				}
-				else if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+			{	
+				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					disconnectClient(i);
 					socketActivity--;
 					i--;
 				}
+				else if (_sockets[i].revents & POLLIN)
+				{
+					//std::cout << "socketActivity = " << socketActivity << std::endl;
+					handleClientMessage(_clients[_sockets[i - 1].fd]);
+					socketActivity--;
+				}
+	
 			}
 		}
 	}
