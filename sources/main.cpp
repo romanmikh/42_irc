@@ -36,11 +36,10 @@ int main(int ac, char **av) {
         return 1;
     
     (void)ac;
-    int port_num = atoi(av[1]);
+    int port = atoi(av[1]);
     std::string passwd = av[2];
 
-    Server server(port_num, passwd);
+    Server server(port, passwd);
     server.run();
-    //poll(sockets.data(), sockets.size(), 0);
     return 0;
 }

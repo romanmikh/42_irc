@@ -29,6 +29,7 @@ std::string Client::getUsername()
 {
 	return (_username);
 }
+
 std::string Client::getNickname()
 {
 	return (_nickname);
