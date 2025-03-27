@@ -2,11 +2,13 @@
 #define SERVER_HPP
 #include "irc.hpp"
 
+class Client;
+
 class Server
 {
 	private:
-	//	std::vector<pollfd>		_sockets;
-	//	std::vector<Client>		_clients;
+		std::vector<pollfd>		_sockets;
+		std::vector<Client>		_clients;
 		//std::vector<Channel>	_channels;
 		std::string				_password;
 		unsigned int			_port;
@@ -20,6 +22,8 @@ class Server
 
 		void run();
 		void handleNewConnectionRequest();
+		void handleClientMessage(Client &client);
+		void disconnectClient(int i);
 };
 
 #endif

@@ -1,10 +1,10 @@
 #include "./Client.hpp"
 
-Client::Client(int clientFd, sockaddr_in &clientAddr)
+Client::Client(pollfd &clientSocket, sockaddr_in &clientAddr)
 {
 	_nickname = "";
 	_username = "";
-	_socket.fd = clientFd;
+	_socket = clientSocket;
 	_Addr = clientAddr;
 }
 
@@ -21,4 +21,13 @@ pollfd Client::getSocket()
 int Client::getFd()
 {
 	return (_socket.fd);
+}
+
+std::string Client::getUsername()
+{
+	return (_username);
+}
+std::string Client::getNickname()
+{
+	return (_nickname);
 }

@@ -13,10 +13,12 @@ class Client
 		sockaddr_in	_Addr;
 
 	public:
-		Client(int clientFd, sockaddr_in &clientAddr);
+		Client(pollfd &clientSocket, sockaddr_in &clientAddr);
 		~Client();
 
 		int getFd();
+		std::string getUsername();
+		std::string getNickname();
 		struct pollfd getSocket();
 };
 
