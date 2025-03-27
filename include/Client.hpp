@@ -10,10 +10,10 @@ class Client
 		std::string	_username;
 		std::string _nickname;
 		pollfd		_socket;
-		sockaddr_in	_clientAddr;
+		sockaddr_in	_Addr;
 
 	public:
-		Client(int listeningSocketFd);
+		Client(int clientFd, sockaddr_in &clientAddr);
 		~Client();
 
 		int getFd();

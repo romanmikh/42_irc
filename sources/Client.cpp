@@ -1,12 +1,11 @@
 #include "./Client.hpp"
 
-Client::Client(int listeningSocketFd)
+Client::Client(int clientFd, sockaddr_in &clientAddr)
 {
 	_nickname = "";
 	_username = "";
-	socklen_t addrLen = sizeof(_clientAddr);
-	_socket.fd = accept(listeningSocketFd, (sockaddr *)&_clientAddr, &addrLen);
-	
+	_socket.fd = clientFd;
+	_Addr = clientAddr;
 }
 
 Client::~Client()

@@ -19,6 +19,7 @@ class Server
 		~Server();
 
 		void run();
+		void handleNewConnectionRequest();
 };
 
 #endif

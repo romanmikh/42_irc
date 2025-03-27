@@ -22,6 +22,21 @@ Server::~Server()
 	close(_listeningSocket.fd);
 }
 
+void Server::handleNewConnectionRequest()
+{
+	sockaddr_in clientAddr;
+	unsigned int addrLen = sizeof(clientAddr);
+	int clientSocketFd = accept(_listeningSocket.fd, (sockaddr *)&clientAddr, &addrLen);
+	if (clientSocketFd < 0)
+	{
+		perror("Accept call failed.\n");
+		return ;
+	}
+	Client newClient(clientSocketFd, clientAddr);
+	//_clients.push_back(newClient);
+	//_sockets.push_back(newClient.getSocket());
+}
+
 void Server::run()
 {
 	char buffer[1024];
@@ -32,9 +47,7 @@ void Server::run()
 		// if (poll(_sockets.data(), _sockets.size(), 0) > 0)
 		// {
 		// if data is at listening socket 
-		Client newClient(_listeningSocket.fd);
-		//_clients.push_back(newClient);
-		//_sockets.push_back(newClient.getSocket());
+			handleNewConnectionRequest();
 
 		while (true) {
 			// /connect localhost 6667 <-- into irssi
