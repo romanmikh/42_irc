@@ -6,12 +6,11 @@ Client::Client()
 	_username = "default";
 }
 
-Client::Client(pollfd &clientSocket, sockaddr_in &clientAddr)
+Client::Client(pollfd &clientSocket)
 {
 	_nickname = "default";
 	_username = "default";
 	_socket = clientSocket;
-	_Addr = clientAddr;
 }
 
 Client::~Client() {}

@@ -13,7 +13,6 @@ class Server
 		std::string				_password;
 		unsigned int			_port;
 		int						_serverActivity;
-		sockaddr_in				_serverAddr; // might not need this
 
 		/* Function Prototypes */
 		pollfd	_makePollfd(int fd, short int events);
@@ -26,7 +25,7 @@ class Server
 		void run();
 		void handleNewConnectionRequest();
 		void handleClientMessage(Client &client);
-		void disconnectClient(int clientFd);
+		void disconnectClient(Client &client);
 };
 
 #endif

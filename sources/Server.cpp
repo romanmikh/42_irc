@@ -3,22 +3,22 @@
 
 Server::Server(int port, std::string &passwd) 
 {
-	pollfd listeningSocket;
-
 	_port = port;
 	_password = passwd;
-
+	
+	pollfd		listeningSocket;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
 	listeningSocket.events = POLLIN;
 	listeningSocket.revents = 0;
 	_sockets.push_back(listeningSocket);
+	
+	sockaddr_in	serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddr.sin_port = htons(_port);
 
-	memset(&_serverAddr, 0, sizeof(_serverAddr));
-    _serverAddr.sin_family = AF_INET;
-    _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    _serverAddr.sin_port = htons(_port);
-
-	bind(_sockets[0].fd, (struct sockaddr *)(&_serverAddr), sizeof(_serverAddr));
+	bind(_sockets[0].fd, (struct sockaddr *)(&serverAddr), sizeof(serverAddr));
 	listen(_sockets[0].fd, 10);
 	printStr("Listening...", YELLOW);
 }
@@ -36,53 +36,53 @@ void Server::handleNewConnectionRequest()
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
-
+	
+	_serverActivity--;
 	clientSocket.events = POLLIN | POLLHUP | POLLERR;
 	clientSocket.revents = 0;
 	clientSocket.fd = accept(_sockets[0].fd, (sockaddr *)&clientAddr, &addrLen);
 	if (clientSocket.fd < 0)
 	{
-		close(_sockets[0].fd);
 		perror("New socket creation failed.\n");
+		close(_sockets[0].fd);
 		return ;
 	}
 
-	Client newClient(clientSocket, clientAddr);
-	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
-	_sockets.push_back(clientSocket);
 	std::cout << "New client connected: " << clientSocket.fd << std::endl;
-	_serverActivity--;
+	Client newClient(clientSocket);
+	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
+	_sockets.push_back(newClient.getSocket());
 }
 
 void Server::handleClientMessage(Client &client)
 {
 	char	buffer[1024];
 	
+	_serverActivity--;
 	size_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0)
 	{
-		disconnectClient(client.getFd());
+		disconnectClient(client);
 		return;
 	}
 	buffer[bytes_read] = '\0';
 	std::cout << "Received message: " << buffer << std::endl;
-	_serverActivity--;
 }
 
-void Server::disconnectClient(int clientFd)
+void Server::disconnectClient(Client &client)
 {
-	std::cout << YELLOW << _clients[clientFd].getUsername() << " disconnected!\n" << RESET;
+	std::cout << YELLOW << client.getUsername() << " disconnected!\n" << RESET;
 
-	close(clientFd);
-	_clients.erase(clientFd);
+	_serverActivity--;
+	close(client.getFd());
+	_clients.erase(client.getFd());
 	for (unsigned int i = 0; i < _sockets.size(); i++) {
-		if (_sockets[i].fd == clientFd)
+		if (_sockets[i].fd == client.getFd())
 		{
 			_sockets.erase(_sockets.begin() + i);
 			break ;
 		}
 	}
-	_serverActivity--;
 }
 
 void Server::run()
@@ -102,7 +102,7 @@ void Server::run()
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
-					disconnectClient(_sockets[i].fd);
+					disconnectClient(_clients[_sockets[i].fd]);
 					i--;
 				}
 				else if (_sockets[i].revents & POLLIN)
