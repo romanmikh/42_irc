@@ -14,10 +14,7 @@ Client::Client(pollfd &clientSocket, sockaddr_in &clientAddr)
 	_Addr = clientAddr;
 }
 
-Client::~Client()
-{
-	close(_socket.fd);
-}
+Client::~Client() {}
 
 pollfd Client::getSocket()
 {

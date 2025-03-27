@@ -14,7 +14,7 @@ NAME	:= ircserv
 
 # Compiler and compilation flags
 CC		:= c++
-CFLAGS	:= -Werror -Wextra -Wall -std=c++98
+CFLAGS	:= -Werror -Wextra -Wall -g3 -std=c++98
 
 # Build files and directories
 SRC_PATH 	= ./sources/

@@ -9,6 +9,7 @@ Server::Server(int port, std::string &passwd)
 	_password = passwd;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
 	listeningSocket.events = POLLIN;
+	listeningSocket.revents = 0;
 	_sockets.push_back(listeningSocket);
 
 	memset(&_serverAddr, 0, sizeof(_serverAddr));
@@ -35,7 +36,9 @@ void Server::handleNewConnectionRequest()
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
 	
-	clientSocket.events = POLLIN | POLLHUP | POLLERR | POLLPRI;
+
+	clientSocket.events = POLLIN | POLLHUP | POLLERR;
+	clientSocket.revents = 0;
 	clientSocket.fd = accept(_sockets[0].fd, (sockaddr *)&clientAddr, &addrLen);
 	if (clientSocket.fd < 0)
 	{
@@ -54,9 +57,7 @@ void Server::handleClientMessage(Client &client)
 {
 	char	buffer[1024];
 	
-	std::cout << "checkpoint 1: " << buffer << std::endl;
 	size_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
-//	std::cout << "bytes read = " << bytes_read << std::endl;
 	if (bytes_read <= 0)
 	{
 		std::cout << "Client disconnected or error reading.\n";
@@ -81,34 +82,27 @@ void Server::run()
 	while (1)
 	{
 		int socketActivity = poll(_sockets.data(), _sockets.size(), -1);
-		if (socketActivity == 0)
-			continue ;
-		else if (socketActivity > 0)
+		if (socketActivity > 0)
 		{
-			//printStr("Activity detected", YELLOW);
-
 			// if data is at listening socket 
 			if (_sockets[0].revents & POLLIN)
-				handleNewConnectionRequest();
-			// check client sockets for data
-			printStr("Checkpoint -1...", YELLOW);
-			for (unsigned int i = 1; i < _sockets.size(); i++)
 			{
-				std::cout << "_sockets[i].revents: " << _sockets[i].revents << std::endl;
-				printStr("Checkpoint 0...", YELLOW);
+				handleNewConnectionRequest();
+				socketActivity--;
+			}
+			// check client sockets for data
+			for (unsigned int i = 1; i < _sockets.size() && socketActivity > 0; i++)
+			{
 				if (_sockets[i].revents & POLLIN)
 				{
-					printStr("Checkpoint 1...", YELLOW);
-					handleClientMessage(_clients[_sockets[i].fd]);
+					handleClientMessage(_clients[_sockets[i - 1].fd]);
+					socketActivity--;
 				}
-				else if (_sockets[i].revents & (POLLHUP | POLLERR | POLLPRI))
+				else if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
-					printStr("Checkpoint 2...", YELLOW);
 					disconnectClient(i);
+					socketActivity--;
 					i--;
-				}
-				if (_sockets[i].revents & (POLLIN | POLLOUT))
-					break;
 				}
 			}
 		}
