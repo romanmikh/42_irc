@@ -35,12 +35,6 @@ void Server::run()
 		Client newClient(_listeningSocket.fd);
 		//_clients.push_back(newClient);
 		//_sockets.push_back(newClient.getSocket());
-		
-		// // if client socket 
-		// ssize_t bytes_read = read(newClient.getFd(), buffer, sizeof(buffer) - 1);  // -1 reserved for '\0' later
-		// buffer[bytes_read] = '\0'; // Null-terminate the buffer
-		// std::cout << "Received message: " << buffer << std::endl;
-		// // CAP LS 302 is the default message
 
 		while (true) {
 			// /connect localhost 6667 <-- into irssi
