@@ -17,8 +17,8 @@ CC		:= c++
 CFLAGS	:= -Werror -Wextra -Wall -std=c++98
 
 # Build files and directories
-SRC_PATH 	= ./src/
-OBJ_PATH	:= ./obj/
+SRC_PATH 	= ./sources/
+OBJ_PATH	:= ./objects/
 INC_PATH	= ./include/
 SRC			= $(wildcard $(SRC_PATH)/*.cpp) $(wildcard $(SRC_PATH)/*/*.cpp) # CHANGE THIS BEFORE EVALUATION!! We can't use wildcards
 SRCS		= $(SRC)
