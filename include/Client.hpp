@@ -19,9 +19,6 @@ class Client
 		Client();
 		Client(pollfd &clientSocket);
 		~Client();
-
-		/* operator overloads */
-        Client & operator = (const Client &other);
         
         /* accessors */
 		int getFd();
