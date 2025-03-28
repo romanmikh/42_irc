@@ -7,6 +7,7 @@ class Client;
 class Server
 {
 	private:
+		std::string				_name;
 		std::vector<pollfd>		_sockets;
 		std::map<int, Client>	_clients;
 		//std::vector<Channel>	_channels;
@@ -22,11 +23,12 @@ class Server
 		Server(int port_num, std::string &passwd);
 		~Server();
 
+	//	std::string getName();
 		void run();
 		void handleNewConnectionRequest();
 		void handleClientMessage(Client &client);
 		void disconnectClient(Client &client);
-		void sendWelcomeMessage(Client client);
+		void sendWelcomeMessage(Client &client);
 };
 
 #endif
