@@ -40,13 +40,11 @@ class Channel
         Channel & operator = (const Channel &other);
         
         /* accessors */
-        std::vector<Client *> getChannelClients(void);
+        std::vector<Client *>   getClients(void) const;
+        std::string             getName(void) const;
 
         /* member functions */
 
-        /* nested classes */
-		class ChannelNonExistentException: public std::exception {};
-        class ChannelAlreadyExistsException: public std::exception {};
 };
 
 /* non-member functions & operators */

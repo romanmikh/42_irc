@@ -6,23 +6,10 @@ class Channel;
 class Manager
 {
     protected:
-
-    private:
-        typedef std::map<std::string, Channel *>    channels_t;
-        typedef std::map<int, Client *>             clients_t;
-
-        typedef std::pair<std::string, Channel *>   channel_pair_t;
-        typedef std::pair<int, Client *>            client_pair_t;
-
-        /* member variables */
-        channels_t         _channels;
-        clients_t          _clients;
-        size_t             _channelCount;
-        size_t             _clientCount;
-
-        /* member functions */  
-
+    
     public:
+        typedef std::map<std::string, Channel *>    channels_t;
+        typedef std::pair<std::string, Channel *>   channel_pair_t;
 
         /* construcotrs & destructors */
         Manager(Server& server);
@@ -31,8 +18,8 @@ class Manager
         ~Manager(void);
         
         /* accessors */
-        channels_t getChannels(void) const;
-        clients_t getClients(void) const;
+        channels_t      getChannels(void) const;
+        Server::clients_t       getClients(void) const;
 
         /* member variables */
         Server& server;
@@ -46,6 +33,17 @@ class Manager
         void    leaveChannel(int clientFd, std::string channelName);
 
         /* nested classes */
+        class ChannelNonExistentException: public std::exception {};
+        class ChannelAlreadyExistsException: public std::exception {};
+
+    private:       
+
+        /* member variables */
+        channels_t         _channels;
+        size_t             _channelCount;
+        
+        /* member functions */  
+
 };
 
 /* non-member functions & operators */
