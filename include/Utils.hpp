@@ -60,6 +60,8 @@
 
 void	        handleCtrlD(void);
 std::string     getCurrentTime(void);
+std::string     intToString(int value);
+std::string     uintToString(unsigned int value);
 int             isDigits(const std::string& s);
 int             isValidPort(const std::string& s);
 unsigned int    getUnsignedInt(const std::string& prompt);

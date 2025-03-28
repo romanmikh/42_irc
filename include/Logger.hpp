@@ -1,6 +1,5 @@
 #pragma once
-#include "../include/Utils.hpp"
-#include "../include/Logger.hpp"
+#include "../include/irc.hpp"
 
 /* non-member functions*/
 void info(const std::string& message);

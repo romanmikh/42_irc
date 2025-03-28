@@ -1,42 +1,49 @@
 #pragma once
-#include "../include/Utils.hpp"
-#include "../include/Channel.hpp"
+#include "../include/irc.hpp"
 
 class Channel;
 
 class Manager
 {
     protected:
-
-    private:
-        /* member variables */
-        std::map<std::string, Channel *> _channels;
-        size_t                          _channelCount;
-        std::map<std::string, User *>   _users;
-        size_t                          _userCount;
-
-        /* member functions */
-        
-
+    
     public:
+        typedef std::map<std::string, Channel *>    channels_t;
+        typedef std::pair<std::string, Channel *>   channel_pair_t;
 
         /* construcotrs & destructors */
-        Manager(void);
+        Manager(Server& server);
         Manager(const std::string name);
         Manager(const Manager &other);
         ~Manager(void);
-
-        /* operator overloads */
-        Manager & operator = (const Manager &other);
         
         /* accessors */
+        channels_t      getChannels(void) const;
+        Server::clients_t       getClients(void) const;
+
+        /* member variables */
+        Server& server;
 
         /* member functions */
         void    createChannel(std::string channelName);
         void    deleteChannel(std::string channelName);
-        void    createUser(int clientFd);
+        void    createClient(int clientFd);
+        void    deleteClient(int clientFd);
+        void    joinChannel(int clientFd, std::string channelName);
+        void    leaveChannel(int clientFd, std::string channelName);
 
         /* nested classes */
+        class ChannelNonExistentException: public std::exception {};
+        class ChannelAlreadyExistsException: public std::exception {};
+
+    private:       
+
+        /* member variables */
+        channels_t         _channels;
+        size_t             _channelCount;
+        
+        /* member functions */  
+
 };
 
 /* non-member functions & operators */

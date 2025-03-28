@@ -3,32 +3,52 @@
 #include "irc.hpp"
 
 class Client;
+class Manager;
 
 class Server
 {
-	private:
+	protected:
+
+	public:
+
+		/* Typedefs */
+		typedef std::map<int, Client *>             clients_t;
+		typedef std::pair<int, Client *>            client_pair_t;
+		
+		/* Constructors & Destructors */
+		Server(int port_num, std::string &passwd);
+		~Server();
+
+		/* Member variables */
+		Manager				manager();
+
+		/* Member functions */
+		void run();
+		void handleNewConnectionRequest();
+		bool handleClientMessage(Client &client);
+		void disconnectClient(Client &client);
+		void sendWelcomeMessage(Client &client);
+		std::vector<std::string> ftSplit(const std::string& input , char delim);
+		std::vector<std::string> splitByString(const std::string& input, const std::string& delim);
+
+
+		// Message Handler
+		void handleUser(char *msg, Client &client);
+		void handleNick(char *msg, Client &client);
+		void msgHandler(char *msg, Client &client);
+
+		private:
+
+		/* Member variables */
 		std::string				_name;
 		std::vector<pollfd>		_sockets;
-		std::map<int, Client>	_clients;
-		//std::vector<Channel>	_channels;
+		clients_t				_clients;
 		std::string				_password;
 		unsigned int			_port;
 		int						_serverActivity;
 
-		/* Function Prototypes */
-		pollfd	_makePollfd(int fd, short int events);
-
-
-	public:
-		Server(int port_num, std::string &passwd);
-		~Server();
-
-	//	std::string getName();
-		void run();
-		void handleNewConnectionRequest();
-		void handleClientMessage(Client &client);
-		void disconnectClient(Client &client);
-		void sendWelcomeMessage(Client &client);
+		/* Member functions */
+		pollfd	_makePollfd(int fd, short int events, short int revents);
 };
 
 #endif

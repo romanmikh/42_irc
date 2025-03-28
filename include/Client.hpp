@@ -7,6 +7,9 @@ class Client
 		/* member variables */
 		std::string	_username;
 		std::string _nickname;
+		std::string _fullname;
+		std::string _hostname;
+		std::string _IP;
 		pollfd		_socket;
 
 		/* member functions */
@@ -16,16 +19,20 @@ class Client
 
 	public:
 		/* construcotrs & destructors */
-		Client();
+		Client(void);
 		Client(pollfd &clientSocket);
-		~Client();
-
-		/* operator overloads */
-        Client & operator = (const Client &other);
+		~Client(void);
         
         /* accessors */
-		int getFd();
-		std::string getUsername();
-		std::string getNickname();
-		struct pollfd getSocket();
+		int 			getFd(void) const;
+		std::string 	getUsername(void) const;
+		std::string 	getNickname(void) const;
+		struct pollfd 	getSocket(void) const;
+		
+		void			setIP(std::string IP);
+		void 			setFullName(std::string fullname);
+		void 			setNickname(std::string nickname);
+		void 			setUsername(std::string username);
+		void 			setHostname(std::string hostname);
+
 };
