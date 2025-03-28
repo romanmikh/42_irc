@@ -32,7 +32,7 @@ Server::~Server()
 
 void Server::handleNewConnectionRequest()
 {
-	printStr("New connection request received", YELLOW);
+	info("New connection request received");
 
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
@@ -49,7 +49,7 @@ void Server::handleNewConnectionRequest()
 		return ;
 	}
 
-	std::cout << "New client connected: " << clientSocket.fd << std::endl;
+	info("New client connected");
 	Client newClient(clientSocket);
 	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
 	_sockets.push_back(newClient.getSocket());
@@ -72,7 +72,7 @@ void Server::handleClientMessage(Client &client)
 
 void Server::disconnectClient(Client &client)
 {
-	std::cout << YELLOW << client.getUsername() << " disconnected!\n" << RESET;
+	info(client.getUsername() + " disconnected");
 
 	_serverActivity--;
 	close(client.getFd());
