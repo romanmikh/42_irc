@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/Utils.hpp"
+#include "../include/irc.hpp"
 
 class PasswordManager
 {

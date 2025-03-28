@@ -4,13 +4,8 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-Manager::Manager(void){
+Manager::Manager(Server& server) : server(server) {
     printStr("Manager default created! :D", PURPLE);
-}
-
-Manager::Manager(const Manager & other) {  
-    *this = other;
-    printStr("Manager copied (deep copy unnecessary)! :D", PURPLE);
 }
 
 Manager::~Manager(void){
@@ -24,7 +19,11 @@ Manager::~Manager(void){
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-
+// void    Manager::createClient(int clientFd) {
+    
+//     _clients.insert(client_pair_t (clientFd, new Client(clientFd)));
+//     printStr("Client created! :D", PURPLE);
+// }
 // ************************************************************************** //
 //                             Private Functions                              //
 // ************************************************************************** //

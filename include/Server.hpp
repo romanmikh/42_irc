@@ -3,6 +3,7 @@
 #include "irc.hpp"
 
 class Client;
+class Manager;
 
 class Server
 {
@@ -10,7 +11,6 @@ class Server
 		/* Member variables */
 		std::vector<pollfd>		_sockets;
 		std::map<int, Client>	_clients;
-		//std::vector<Channel>	_channels;
 		std::string				_password;
 		unsigned int			_port;
 		int						_serverActivity;
@@ -18,11 +18,13 @@ class Server
 		/* Member functions */
 		pollfd	_makePollfd(int fd, short int events, short int revents);
 
-
 	public:
 		/* Constructors & Destructors */
 		Server(int port_num, std::string &passwd);
 		~Server();
+
+		/* Member variables */
+		Manager *				manager;
 
 		/* Member functions */
 		void run();

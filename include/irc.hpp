@@ -3,6 +3,9 @@
 #include "Utils.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
+#include "Logger.hpp"
+#include "Manager.hpp"
 
 
 /* Macros */

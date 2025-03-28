@@ -1,6 +1,4 @@
-#include "../include/Server.hpp"
-#include "../include/Client.hpp"
-#include "../include/Logger.hpp"
+#include "../include/irc.hpp"
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
@@ -25,12 +23,17 @@ Server::Server(int port, std::string &passwd)
 	bind(_sockets[0].fd, (struct sockaddr *)(&serverAddr), sizeof(serverAddr));
 	listen(_sockets[0].fd, 10);
 	info("Listening...");
+
+	manager = new Manager(*this);
 }
 
 Server::~Server()
 {
 	for (unsigned int i = 0; i < _sockets.size(); i++)
 		close(_sockets[i].fd);
+
+	for (size_t i = 0; i < _clients.size(); i++)
+		delete &_clients[i];
 }
 
 // ************************************************************************** //
@@ -49,15 +52,16 @@ void Server::handleNewConnectionRequest()
 	clientSocket = _makePollfd(clientSocket.fd, POLLIN | POLLHUP | POLLERR, 0);
 	if (clientSocket.fd < 0)
 	{
-		perror("New socket creation failed.\n");
+		error("New socket creation failed.");
 		close(_sockets[0].fd);
 		return ;
 	}
 
 	info("New client connected with fd: " + intToString(clientSocket.fd));
-	Client newClient(clientSocket);
-	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
-	_sockets.push_back(newClient.getSocket());
+	Client* newClient = new Client(clientSocket);
+	_clients.insert(std::pair<int, Client>(clientSocket.fd, *newClient));
+	_sockets.push_back(newClient->getSocket());
+
 }
 
 void Server::handleClientMessage(Client &client)
@@ -72,7 +76,7 @@ void Server::handleClientMessage(Client &client)
 		return;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << "Received message: " << buffer << std::endl;
+	std::cout << "Received message: " << buffer;
 }
 
 void Server::disconnectClient(Client &client)
@@ -99,11 +103,10 @@ void Server::run()
 		_serverActivity = poll(_sockets.data(), _sockets.size(), -1);
 		if (_serverActivity > 0)
 		{
-			// if data is at listening socket 
 			if (_sockets[0].revents & POLLIN)
+			{
 				handleNewConnectionRequest();
-
-			// check client sockets for data
+			}
 			for (unsigned int i = 1; i < _sockets.size() && _serverActivity > 0; i++)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
