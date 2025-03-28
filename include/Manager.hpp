@@ -12,8 +12,8 @@ class Manager
         /* member variables */
         std::map<std::string, Channel *> _channels;
         size_t                          _channelCount;
-        std::map<std::string, User *>   _users;
-        size_t                          _userCount;
+        std::map<std::string, Client *>   _clients;
+        size_t                          _clientCount;
 
         /* member functions */
         
@@ -25,16 +25,13 @@ class Manager
         Manager(const std::string name);
         Manager(const Manager &other);
         ~Manager(void);
-
-        /* operator overloads */
-        Manager & operator = (const Manager &other);
         
         /* accessors */
 
         /* member functions */
         void    createChannel(std::string channelName);
         void    deleteChannel(std::string channelName);
-        void    createUser(int clientFd);
+        void    createClient(int clientFd);
 
         /* nested classes */
 };

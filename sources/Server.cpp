@@ -2,6 +2,9 @@
 #include "../include/Client.hpp"
 #include "../include/Logger.hpp"
 
+// ************************************************************************** //
+//                       Constructors & Desctructors                          //
+// ************************************************************************** //
 Server::Server(int port, std::string &passwd) 
 {
 	_port = port;
@@ -30,6 +33,9 @@ Server::~Server()
 		close(_sockets[i].fd);
 }
 
+// ************************************************************************** //
+//                             Public Functions                               //
+// ************************************************************************** //
 void Server::handleNewConnectionRequest()
 {
 	info("New connection request received");
@@ -39,9 +45,8 @@ void Server::handleNewConnectionRequest()
 	unsigned int	addrLen = sizeof(clientAddr);
 	
 	_serverActivity--;
-	clientSocket.events = POLLIN | POLLHUP | POLLERR;
-	clientSocket.revents = 0;
 	clientSocket.fd = accept(_sockets[0].fd, (sockaddr *)&clientAddr, &addrLen);
+	clientSocket = _makePollfd(clientSocket.fd, POLLIN | POLLHUP | POLLERR, 0);
 	if (clientSocket.fd < 0)
 	{
 		perror("New socket creation failed.\n");
@@ -49,7 +54,7 @@ void Server::handleNewConnectionRequest()
 		return ;
 	}
 
-	info("New client connected");
+	info("New client connected with fd: " + intToString(clientSocket.fd));
 	Client newClient(clientSocket);
 	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
 	_sockets.push_back(newClient.getSocket());
@@ -116,10 +121,15 @@ void Server::run()
 // ************************************************************************** //
 //                             Private Functions                              //
 // ************************************************************************** //
-pollfd Server::_makePollfd(int fd, short int events)
+pollfd Server::_makePollfd(int fd, short int events, short int revents)
 {
 	struct pollfd pfd;
 	pfd.fd = fd;
 	pfd.events = events;
+	pfd.revents = revents;
 	return pfd;
 }
+
+// ************************************************************************** //
+//                            Non-member Functions                            //
+// ************************************************************************** //

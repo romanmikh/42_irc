@@ -1,39 +1,35 @@
 #pragma once
-#include "../include/Utils.hpp"
-#include "../include/User.hpp"
+#include "../include/Client.hpp"
 
 class Channel
 {
-    protected:
-
     private:
-
-
         /* member variables */
+        std::vector<Client *>   _channelClients;
         std::string             _channelName;
         std::string             _channelPassword;
-
-        std::vector<User *>     _channelUsers;
-        size_t                  _channelUserCount;
-        size_t                  _channelUserLimit;
+        std::string             _channelTopic;
+        std::string             _channelMode;
+        size_t                  _channelClientCount;
+        size_t                  _channelClientLimit;
 
         /* member functions */
         void    _createChannel(std::string channelName);
         void    _deleteChannel(std::string channelName);
 
-        bool    _isUserInChannel(std::string channelName, std::string username);
-        void    _addUserToChannel(std::string channelName, std::string username);
-        void    _removeUserFromChannel(std::string channelName, std::string username);
-        bool    _isUserOperator(std::string channelName, std::string username);
-        void    _makeUserOperator(std::string channelName, std::string username);
-        void    _removeUserOperator(std::string channelName, std::string username);
+        bool    _isClientInChannel(std::string channelName, std::string Clientname);
+        void    _addClientToChannel(std::string channelName, std::string Clientname);
+        void    _removeClientFromChannel(std::string channelName, std::string Clientname);
+        
+        bool    _isClientOperator(std::string channelName, std::string Clientname);
+        void    _makeClientOperator(std::string channelName, std::string Clientname);
+        void    _removeClientOperator(std::string channelName, std::string Clientname);
 
         void    _sendMessageToChannel(std::string channelName, std::string message);
         bool    _isEmptyChannel(std::string channelName);
 
 
     public:
-
         /* construcotrs & destructors */
         Channel(void);
         Channel(const std::string name);
@@ -44,7 +40,7 @@ class Channel
         Channel & operator = (const Channel &other);
         
         /* accessors */
-        std::vector<User *> getChannelUsers(void);
+        std::vector<Client *> getChannelClients(void);
 
         /* member functions */
 

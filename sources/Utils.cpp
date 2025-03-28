@@ -14,6 +14,18 @@ std::string getCurrentTime(void) {
 	return ss.str();
 }
 
+std::string intToString(int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+std::string uintToString(unsigned int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
 void	handleCtrlD(void)
 {
 	if (std::cin.eof())

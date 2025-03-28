@@ -7,6 +7,7 @@ class Client;
 class Server
 {
 	private:
+		/* Member variables */
 		std::vector<pollfd>		_sockets;
 		std::map<int, Client>	_clients;
 		//std::vector<Channel>	_channels;
@@ -14,14 +15,16 @@ class Server
 		unsigned int			_port;
 		int						_serverActivity;
 
-		/* Function Prototypes */
-		pollfd	_makePollfd(int fd, short int events);
+		/* Member functions */
+		pollfd	_makePollfd(int fd, short int events, short int revents);
 
 
 	public:
+		/* Constructors & Destructors */
 		Server(int port_num, std::string &passwd);
 		~Server();
 
+		/* Member functions */
 		void run();
 		void handleNewConnectionRequest();
 		void handleClientMessage(Client &client);
