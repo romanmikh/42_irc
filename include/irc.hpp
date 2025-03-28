@@ -5,7 +5,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Logger.hpp"
-#include "Manager.hpp"
+#include "ChannelManager.hpp"
 #include "libft.h"
 
 /* Macros */

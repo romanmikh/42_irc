@@ -3,7 +3,7 @@
 
 class Channel;
 
-class Manager
+class ChannelManager
 {
     protected:
     
@@ -12,10 +12,10 @@ class Manager
         typedef std::pair<std::string, Channel *>   channel_pair_t;
 
         /* construcotrs & destructors */
-        Manager(Server& server);
-        Manager(const std::string name);
-        Manager(const Manager &other);
-        ~Manager(void);
+        ChannelManager(Server& server);
+        ChannelManager(const std::string name);
+        ChannelManager(const ChannelManager &other);
+        ~ChannelManager(void);
         
         /* accessors */
         channels_t      getChannels(void) const;
