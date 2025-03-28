@@ -30,6 +30,11 @@ Server::~Server()
 		close(_sockets[i].fd);
 }
 
+void Server::sendWelcomeMessage(Client client)
+{
+	std::string msg = this->getName() + client.getNickname() + " 001 "
+}
+
 void Server::handleNewConnectionRequest()
 {
 	printStr("New connection request received", YELLOW);
@@ -53,6 +58,7 @@ void Server::handleNewConnectionRequest()
 	Client newClient(clientSocket);
 	_clients.insert(std::pair<int, Client>(clientSocket.fd, newClient));
 	_sockets.push_back(newClient.getSocket());
+	sendWelcomeMessage(newClient);
 }
 
 void Server::handleClientMessage(Client &client)

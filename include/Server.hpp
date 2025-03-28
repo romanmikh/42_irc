@@ -26,6 +26,7 @@ class Server
 		void handleNewConnectionRequest();
 		void handleClientMessage(Client &client);
 		void disconnectClient(Client &client);
+		void sendWelcomeMessage(Client client);
 };
 
 #endif
