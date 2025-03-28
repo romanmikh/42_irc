@@ -1,5 +1,6 @@
 #include "../include/irc.hpp"
 #include "../include/Server.hpp"
+#include "../include/Logger.hpp"
 
 int    checkInput(int ac, char **av) {
     if (ac != 3) {
@@ -36,6 +37,7 @@ int main(int ac, char **av) {
         return 1;
     
     (void)ac;
+    info("Starting server...");
     int port = atoi(av[1]);
     std::string passwd = av[2];
 

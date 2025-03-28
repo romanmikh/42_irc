@@ -59,10 +59,11 @@
 #include <netinet/in.h>
 
 void	        handleCtrlD(void);
-unsigned int    getUnsignedInt(const std::string& prompt);
-void            printStr(const std::string& text, const std::string& colour);
+std::string     getCurrentTime(void);
 int             isDigits(const std::string& s);
 int             isValidPort(const std::string& s);
+unsigned int    getUnsignedInt(const std::string& prompt);
+void            printStr(const std::string& text, const std::string& colour);
 
 /* Colours */
 #define RESET   "\e[0m"

@@ -1,5 +1,6 @@
 #include "../include/Server.hpp"
 #include "../include/Client.hpp"
+#include "../include/Logger.hpp"
 
 Server::Server(int port, std::string &passwd) 
 {
@@ -20,7 +21,7 @@ Server::Server(int port, std::string &passwd)
 
 	bind(_sockets[0].fd, (struct sockaddr *)(&serverAddr), sizeof(serverAddr));
 	listen(_sockets[0].fd, 10);
-	printStr("Listening...", YELLOW);
+	info("Listening...");
 }
 
 Server::~Server()
@@ -87,7 +88,7 @@ void Server::disconnectClient(Client &client)
 
 void Server::run()
 {
-	printStr("Running...", YELLOW);
+	info("Running...");
 	while (1)
 	{
 		_serverActivity = poll(_sockets.data(), _sockets.size(), -1);

@@ -1,5 +1,19 @@
 #include "Utils.hpp"
 
+std::string getCurrentTime(void) {
+	std::time_t now = std::time(0);
+	std::tm* localTime = std::localtime(&now);
+	std::stringstream ss;
+	ss << std::setfill('0')
+	   << (1900 + localTime->tm_year) << "-"
+	   << std::setw(2) << (1 + localTime->tm_mon) << "-"
+	   << std::setw(2) << localTime->tm_mday << " "
+	   << std::setw(2) << localTime->tm_hour << ":"
+	   << std::setw(2) << localTime->tm_min << ":"
+	   << std::setw(2) << localTime->tm_sec;
+	return ss.str();
+}
+
 void	handleCtrlD(void)
 {
 	if (std::cin.eof())
