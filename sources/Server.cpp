@@ -7,6 +7,7 @@ Server::Server(int port, std::string &passwd)
 {
 	_port = port;
 	_password = passwd;
+	_name = "42IRC";
 	
 	pollfd		listeningSocket;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -39,6 +40,12 @@ Server::~Server()
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
+void Server::sendWelcomeMessage(Client &client)
+{
+	std::string msg = "001 :" + client.getNickname() + ": Welcome to our " + _name + " server!\r\n";
+	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
+}
+
 void Server::handleNewConnectionRequest()
 {
 	info("New connection request received");
@@ -57,11 +64,18 @@ void Server::handleNewConnectionRequest()
 		return ;
 	}
 
-	info("New client connected with fd: " + intToString(clientSocket.fd));
+	info("New connection request received");
+	//if (validatePassword())
+	send(clientSocket.fd, "CAP * LS : \r\n", 10, 0);
+
+	// parse NICK and USER and use to construct client object
+	// ...
+
 	Client* newClient = new Client(clientSocket);
 	_clients.insert(std::pair<int, Client>(clientSocket.fd, *newClient));
 	_sockets.push_back(newClient->getSocket());
-
+	sendWelcomeMessage(newClient);
+  info("New client connected with fd: " + intToString(clientSocket.fd));
 }
 
 void Server::handleClientMessage(Client &client)

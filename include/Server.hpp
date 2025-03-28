@@ -9,6 +9,7 @@ class Server
 {
 	private:
 		/* Member variables */
+		std::string				_name;
 		std::vector<pollfd>		_sockets;
 		std::map<int, Client>	_clients;
 		std::string				_password;
@@ -31,6 +32,7 @@ class Server
 		void handleNewConnectionRequest();
 		void handleClientMessage(Client &client);
 		void disconnectClient(Client &client);
+		void sendWelcomeMessage(Client &client);
 };
 
 #endif
