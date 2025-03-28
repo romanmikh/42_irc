@@ -40,7 +40,7 @@ Server::~Server()
 // ************************************************************************** //
 void Server::sendWelcomeMessage(Client &client)
 {
-	std::string msg = RPL_WELCOME + client.getNickname() + ": Welcome to our " + _name + " server!\r\n";
+	std::string msg = "001: " + client.getNickname() + ": Welcome to our " + _name + " server!\r\n";
 	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
 }
 
