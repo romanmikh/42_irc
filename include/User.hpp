@@ -7,6 +7,16 @@ class User
 
     private:
 
+        /* member variables */
+        std::string _nickname;
+        std::string _username;
+        int         _fd;
+        
+        /* member functions */
+        bool    _isNicknameValid(const std::string nickname) const;
+        bool    _isUsernameValid(const std::string username) const;
+        bool    _isOperator(void) const;
+
     public:
 
         /* construcotrs & destructors */
@@ -21,8 +31,6 @@ class User
         /* accessors */
         
         /* member functions */
-
-        /* static values */
 
         /* nested classes */
 };
