@@ -33,7 +33,7 @@ Server::~Server()
 
 void Server::sendWelcomeMessage(Client &client)
 {
-	std::string msg = "001 :" + client.getNickname() + ": Welcome to our " + _name + " server!\r\n";
+	std::string msg = RPL_WELCOME + client.getNickname() + ": Welcome to our " + _name + " server!\r\n";
 	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
 }
 
@@ -59,7 +59,7 @@ void Server::handleNewConnectionRequest()
 	info("New connection request received");
 	//if (validatePassword())
 	send(clientSocket.fd, "CAP * LS : \r\n", 10, 0);
-
+	//createClient();
 	// parse NICK and USER and use to construct client object
 	// ...
 
@@ -81,7 +81,7 @@ void Server::handleClientMessage(Client &client)
 		return;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << "Received message: " << buffer << std::endl;
+	//std::cout << "Received message: " << buffer << std::endl;
 }
 
 void Server::disconnectClient(Client &client)
