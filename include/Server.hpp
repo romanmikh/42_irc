@@ -27,6 +27,7 @@ class Server
 		void handleNewConnectionRequest();
 		bool handleClientMessage(Client &client);
 		void disconnectClient(Client &client);
+		void addclient(pollfd &clientSocket);
 		void sendWelcomeMessage(Client &client);
 		//std::vector<std::string> ftSplit(const std::string& input , char delim);
 		//std::vector<std::string> splitByString(const std::string& input, const std::string& delim);

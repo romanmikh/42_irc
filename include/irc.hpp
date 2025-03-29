@@ -6,7 +6,6 @@
 #include "Channel.hpp"
 #include "Logger.hpp"
 #include "Manager.hpp"
-#include "libft.h"
 
 /* Macros */
 # define MAX_PORT 65535 // must be 16-bit unsigned integer
@@ -34,3 +33,4 @@
 int     checkInput(int ac, char **av);
 int     errMsgVal(int detail, const std::string& str, int code);
 int     errMsg(const std::string& detail, const std::string& str, int code);
+std::vector<std::string> split(const std::string& str, char delimiter);

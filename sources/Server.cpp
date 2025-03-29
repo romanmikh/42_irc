@@ -46,6 +46,13 @@ void Server::sendWelcomeMessage(Client &client)
 	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
 }
 
+void Server::addclient(pollfd &clientSocket)
+{
+	Client *newClient = new Client(clientSocket);
+	_clients.insert(client_pair_t (clientSocket.fd, newClient));
+	_sockets.push_back(newClient->getSocket());
+}
+
 void Server::handleNewConnectionRequest()
 {
 	info("New connection request received");
@@ -67,23 +74,8 @@ void Server::handleNewConnectionRequest()
 	info("New connection request received");
 	//if (validatePassword())
 	send(clientSocket.fd, "CAP * LS : \r\n", 13, 0);
-
-	Client *newClient = new Client(clientSocket);
-	_clients.insert(client_pair_t (clientSocket.fd, newClient));
-	_sockets.push_back(newClient->getSocket());
+	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
-}
-
-std::vector<std::string> split(const std::string& str, char delimiter)
-{
-    std::vector<std::string> result;
-    std::stringstream ss(str);
-    std::string elem;
-
-    while (std::getline(ss, elem, delimiter))
-        result.push_back(elem);
-
-    return result;
 }
 
 void Server::handleUser(std::string &msg, Client &client)
@@ -95,7 +87,7 @@ void Server::handleUser(std::string &msg, Client &client)
 	client.setUsername(moreNames[1]);
 	client.setHostname(moreNames[2]);
 	client.setIP(moreNames[3]);
-	
+
 	sendWelcomeMessage(client);
 }
 

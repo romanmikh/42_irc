@@ -74,3 +74,15 @@ int isValidPort(const std::string& s)
     int port = std::atoi(s.c_str());
     return (port >= 0 && port <= 65535);
 }
+
+std::vector<std::string> split(const std::string& str, char delimiter)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string elem;
+
+    while (std::getline(ss, elem, delimiter))
+        result.push_back(elem);
+
+    return result;
+}
