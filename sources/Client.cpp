@@ -41,19 +41,19 @@ std::string Client::getNickname() const
 	return (_nickname);
 }
 
-void Client::setFullName(std::string fullname) {
+void Client::setFullName(std::string &fullname) {
 	_fullname = fullname;
 }
 
-void Client::setNickname(std::string nickname) {
+void Client::setNickname(std::string &nickname) {
 	_nickname = nickname;
 }
 
-void Client::setUsername(std::string username) {
+void Client::setUsername(std::string &username) {
 	_username = username;
 }
 
-void Client::setHostname(std::string hostname) {
+void Client::setHostname(std::string &hostname) {
 	_hostname = hostname;
 }
 

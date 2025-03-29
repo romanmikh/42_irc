@@ -28,13 +28,13 @@ class Server
 		bool handleClientMessage(Client &client);
 		void disconnectClient(Client &client);
 		void sendWelcomeMessage(Client &client);
-		std::vector<std::string> ftSplit(const std::string& input , char delim);
-		std::vector<std::string> splitByString(const std::string& input, const std::string& delim);
+		//std::vector<std::string> ftSplit(const std::string& input , char delim);
+		//std::vector<std::string> splitByString(const std::string& input, const std::string& delim);
 
 
 		// Message Handler
-		void handleUser(char *msg, Client &client);
-		void handleNick(char *msg, Client &client);
+		void handleUser(std::string &msg, Client &client);
+		void handleNick(std::string &msg, Client &client);
 		void msgHandler(char *msg, Client &client);
 
 		private:

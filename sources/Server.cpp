@@ -1,4 +1,6 @@
 #include "../include/irc.hpp"
+#include <sstream>
+
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
@@ -65,7 +67,6 @@ void Server::handleNewConnectionRequest()
 	info("New connection request received");
 	//if (validatePassword())
 	send(clientSocket.fd, "CAP * LS : \r\n", 13, 0);
-	
 
 	Client *newClient = new Client(clientSocket);
 	_clients.insert(client_pair_t (clientSocket.fd, newClient));
@@ -73,19 +74,32 @@ void Server::handleNewConnectionRequest()
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }
 
-void Server::handleUser(char *msg, Client &client)
+std::vector<std::string> split(const std::string& str, char delimiter)
 {
-	char **elems = ft_split(msg, ':');
-	client.setFullName(elems[1]);
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string elem;
 
-	char **moreNames = ft_split(elems[0], ' ');
+    while (std::getline(ss, elem, delimiter))
+        result.push_back(elem);
+
+    return result;
+}
+
+void Server::handleUser(std::string &msg, Client &client)
+{
+	std::vector<std::string> names = split(msg, ':');
+	client.setFullName(names[1]);
+
+	std::vector<std::string> moreNames = split(names[0], ' ');
 	client.setUsername(moreNames[1]);
 	client.setHostname(moreNames[2]);
 	client.setIP(moreNames[3]);
+	
 	sendWelcomeMessage(client);
 }
 
-void Server::handleNick(char *nickname, Client &client)
+void Server::handleNick(std::string &nickname, Client &client)
 {
 	client.setNickname(nickname);
 	info("Client " + client.getNickname() + " has set their nickname");
@@ -93,21 +107,15 @@ void Server::handleNick(char *nickname, Client &client)
 
 void Server::msgHandler(char *msg, Client &client)
 {
-	char **lines = ft_split_set(msg, (char *)"\r\n");
-
-	std::cout << "Lines: " << lines[0] << std::endl;
-
-	for (int i = 0; lines[i]; i++)
+	std::istringstream ss(msg);
+	std::string line;
+	while (std::getline(ss, line))
 	{
-		char **elems = ft_split(lines[i], ' ');
-	//	if (ft_match(elems[0], "JOIN"))
-	//		handleJoin();
-		if (ft_match((const char *)elems[0], "USER"))
-			handleUser(lines[i], client); 
-		else if (ft_match((const char *)elems[0], "NICK"))
-			handleNick(elems[1], client);
-		// can add the rest later
-		// can maybe use function pointers and loop to be more efficient ?
+		std::vector<std::string> data = split(line, ' ');
+		if (data[0] == "USER")
+			handleUser(line, client); 
+		if (data[0] == "NICK")
+			handleNick(data[1], client);
 	}
 }
 

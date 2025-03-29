@@ -38,6 +38,7 @@ int main(int ac, char **av) {
     
     (void)ac;
     info("Starting server...");
+
     int port = atoi(av[1]);
     std::string passwd = av[2];
 

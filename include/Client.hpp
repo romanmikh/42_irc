@@ -30,9 +30,9 @@ class Client
 		struct pollfd 	getSocket(void) const;
 		
 		void			setIP(std::string IP);
-		void 			setFullName(std::string fullname);
-		void 			setNickname(std::string nickname);
-		void 			setUsername(std::string username);
-		void 			setHostname(std::string hostname);
+		void 			setFullName(std::string &fullname);
+		void 			setNickname(std::string &nickname);
+		void 			setUsername(std::string &username);
+		void 			setHostname(std::string &hostname);
 
 };
