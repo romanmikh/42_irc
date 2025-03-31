@@ -5,7 +5,7 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-Server::Server(int port, std::string &passwd) 
+Server::Server(int port, std::string &passwd)
 {
 	_port = port;
 	_password = passwd;
@@ -40,19 +40,10 @@ Server::~Server()
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void Server::sendWelcomeProtocol(Client &client)
-{
-	std::string msg1 = ":" + _serverName + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
-	send(client.getFd(), msg1.c_str(), msg1.length(), MSG_DONTWAIT);
 
-	std::string msg2 = ":" + _serverName + " 002 " + client.nickname() + " :Your host is " + _serverName + ", running version 1.0\r\n";
-	send(client.getFd(), msg2.c_str(), msg2.length(), MSG_DONTWAIT);
-	
-	std::string msg3 = ":" + _serverName + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n";
-	send(client.getFd(), msg3.c_str(), msg3.length(), MSG_DONTWAIT);
-	
-	std::string msg4 = ":" + _serverName + " 004 " + client.nickname() + _serverName + " 1.0 o itkol\r\n";
-	send(client.getFd(), msg4.c_str(), msg4.length(), MSG_DONTWAIT);
+std::string Server::name()
+{
+	return (_serverName);
 }
 
 void Server::addclient(pollfd &clientSocket)
@@ -70,7 +61,6 @@ void Server::handleNewConnectionRequest()
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
 	
-	_serverActivity--;
 	clientSocket.fd = accept(_sockets[0].fd, (sockaddr *)&clientAddr, &addrLen);
 	clientSocket = _makePollfd(clientSocket.fd, POLLIN | POLLHUP | POLLERR, 0);
 	if (clientSocket.fd < 0)
@@ -87,74 +77,11 @@ void Server::handleNewConnectionRequest()
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }
 
-void Server::replyUSER(std::string &msg, Client &client)
-{
-	std::vector<std::string> names = split(msg, ':');
-	client.setFullName(names[1]);
-
-	std::vector<std::string> moreNames = split(names[0], ' ');
-	client.setUsername(moreNames[1]);
-	client.setHostname(moreNames[2]);
-	client.setIP(moreNames[3]);
-
-	sendWelcomeProtocol(client);
-}
-
-void Server::handleNick(std::string &nickname, Client &client)
-{
-	client.setNickname(nickname);
-	//info("Client " + client.nickname() + " has set their nickname");
-}
-
-void Server::replyPONG(Client &client)
-{
-	std::string pongMsg = "PONG " + _serverName + "\r\n";
-	send(client.getFd(), pongMsg.c_str(), 6, 0);
-}
-
-void Server::msgHandler(char *msgBuffer, Client &client)
-{
-	std::istringstream ss(msgBuffer);
-	std::string line;
-
-	while (std::getline(ss, line))
-	{
-		std::vector<std::string> msgData = split(line, ' ');
-		if (msgData[0] == "USER")
-			replyUSER(line, client); 
-		else if (msgData[0] == "NICK")
-			handleNick(msgData[1], client);
-		else if (msgData[0] == "QUIT")
-			disconnectClient(client);
-		else if (msgData[0] == "PING")
-			replyPONG(client);
-	}
-}
-
-bool Server::handleClientMessage(Client &client)
-{
-	char	buffer[1024];
-	
-	_serverActivity--;
-	size_t bytes_read = read(client.getFd(), (void *)buffer, sizeof(buffer) - 1);
-	if (bytes_read <= 0)
-	{
-		disconnectClient(client);
-		return (true);
-	}
-	buffer[bytes_read] = '\0';
-	std::cout << buffer; // only for testing
-
-	// need to check for partial message here too.. can think about this later
-	msgHandler(buffer, client); //-> this function can be part of manager if you want? can think about that later
-	return (false);
-}
 
 void Server::disconnectClient(Client &client)
 {
 	info(client.username() + " disconnected");
 
-	_serverActivity--;
 	close(client.getFd());
 	_clients.erase(client.getFd());
 	for (unsigned int i = 0; i < _sockets.size(); i++) {
@@ -168,27 +95,34 @@ void Server::disconnectClient(Client &client)
 
 void Server::run()
 {
+	MsgHandler		msg(*this);
+	//Manager		manager();
+
 	info("Running...");
-	bool clientDisconnected;
 	while (1)
 	{
-		_serverActivity = poll(_sockets.data(), _sockets.size(), -1);
-		if (_serverActivity > 0)
+		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
+		if (serverActivity > 0)
 		{
 			if (_sockets[0].revents & POLLIN)
 			{
 				handleNewConnectionRequest();
+				serverActivity--;
 			}
-			for (unsigned int i = 1; i < _sockets.size() && _serverActivity > 0;)
+			for (unsigned int i = 1; i < _sockets.size() && serverActivity > 0;)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+				{
 					disconnectClient(*(_clients[_sockets[i].fd]));
+					serverActivity--;
+				}
 				else if (_sockets[i].revents & POLLIN)
 				{
+					bool clientDisconnected = msg.receiveMessage(*(_clients[_sockets[i].fd]));
 					// added this check because we need to reset i when client disconnects inside this fn
-					clientDisconnected = handleClientMessage(*(_clients[_sockets[i].fd]));
 					if (!clientDisconnected)
 						i++;
+					serverActivity--;
 				}
 			}
 		}
