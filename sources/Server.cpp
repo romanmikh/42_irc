@@ -106,6 +106,12 @@ void Server::handleNick(std::string &nickname, Client &client)
 	//info("Client " + client.nickname() + " has set their nickname");
 }
 
+void Server::replyPONG(Client &client)
+{
+	std::string pongMsg = "PONG " + _serverName + "\r\n";
+	send(client.getFd(), pongMsg.c_str(), 6, 0);
+}
+
 void Server::msgHandler(char *msgBuffer, Client &client)
 {
 	std::istringstream ss(msgBuffer);
@@ -117,11 +123,11 @@ void Server::msgHandler(char *msgBuffer, Client &client)
 		if (msgData[0] == "USER")
 			replyUSER(line, client); 
 		else if (msgData[0] == "NICK")
-			client.setNickname(msgData[1]);
+			handleNick(msgData[1], client);
 		else if (msgData[0] == "QUIT")
 			disconnectClient(client);
-		// else if (msgData[0] == "PING")
-		// 	send(client.getFd(), "PONG\r\n", 6, 0);
+		else if (msgData[0] == "PING")
+			replyPONG(client);
 	}
 }
 

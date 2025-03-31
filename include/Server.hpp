@@ -37,6 +37,7 @@ class Server
 		void replyUSER(std::string &msg, Client &client);
 		void handleNick(std::string &msg, Client &client);
 		void msgHandler(char *msg, Client &client);
+		void replyPONG(Client &client);
 
 		private:
 
