@@ -9,7 +9,7 @@ Server::Server(int port, std::string &passwd)
 {
 	_port = port;
 	_password = passwd;
-	_name = "42IRC";
+	_serverName = "42irc.local";
 	
 	pollfd		listeningSocket;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -40,10 +40,19 @@ Server::~Server()
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void Server::sendWelcomeMessage(Client &client)
+void Server::sendWelcomeProtocol(Client &client)
 {
-	std::string msg = "001: " + client.getNickname() + ": Welcome to our " + _name + " server!\r\n";
-	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
+	std::string msg1 = ":" + _serverName + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
+	send(client.getFd(), msg1.c_str(), msg1.length(), MSG_DONTWAIT);
+
+	std::string msg2 = ":" + _serverName + " 002 " + client.nickname() + " :Your host is " + _serverName + ", running version 1.0\r\n";
+	send(client.getFd(), msg2.c_str(), msg2.length(), MSG_DONTWAIT);
+	
+	std::string msg3 = ":" + _serverName + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n";
+	send(client.getFd(), msg3.c_str(), msg3.length(), MSG_DONTWAIT);
+	
+	std::string msg4 = ":" + _serverName + " 004 " + client.nickname() + _serverName + " 1.0 o itkol\r\n";
+	send(client.getFd(), msg4.c_str(), msg4.length(), MSG_DONTWAIT);
 }
 
 void Server::addclient(pollfd &clientSocket)
@@ -78,7 +87,7 @@ void Server::handleNewConnectionRequest()
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }
 
-void Server::handleUser(std::string &msg, Client &client)
+void Server::replyUSER(std::string &msg, Client &client)
 {
 	std::vector<std::string> names = split(msg, ':');
 	client.setFullName(names[1]);
@@ -88,26 +97,31 @@ void Server::handleUser(std::string &msg, Client &client)
 	client.setHostname(moreNames[2]);
 	client.setIP(moreNames[3]);
 
-	sendWelcomeMessage(client);
+	sendWelcomeProtocol(client);
 }
 
 void Server::handleNick(std::string &nickname, Client &client)
 {
 	client.setNickname(nickname);
-	info("Client " + client.getNickname() + " has set their nickname");
+	//info("Client " + client.nickname() + " has set their nickname");
 }
 
-void Server::msgHandler(char *msg, Client &client)
+void Server::msgHandler(char *msgBuffer, Client &client)
 {
-	std::istringstream ss(msg);
+	std::istringstream ss(msgBuffer);
 	std::string line;
+
 	while (std::getline(ss, line))
 	{
-		std::vector<std::string> data = split(line, ' ');
-		if (data[0] == "USER")
-			handleUser(line, client); 
-		if (data[0] == "NICK")
-			handleNick(data[1], client);
+		std::vector<std::string> msgData = split(line, ' ');
+		if (msgData[0] == "USER")
+			replyUSER(line, client); 
+		else if (msgData[0] == "NICK")
+			client.setNickname(msgData[1]);
+		else if (msgData[0] == "QUIT")
+			disconnectClient(client);
+		// else if (msgData[0] == "PING")
+		// 	send(client.getFd(), "PONG\r\n", 6, 0);
 	}
 }
 
@@ -123,7 +137,7 @@ bool Server::handleClientMessage(Client &client)
 		return (true);
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << "Received message: " << buffer;
+	std::cout << buffer; // only for testing
 
 	// need to check for partial message here too.. can think about this later
 	msgHandler(buffer, client); //-> this function can be part of manager if you want? can think about that later
@@ -132,7 +146,7 @@ bool Server::handleClientMessage(Client &client)
 
 void Server::disconnectClient(Client &client)
 {
-	info(client.getUsername() + " disconnected");
+	info(client.username() + " disconnected");
 
 	_serverActivity--;
 	close(client.getFd());
