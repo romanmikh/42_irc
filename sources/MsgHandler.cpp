@@ -29,32 +29,27 @@ void MsgHandler::replyPONG(Client &client)
 	send(client.getFd(), pongMsg.c_str(), 6, 0);
 }
 
-void MsgHandler::respond(char *msgBuffer, Client &client)
+void MsgHandler::respond(std::string &msg, Client &client)
 {
-	std::istringstream ss(msgBuffer);
-	std::string line;
-
-	while (std::getline(ss, line))
-	{
-		std::vector<std::string> msgData = split(line, ' ');
-		if (msgData[0] == "USER")
-			replyUSER(line, client); 
-		else if (msgData[0] == "NICK")
-			handleNICK(msgData[1], client);
-		else if (msgData[0] == "PING")
-			replyPONG(client);
-		else if (msgData[0] == "QUIT")
-			_server.disconnectClient(client);
-		//else if (msgData[0] == "JOIN")
-			//add to channel ...
-	}
+	std::vector<std::string> msgData = split(msg, ' ');
+	if (msgData[0] == "USER")
+		replyUSER(msg, client); 
+	else if (msgData[0] == "NICK")
+		handleNICK(msgData[1], client);
+	else if (msgData[0] == "PING")
+		replyPONG(client);
+	else if (msgData[0] == "QUIT")
+		_server.disconnectClient(client);
+	//else if (msgData[0] == "JOIN")
+		//add to channel ...
 }
 
 bool MsgHandler::receiveMessage(Client &client)
 {
 	char	buffer[1024];
+	static std::map<int, std::string> msgBuffer;
 	
-	size_t bytes_read = read(client.getFd(), (void *)buffer, sizeof(buffer) - 1);
+	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0)
 	{
 		_server.disconnectClient(client);
@@ -63,8 +58,14 @@ bool MsgHandler::receiveMessage(Client &client)
 	buffer[bytes_read] = '\0';
 	std::cout << buffer; // only for testing
 
-	// need to check for partial message here too.. can think about this later
-	respond(buffer, client);
+	msgBuffer[client.getFd()] += buffer;
+	size_t i;
+	while ((i = msgBuffer[client.getFd()].find("\r\n")) != std::string::npos)
+	{
+		std::string message = msgBuffer[client.getFd()].substr(0, i);
+		msgBuffer[client.getFd()].erase(0, i + 2);
+		respond(message, client);
+	}
 	return (false);
 }
 
