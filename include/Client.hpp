@@ -10,10 +10,11 @@ class Client
 		std::string _hostname;
 		std::string _IP;
 		pollfd		_socket;
+		bool		_isOperator;
 		
-        bool    _isNicknameValid(const std::string nickname) const;
-        bool    _isUsernameValid(const std::string username) const;
-        bool    _isOperator(void) const;
+        // bool    _isNicknameValid(const std::string nickname) const;
+        // bool    _isUsernameValid(const std::string username) const;
+        // bool    _isOperator(void) const;
 		
 	public:
 		Client(void);
@@ -33,5 +34,6 @@ class Client
 		void 			setNickname(std::string &nickname);
 		void 			setUsername(std::string &username);
 		void 			setHostname(std::string &hostname);
+		void 			setOper(bool status);
 
 };

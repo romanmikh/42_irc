@@ -3,11 +3,12 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-Server::Server(int port, std::string &passwd)
+Server::Server(int port, std::string &password)
 {
 	_port = port;
-	_password = passwd;
+	_password = password;
 	_serverName = "42irc.local";
+	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -38,6 +39,30 @@ Server::~Server()
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
+
+
+void Server::parseOpersConfigFile(const char *fileName)
+{
+	std::ifstream file;
+	
+	file.open(fileName, std::ios::in);
+	if (!file.is_open())
+	{
+		std::cerr << "Failed to open file: " << fileName << std::endl;
+		return;
+	}
+
+	std::string line;
+	while(std::getline(file, line))
+	{
+		std::vector<std::string> oper = split(line, ' ');
+		_opers.insert(std::pair<std::string, std::string>(oper[0], oper[1]));
+	}
+}
+std::map<std::string,std::string> Server::getOpers()
+{
+	return (_opers);
+}
 
 std::string Server::name()
 {

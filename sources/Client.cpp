@@ -14,6 +14,7 @@ Client::Client(pollfd &clientSocket)
 	_nickname = "default";
 	_username = "default";
 	_socket = clientSocket;
+	_isOperator = false;
 }
 
 Client::~Client() {}
@@ -69,6 +70,10 @@ void Client::setHostname(std::string &hostname)
 void Client::setIP(std::string IP)
 {
 	_IP = IP;
+}
+void 	Client::setOper(bool status)
+{
+	_isOperator = status;
 }
 
 // ************************************************************************** //

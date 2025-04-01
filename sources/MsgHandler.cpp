@@ -29,6 +29,18 @@ void MsgHandler::replyPONG(Client &client)
 	send(client.getFd(), pongMsg.c_str(), 6, 0);
 }
 
+
+void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
+{
+	std::map<std::string, std::string>	allowedOpers = _server.getOpers();
+
+	if (allowedOpers[nickname] == password)
+	{
+		std::cout << nickname << "set as operator.\n";
+		client.setOper(true);
+	}
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
@@ -42,6 +54,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		_server.disconnectClient(client);
 	//else if (msgData[0] == "JOIN")
 		//add to channel ...
+	else if (msgData[0] == "OPER")
+		handleOPER(msgData[1], msgData[2], client);
 }
 
 bool MsgHandler::receiveMessage(Client &client)

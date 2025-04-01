@@ -18,17 +18,22 @@ class Server
 		std::string				_password;
 		unsigned int			_port;
 
+		std::map<std::string, std::string>	_opers;
+
 		pollfd	_makePollfd(int fd, short int events, short int revents);
 
 	public:
 		Server(int port_num, std::string &passwd);
 		~Server();
 
-		void run();
-		void handleNewConnectionRequest();
-		void disconnectClient(Client &client);
-		void addclient(pollfd &clientSocket);
-		std::string name();
+		void 			run();
+		void 			parseOpersConfigFile(const char *file);
+		void 			handleNewConnectionRequest();
+		void 			disconnectClient(Client &client);
+		void 			addclient(pollfd &clientSocket);
+		std::string 	name();
+		
+		std::map<std::string,std::string> getOpers();
 
 		//std::vector<std::string> ftSplit(const std::string& input , char delim);
 		//std::vector<std::string> splitByString(const std::string& input, const std::string& delim);
