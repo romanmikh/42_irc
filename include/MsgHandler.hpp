@@ -15,7 +15,7 @@ class MsgHandler
 
 		void replyUSER(std::string &msg, Client &client);
 		void handleNICK(std::string &msg, Client &client);
-		void msgHandler(char *msg, Client &client);
+		void respond(char *msg, Client &client);
 		void replyPONG(Client &client);
 		void sendWelcomeProtocol(Client &client);
 		bool receiveMessage(Client &client);
