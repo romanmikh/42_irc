@@ -1,8 +1,6 @@
 #ifndef MSGHANDLER_HPP
 #define MSGHANDLER_HPP
 #include "irc.hpp"
-#include "Client.hpp"
-#include "Server.hpp"
 
 class MsgHandler
 {

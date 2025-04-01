@@ -1,4 +1,4 @@
-#include "Utils.hpp"
+#include "../../include/irc.hpp"
 
 std::string getCurrentTime(void) {
 	std::time_t now = std::time(0);

@@ -1,4 +1,4 @@
-#include "../include/Logger.hpp"
+#include "../../include/irc.hpp"
 
 // ************************************************************************** //
 //                            Non-member Functions                            //

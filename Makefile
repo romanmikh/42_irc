@@ -20,15 +20,10 @@ CFLAGS	:= -Werror -Wextra -Wall -g3 -std=c++98
 SRC_PATH 	= ./sources/
 OBJ_PATH	:= ./objects/
 INC_PATH	= ./include/
-#SRC			= $(wildcard $(SRC_PATH)/*.cpp) $(wildcard $(SRC_PATH)/*/*.cpp) # CHANGE THIS BEFORE EVALUATION!! We can't use wildcards
 
 SRCS = $(shell find $(SRC_PATH) -name '*.cpp') #! Remember to explicity define src
 OBJS = $(SRCS:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
-
-#SRCS		= $(SRC)
-#OBJ			= $(patsubst $(SRC_PATH)%, %, $(SRCS:.cpp=.o))
-#OBJS		= $(addprefix $(OBJ_PATH), $(OBJ))
-INC			= -I $(INC_PATH)
+INC	= -I $(INC_PATH)
 
 # Main rule
 all: $(OBJ_PATH) $(NAME)

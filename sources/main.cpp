@@ -1,6 +1,4 @@
 #include "../include/irc.hpp"
-#include "../include/Server.hpp"
-#include "../include/Logger.hpp"
 
 int    checkInput(int ac, char **av) {
     if (ac != 3) {

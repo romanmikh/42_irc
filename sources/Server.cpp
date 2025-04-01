@@ -1,6 +1,4 @@
 #include "../include/irc.hpp"
-#include <sstream>
-
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
