@@ -4,26 +4,24 @@
 class Client
 {
 	private:
-		/* member variables */
 		std::string	_username;
 		std::string _nickname;
 		std::string _fullname;
 		std::string _hostname;
 		std::string _IP;
 		pollfd		_socket;
-
-		/* member functions */
+		
         bool    _isNicknameValid(const std::string nickname) const;
         bool    _isUsernameValid(const std::string username) const;
         bool    _isOperator(void) const;
-
+		
 	public:
-		/* construcotrs & destructors */
 		Client(void);
 		Client(pollfd &clientSocket);
 		~Client(void);
+
+		std::string msgBuffer;
         
-        /* accessors */
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
 		std::string 	username(void) const;

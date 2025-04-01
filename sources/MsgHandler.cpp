@@ -46,8 +46,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 
 bool MsgHandler::receiveMessage(Client &client)
 {
-	char	buffer[1024];
-	static std::map<int, std::string> msgBuffer;
+	char		buffer[1024];
 	
 	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0)
@@ -56,14 +55,14 @@ bool MsgHandler::receiveMessage(Client &client)
 		return (true);
 	}
 	buffer[bytes_read] = '\0';
-	msgBuffer[client.getFd()] += buffer;
 	std::cout << buffer; // only for testing
 
+	client.msgBuffer += buffer;	
 	size_t i;
-	while ((i = msgBuffer[client.getFd()].find("\r\n")) != std::string::npos)
+	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{
-		std::string message = msgBuffer[client.getFd()].substr(0, i);
-		msgBuffer[client.getFd()].erase(0, i + 2);
+		std::string message = client.msgBuffer.substr(0, i);
+		client.msgBuffer.erase(0, i + 2);
 		respond(message, client);
 	}
 	return (false);

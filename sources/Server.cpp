@@ -53,8 +53,6 @@ void Server::addclient(pollfd &clientSocket)
 
 void Server::handleNewConnectionRequest()
 {
-	info("New connection request received");
-
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
@@ -117,7 +115,6 @@ void Server::run()
 				else if (_sockets[i].revents & POLLIN)
 				{
 					bool clientDisconnected = msg.receiveMessage(*(_clients[_sockets[i].fd]));
-					// added this check because we need to reset i when client disconnects inside this fn
 					if (!clientDisconnected)
 						i++;
 					serverActivity--;
