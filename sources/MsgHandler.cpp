@@ -4,7 +4,6 @@ MsgHandler::MsgHandler(Server &server) : _server(server) {};
 
 MsgHandler::~MsgHandler() {};
 
-
 void MsgHandler::replyUSER(std::string &msg, Client &client)
 {
 	std::vector<std::string> names = split(msg, ':');
@@ -30,7 +29,7 @@ void MsgHandler::replyPONG(Client &client)
 	send(client.getFd(), pongMsg.c_str(), 6, 0);
 }
 
-void MsgHandler::msgHandler(char *msgBuffer, Client &client)
+void MsgHandler::respond(char *msgBuffer, Client &client)
 {
 	std::istringstream ss(msgBuffer);
 	std::string line;
@@ -46,6 +45,8 @@ void MsgHandler::msgHandler(char *msgBuffer, Client &client)
 			replyPONG(client);
 		else if (msgData[0] == "QUIT")
 			_server.disconnectClient(client);
+		//else if (msgData[0] == "JOIN")
+			//add to channel ...
 	}
 }
 
@@ -63,7 +64,7 @@ bool MsgHandler::receiveMessage(Client &client)
 	std::cout << buffer; // only for testing
 
 	// need to check for partial message here too.. can think about this later
-	msgHandler(buffer, client);
+	respond(buffer, client);
 	return (false);
 }
 
