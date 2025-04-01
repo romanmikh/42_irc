@@ -15,21 +15,6 @@ int    checkInput(int ac, char **av) {
     // ...
     return 0;
 }
-//  list of clients on the server
-//  list of channels
-//  server password
-//  
-
-// Client class
-//  username
-//  nickname
-//  fd for their socket
-//   
-
-// channel class/struct
-//  list of operators/  channel mode
-//  users in channel
-//  
 
 int main(int ac, char **av) {
 
@@ -38,10 +23,12 @@ int main(int ac, char **av) {
     
     (void)ac;
     info("Starting server...");
+
     int port = atoi(av[1]);
     std::string passwd = av[2];
 
     Server server(port, passwd);
     server.run();
+
     return 0;
 }

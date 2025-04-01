@@ -31,29 +31,34 @@ int Client::getFd() const
 	return (_socket.fd);
 }
 
-std::string Client::getUsername() const
+std::string Client::username() const
 {
 	return (_username);
 }
 
-std::string Client::getNickname() const
+std::string Client::nickname() const
 {
 	return (_nickname);
 }
 
-void Client::setFullName(std::string fullname) {
+std::string Client::hostname() const
+{
+	return (_hostname);
+}
+
+void Client::setFullName(std::string &fullname) {
 	_fullname = fullname;
 }
 
-void Client::setNickname(std::string nickname) {
+void Client::setNickname(std::string &nickname) {
 	_nickname = nickname;
 }
 
-void Client::setUsername(std::string username) {
+void Client::setUsername(std::string &username) {
 	_username = username;
 }
 
-void Client::setHostname(std::string hostname) {
+void Client::setHostname(std::string &hostname) {
 	_hostname = hostname;
 }
 

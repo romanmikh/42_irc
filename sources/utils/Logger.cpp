@@ -4,7 +4,7 @@
 //                            Non-member Functions                            //
 // ************************************************************************** //
 void info(const std::string& message) {
-    std::cout << getCurrentTime() << " [INFO] " << message << std::endl;
+    std::cout << GREEN << getCurrentTime() << " [INFO] " << message << RESET << std::endl;
 }
 
 void error(const std::string& message) {

@@ -19,7 +19,7 @@ class ChannelManager
         
         /* accessors */
         channels_t      getChannels(void) const;
-        Server::clients_t       getClients(void) const;
+        clients_t       getClients(void) const;
 
         /* member variables */
         Server& server;

@@ -25,14 +25,15 @@ class Client
         
         /* accessors */
 		int 			getFd(void) const;
-		std::string 	getUsername(void) const;
-		std::string 	getNickname(void) const;
 		struct pollfd 	getSocket(void) const;
+		std::string 	username(void) const;
+		std::string 	nickname(void) const;
+		std::string 	hostname(void) const;
 		
 		void			setIP(std::string IP);
-		void 			setFullName(std::string fullname);
-		void 			setNickname(std::string nickname);
-		void 			setUsername(std::string username);
-		void 			setHostname(std::string hostname);
+		void 			setFullName(std::string &fullname);
+		void 			setNickname(std::string &nickname);
+		void 			setUsername(std::string &username);
+		void 			setHostname(std::string &hostname);
 
 };
