@@ -56,9 +56,9 @@ bool MsgHandler::receiveMessage(Client &client)
 		return (true);
 	}
 	buffer[bytes_read] = '\0';
+	msgBuffer[client.getFd()] += buffer;
 	std::cout << buffer; // only for testing
 
-	msgBuffer[client.getFd()] += buffer;
 	size_t i;
 	while ((i = msgBuffer[client.getFd()].find("\r\n")) != std::string::npos)
 	{
@@ -74,7 +74,7 @@ void MsgHandler::sendWelcomeProtocol(Client &client)
 	std::string rpl_welcome = ":" + _server.name() + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
 	std::string rpl_yourhost = ":" + _server.name() + " 002 " + client.nickname() + " :Your host is " + _server.name() + ", running version 1.0\r\n";
 	std::string rpl_created = ":" + _server.name() + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n";
-	std::string rpl_myinfo = ":" + _server.name() + " 004 " + client.nickname() + _server.name() + " 1.0 o itkol\r\n";
+	std::string rpl_myinfo = ":" + _server.name() + " 004 " + client.nickname() + " " + _server.name() + " 1.0 o itkol\r\n";
 	
 	send(client.getFd(), rpl_welcome.c_str(), rpl_welcome.length(), MSG_DONTWAIT);
 	send(client.getFd(), rpl_yourhost.c_str(), rpl_yourhost.length(), MSG_DONTWAIT);
