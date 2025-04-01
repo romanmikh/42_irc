@@ -6,7 +6,8 @@
 #include "Channel.hpp"
 #include "MsgHandler.hpp"
 #include "Logger.hpp"
-//#include "Manager.hpp"
+#include "ChannelManager.hpp"
+#include "libft.h"
 
 /* Macros */
 # define MAX_PORT 65535 // must be 16-bit unsigned integer
