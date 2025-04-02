@@ -128,13 +128,14 @@ void Server::run()
 			if (_sockets[0].revents & POLLIN)
 			{
 				handleNewConnectionRequest();
+				serverActivity--;
 			}
 			for (unsigned int i = _sockets.size() - 1; i > 0 && serverActivity > 0; --i)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					disconnectClient(*(_clients[_sockets[i].fd]));
-					// socket list changed, don’t increment i
+					serverActivity--;
 				}
 				else if (_sockets[i].revents & POLLIN)
 				{
