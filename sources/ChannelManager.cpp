@@ -70,6 +70,11 @@ void ChannelManager::leaveChannel(Client& client, std::string channelName) {
         client.leaveChannel(channelName);
         info(client.username() + " removed from channel " + channelName);
     }
+    // send irssi message to close channel interface: :<nickname>!<user>@<host> PART #channel
+    // causes segfaults atm...
+    // std::string PARTmsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PART " + channelName + "\r\n";
+    // printStr("PARTmsg: " + PARTmsg, YELLOW);
+    // send(client.getFd(), PARTmsg.c_str(), PARTmsg.length(), 0);
 }
 // ************************************************************************** //
 //                             Private Functions                              //
