@@ -87,17 +87,15 @@ void MsgHandler::handleKICK(std::string &username, std::string &channel, Client 
 
 void MsgHandler::replyPONG(Client &client)
 {
-	std::string pongMsg = "PONG " + SERVER_NAME + "\r\n";
-	send(client.getFd(), pongMsg.c_str(), 6, 0);
+	sendMSG(client.getFd(), PONG);
 }
 
 void MsgHandler::replyBadPassword(Client &client)
 {
-	std::string msg = ":" + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"; 
-	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
+	sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
 }
 
-void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
+void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
 {
 	std::map<std::string, std::string>	allowedOpers = _server.getOpers();
 
@@ -110,8 +108,7 @@ void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	{
 		std::cout << nickname << " set as operator.\n";
 		client.setIRCOp(true);
-		std::string rpl_youroper = ":" + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n";
-		send(client.getFd(), rpl_youroper.c_str(), rpl_youroper.length(), MSG_DONTWAIT);
+		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
 	else {
 	 	replyBadPassword(client);
