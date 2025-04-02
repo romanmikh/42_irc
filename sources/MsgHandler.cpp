@@ -183,7 +183,3 @@ void MsgHandler::sendWelcomeProtocol(Client &client)
 	sendMSG(client.getFd(), RPL_MYINFO(client));
 }
 
-void MsgHandler::sendMSG(int fd, std::string RPL)
-{
-	send(fd, RPL.c_str(), RPL.length(), MSG_DONTWAIT);
-}

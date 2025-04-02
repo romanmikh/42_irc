@@ -86,3 +86,8 @@ std::vector<std::string> split(const std::string& str, char delimiter)
 
     return result;
 }
+
+void sendMSG(int fd, std::string RPL)
+{
+	send(fd, RPL.c_str(), RPL.length(), MSG_DONTWAIT);
+}

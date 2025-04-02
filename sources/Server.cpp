@@ -87,7 +87,7 @@ void Server::handleNewConnectionRequest()
 
 	info("New connection request received");
 	//if (validatePassword())
-	send(clientSocket.fd, "CAP * LS : \r\n", 13, 0);
+	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }
