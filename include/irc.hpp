@@ -45,21 +45,15 @@
 #include "ChannelManager.hpp"
 
 /* Macros */
-# define MAX_PORT 65535 // must be 16-bit unsigned integer
-# define MIN_PORT 1024 // 1-1023 are reserved ports, require root
+#define MIN_PORT 1024
+#define MAX_PORT 65535
 
-/* Enumerations */ 
+#define ERR_USAGE "Usage: ./ircserv <port> <password>"
+#define ERR_PORT "Invalid port number"
+#define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
+#define ERR_INVALID_PASSWORD "Invalid password"
+#define ERR_INVALID_PASSWORD_LENGTH "Password must be 1 characters long"
 
-/* Error messages */
-# define ERR_USAGE "Usage: ./ircserv <port> <password>"
-# define ERR_PORT "Invalid port number"
-# define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
-# define ERR_INVALID_PASSWORD "Invalid password"
-# define ERR_INVALID_PASSWORD_LENGTH "Password must be 1 characters long"
-
-// Reply codes for server responses
-
-// RPL MESSAGE MACROS
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
 #define RPL_CREATED(client) std::string(":") + SERVER_NAME + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n"
@@ -68,32 +62,33 @@
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
 
+#define CMD_STD_FMT(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
+
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
 
 /* Function prototypes */ 
-int     checkInput(int ac, char **av);
-int     errMsgVal(int detail, const std::string& str, int code);
-int     errMsg(const std::string& detail, const std::string& str, int code);
-std::vector<std::string> split(const std::string& str, char delimiter);
-
-void	        handleCtrlD(void);
-std::string     getCurrentTime(void);
-std::string     intToString(int value);
-std::string     uintToString(unsigned int value);
-int             isDigits(const std::string& s);
-int             isValidPort(const std::string& s);
-unsigned int    getUnsignedInt(const std::string& prompt);
-void            printStr(const std::string& text, const std::string& colour);
-void 			sendMSG(int fd, std::string RPL);
+std::vector<std::string>    split(const std::string& str, char delimiter);
+std::string                 getCurrentTime(void);
+std::string                 intToString(int value);
+std::string                 uintToString(unsigned int value);
+unsigned int                getUnsignedInt(const std::string& prompt);
+int                         checkInput(int ac, char **av);
+int                         errMsgVal(int detail, const std::string& str, int code);
+int                         errMsg(const std::string& detail, const std::string& str, int code);
+void	                    handleCtrlD(void);
+int                         isDigits(const std::string& s);
+int                         isValidPort(const std::string& s);
+void                        printStr(const std::string& text, const std::string& colour);
+void 			            sendMSG(int fd, std::string RPL);
 
 // Logging
-void info(const std::string& message);
-void error(const std::string& message);
-void warning(const std::string& message);
+void                        info(const std::string& message);
+void                        error(const std::string& message);
+void                        warning(const std::string& message);
 
 //Command
 enum Command
