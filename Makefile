@@ -14,17 +14,16 @@ NAME	:= ircserv
 
 # Compiler and compilation flags
 CC		:= c++
-CFLAGS	:= -Werror -Wextra -Wall -std=c++98
+CFLAGS	:= -Werror -Wextra -Wall -g3 -std=c++98
 
 # Build files and directories
-SRC_PATH 	= ./src/
-OBJ_PATH	:= ./obj/
+SRC_PATH 	= ./sources/
+OBJ_PATH	:= ./objects/
 INC_PATH	= ./include/
-SRC			= $(wildcard $(SRC_PATH)/*.cpp) $(wildcard $(SRC_PATH)/*/*.cpp) # CHANGE THIS BEFORE EVALUATION!! We can't use wildcards
-SRCS		= $(SRC)
-OBJ			= $(patsubst $(SRC_PATH)%, %, $(SRCS:.cpp=.o))
-OBJS		= $(addprefix $(OBJ_PATH), $(OBJ))
-INC			= -I $(INC_PATH)
+
+SRCS = $(shell find $(SRC_PATH) -name '*.cpp') #! Remember to explicity define src
+OBJS = $(SRCS:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
+INC	= -I $(INC_PATH)
 
 # Main rule
 all: $(OBJ_PATH) $(NAME)
@@ -54,6 +53,6 @@ re: fclean all
 
 # Valgrind rule
 valgrind: $(NAME)
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes --trace-children=yes --num-callers=20 --log-file=valgrind_out.txt ./ircserv 8080 p
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes --trace-children=yes --num-callers=20 --log-file=valgrind_out.txt ./ircserv 6667 p
 
 .PHONY: all re clean fclean valgrind

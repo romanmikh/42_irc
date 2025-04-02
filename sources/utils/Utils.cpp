@@ -1,4 +1,30 @@
-#include "utils.hpp"
+#include "../../include/irc.hpp"
+
+std::string getCurrentTime(void) {
+	std::time_t now = std::time(0);
+	std::tm* localTime = std::localtime(&now);
+	std::stringstream ss;
+	ss << std::setfill('0')
+	   << (1900 + localTime->tm_year) << "-"
+	   << std::setw(2) << (1 + localTime->tm_mon) << "-"
+	   << std::setw(2) << localTime->tm_mday << " "
+	   << std::setw(2) << localTime->tm_hour << ":"
+	   << std::setw(2) << localTime->tm_min << ":"
+	   << std::setw(2) << localTime->tm_sec;
+	return ss.str();
+}
+
+std::string intToString(int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+std::string uintToString(unsigned int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 
 void	handleCtrlD(void)
 {
@@ -47,4 +73,16 @@ int isValidPort(const std::string& s)
         return 0;
     int port = std::atoi(s.c_str());
     return (port >= 0 && port <= 65535);
+}
+
+std::vector<std::string> split(const std::string& str, char delimiter)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string elem;
+
+    while (std::getline(ss, elem, delimiter))
+        result.push_back(elem);
+
+    return result;
 }
