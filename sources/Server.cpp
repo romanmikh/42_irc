@@ -130,7 +130,7 @@ void Server::run()
 				handleNewConnectionRequest();
 				serverActivity--;
 			}
-			for (unsigned int i = 1; i < _sockets.size() && serverActivity > 0;)
+			for (unsigned int i = _sockets.size() - 1; i > 0 && serverActivity > 0; --i)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
@@ -139,9 +139,7 @@ void Server::run()
 				}
 				else if (_sockets[i].revents & POLLIN)
 				{
-					bool clientDisconnected = msg.receiveMessage(*(_clients[_sockets[i].fd]));
-					if (!clientDisconnected)
-						i++;
+					msg.receiveMessage(*(_clients[_sockets[i].fd]));
 					serverActivity--;
 				}
 			}
