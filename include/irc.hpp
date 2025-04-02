@@ -55,7 +55,7 @@
 # define ERR_PORT "Invalid port number"
 # define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
 # define ERR_INVALID_PASSWORD "Invalid password"
-# define ERR_INVALID_PASSWORD_LENGTH "Password must be 1 characters long"
+# define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
 
 // Reply codes for server responses
 #define RPL_WELCOME "001"
@@ -82,6 +82,7 @@ int             isDigits(const std::string& s);
 int             isValidPort(const std::string& s);
 unsigned int    getUnsignedInt(const std::string& prompt);
 void            printStr(const std::string& text, const std::string& colour);
+int             isValidPassword(const std::string& pwd);
 
 // Logging
 void info(const std::string& message);

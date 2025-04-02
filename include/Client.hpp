@@ -11,6 +11,7 @@ class Client
 		std::string _IP;
 		pollfd		_socket;
 		bool 		_isOperator;
+		bool		_isRegistered;
 		std::vector<std::string> _channels;
 
 		
@@ -33,11 +34,13 @@ class Client
 		void 			setUsername(std::string &username);
 		void 			setHostname(std::string &hostname);
 		void 			setOperator(bool isOperator);
+		void			setRegistered(bool status);
 		
 		std::string 	username(void) const;
 		std::string 	nickname(void) const;
 		std::string 	hostname(void) const;
         bool    		isOperator(void) const;
+		bool			isRegistered(void) const;
 		
 		/* member functions */
 		void    		joinChannel(std::string channelName);

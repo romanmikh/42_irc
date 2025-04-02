@@ -27,6 +27,7 @@ class MsgHandler
 		void handleKICK(std::string &username, std::string &channelName, Client &client);
 		void handleMODE(std::string &channelName, std::string &mode, Client &client);
 		void handleTOPIC(std::string &channelName, std::string &topic, Client &client);
+		void handlePASS(std::string &password, Client &client);
 
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
 };

@@ -99,6 +99,20 @@ void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	}
 }
 
+void	MsgHandler::handlePASS(std::string &password, Client &client)
+{
+	if (password == _server.getPassword())
+	{
+		client.setRegistered(true);
+		send(client.getFd(), "Client authenticated with the mserver\r\n", 23, MSG_DONTWAIT);
+	}
+	else
+	{
+		send(client.getFd(), "Invalid password\r\n", 18, MSG_DONTWAIT);
+		_server.disconnectClient(client);
+	}
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
@@ -126,6 +140,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		//add to channel ...
 	else if (msgData[0] == "OPER")
 		handleOPER(msgData[1], msgData[2], client);
+	else if (msgData[0] == "PASS")
+		handlePASS(msgData[1], client);
 }
 
 void MsgHandler::receiveMessage(Client &client)

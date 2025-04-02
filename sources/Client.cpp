@@ -8,6 +8,7 @@ Client::Client()
 	_nickname = "default";
 	_username = "default";
 	_isOperator = false;
+	_isRegistered = false;
 }
 
 Client::Client(pollfd &clientSocket)
@@ -16,6 +17,7 @@ Client::Client(pollfd &clientSocket)
 	_username = "default";
 	_socket = clientSocket;
 	_isOperator = false;
+	_isRegistered = false;
 }
 
 Client::~Client() {}
@@ -74,30 +76,45 @@ void Client::setIP(std::string IP)
 	_IP = IP;
 }
 
-bool Client::isOperator() const {
-	return _isOperator;
-}
-
 void Client::setOperator(bool isOperator) {
 	_isOperator = isOperator;
 }
 
-std::vector<std::string> Client::getChannels() const {
-	return (_channels);
-}
 void 	Client::setOper(bool status)
 {
 	_isOperator = status;
 }
 
+void Client::setRegistered(bool status)
+{
+	_isRegistered = status;
+}
+
+bool Client::isOperator() const
+{
+	return (_isOperator);
+}
+
+bool Client::isRegistered() const
+{
+	return (_isRegistered);
+}
+
+std::vector<std::string> Client::getChannels() const
+{
+	return (_channels);
+}
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void Client::joinChannel(std::string channelName) {
+void Client::joinChannel(std::string channelName)
+{
 	_channels.push_back(channelName);
 }
 
-void Client::leaveChannel(std::string channelName) {
+void Client::leaveChannel(std::string channelName)
+{
 	std::vector<std::string>::iterator it = std::find(_channels.begin(), _channels.end(), channelName);
 	if (it != _channels.end()) {
 		_channels.erase(it);
