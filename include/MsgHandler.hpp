@@ -30,6 +30,8 @@ class MsgHandler
 		void handleTOPIC(std::string &channelName, std::string &topic, Client &client);
 
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
+
+		void handlePRIVMSG(std::string &msg, Client &client);
 };
 
 #endif

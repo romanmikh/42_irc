@@ -40,12 +40,8 @@ class Channel
         /* member functions */
         bool    isEmpty(void) const;
         bool    hasClient(Client* client) const;
-        void    addOperator(Client* client);
-        void    removeOperator(Client* client);
-        bool    isClientOperator(Client* client) const;
-        void    sendMessageToChannel(std::string message);
-        // void addClient(Client* client);
-        
+        void    addChanOp(Client* client);
+        void    removeChanOp(Client* client);
+        bool    isClientChanOp(Client* client) const;
+        void    broadcastToChannel(std::string message, Client* client);        
 };
-
-/* non-member functions & operators */
