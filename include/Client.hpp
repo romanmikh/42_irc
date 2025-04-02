@@ -4,7 +4,6 @@
 class Client
 {
 	private:
-		/* member variables */
 		std::string	_username;
 		std::string _nickname;
 		std::string _fullname;
@@ -20,6 +19,8 @@ class Client
 		Client(void);
 		Client(pollfd &clientSocket);
 		~Client(void);
+
+		std::string msgBuffer;
         
         /* accessors */
 		std::vector<std::string> getChannels() const;
@@ -42,5 +43,6 @@ class Client
 		void    		joinChannel(std::string channelName);
         void    		leaveChannel(std::string channelName);
 		
+		void 			setOper(bool status);
 
 };

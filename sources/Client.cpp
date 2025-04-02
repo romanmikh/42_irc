@@ -15,6 +15,7 @@ Client::Client(pollfd &clientSocket)
 	_nickname = "default";
 	_username = "default";
 	_socket = clientSocket;
+	_isOperator = false;
 }
 
 Client::~Client() {}
@@ -47,24 +48,29 @@ std::string Client::hostname() const
 	return (_hostname);
 }
 
-void Client::setFullName(std::string &fullname) {
+void Client::setFullName(std::string &fullname)
+{
 	_fullname = fullname;
 }
 
-void Client::setNickname(std::string &nickname) {
+void Client::setNickname(std::string &nickname)
+{
 	_nickname = nickname;
 	// info("Client " + username() + "'s nickname was set to "	+ nickname);
 }
 
-void Client::setUsername(std::string &username) {
+void Client::setUsername(std::string &username)
+{
 	_username = username;
 }
 
-void Client::setHostname(std::string &hostname) {
+void Client::setHostname(std::string &hostname)
+{
 	_hostname = hostname;
 }
 
-void Client::setIP(std::string IP) {
+void Client::setIP(std::string IP)
+{
 	_IP = IP;
 }
 
@@ -78,6 +84,10 @@ void Client::setOperator(bool isOperator) {
 
 std::vector<std::string> Client::getChannels() const {
 	return (_channels);
+}
+void 	Client::setOper(bool status)
+{
+	_isOperator = status;
 }
 
 // ************************************************************************** //

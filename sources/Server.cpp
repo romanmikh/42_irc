@@ -3,11 +3,12 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-Server::Server(int port, std::string &passwd)
+Server::Server(int port, std::string &password)
 {
 	_port = port;
-	_password = passwd;
+	_password = password;
 	_serverName = "42irc.local";
+	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
 	listeningSocket.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -39,6 +40,30 @@ Server::~Server()
 //                             Public Functions                               //
 // ************************************************************************** //
 
+
+void Server::parseOpersConfigFile(const char *fileName)
+{
+	std::ifstream file;
+	
+	file.open(fileName, std::ios::in);
+	if (!file.is_open())
+	{
+		std::cerr << "Failed to open file: " << fileName << std::endl;
+		return;
+	}
+
+	std::string line;
+	while(std::getline(file, line))
+	{
+		std::vector<std::string> oper = split(line, ' ');
+		_opers.insert(std::pair<std::string, std::string>(oper[0], oper[1]));
+	}
+}
+std::map<std::string,std::string> Server::getOpers()
+{
+	return (_opers);
+}
+
 std::string Server::name()
 {
 	return (_serverName);
@@ -53,8 +78,6 @@ void Server::addclient(pollfd &clientSocket)
 
 void Server::handleNewConnectionRequest()
 {
-	info("New connection request received");
-
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
 	unsigned int	addrLen = sizeof(clientAddr);
@@ -106,7 +129,7 @@ void Server::run()
 			{
 				handleNewConnectionRequest();
 			}
-			for (unsigned int i = 1; i < _sockets.size();)
+			for (unsigned int i = _sockets.size() - 1; i > 0 && serverActivity > 0; --i)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
@@ -115,12 +138,8 @@ void Server::run()
 				}
 				else if (_sockets[i].revents & POLLIN)
 				{
-					bool clientDisconnected = msg.receiveMessage(*(_clients[_sockets[i].fd]));
-					if (!clientDisconnected)
-						i++;
-				}
-				else {
-					i++;
+					msg.receiveMessage(*(_clients[_sockets[i].fd]));
+					serverActivity--;
 				}
 			}
 		}
