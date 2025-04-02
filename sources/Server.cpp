@@ -95,8 +95,8 @@ void Server::disconnectClient(Client &client)
 
 void Server::run()
 {
-	MsgHandler		msg(*this);
-	//Manager		manager();
+	ChannelManager  manager;
+	MsgHandler		msg(*this, manager);
 
 	info("Running...");
 	while (1)

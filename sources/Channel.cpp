@@ -5,24 +5,11 @@
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
 Channel::Channel(std::string name) : _channelName(name) {
-    printStr("Channel default created! :D", PURPLE);
-}
-
-Channel::Channel(const Channel & other) {  
-    *this = other;
-    printStr("Channel copied (deep copy unnecessary)! :D", PURPLE);
+    printStr("Channel default created", PURPLE);
 }
 
 Channel::~Channel(void){
-    printStr("Channel destroyed! D:", PURPLE);
-}
-
-// ************************************************************************** //
-//                           Operator Overloads                               //
-// ************************************************************************** //
-Channel & Channel::operator=(const Channel &other) {
-    (void)other;
-    return *this;
+    printStr("Channel destroyed", PURPLE);
 }
 
 // ************************************************************************** //
@@ -31,6 +18,11 @@ Channel & Channel::operator=(const Channel &other) {
 std::string       Channel::getName(void) const {
     return _channelName;
 }
+
+std::vector<Client *>&  Channel::getClients(void) {
+    return _channelClients;
+}
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //

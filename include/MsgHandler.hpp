@@ -4,13 +4,16 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
+class ChannelManager;
+
 class MsgHandler
 {
 	private:
-		Server _server;
+		Server& _server;
+		ChannelManager& _manager;
 
     public:
-		MsgHandler(Server &server);
+		MsgHandler(Server& server, ChannelManager& _manager);
 		~MsgHandler();
 
 		void replyUSER(std::string &msg, Client &client);
@@ -19,6 +22,7 @@ class MsgHandler
 		void replyPONG(Client &client);
 		void sendWelcomeProtocol(Client &client);
 		bool receiveMessage(Client &client);
+		void handleJOIN(std::string &channelName, Client &client);
 };
 
 #endif

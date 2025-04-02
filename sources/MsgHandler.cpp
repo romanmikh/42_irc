@@ -1,6 +1,7 @@
 #include "../include/MsgHandler.hpp"
+#include "../include/irc.hpp"
 
-MsgHandler::MsgHandler(Server &server) : _server(server) {};
+MsgHandler::MsgHandler(Server &server, ChannelManager &manager) : _server(server), _manager(manager) {};
 
 MsgHandler::~MsgHandler() {};
 
@@ -16,6 +17,12 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 	client.setIP(moreNames[3]);
 
 	sendWelcomeProtocol(client);
+}
+
+void MsgHandler::handleJOIN(std::string &channelName, Client &client)
+{
+	_manager.joinChannel(client, channelName);
+	info(client.username() + " joined channel " + channelName);
 }
 
 void MsgHandler::handleNICK(std::string &nickname, Client &client)
@@ -42,6 +49,8 @@ void MsgHandler::msgHandler(char *msgBuffer, Client &client)
 			replyUSER(line, client); 
 		else if (msgData[0] == "NICK")
 			handleNICK(msgData[1], client);
+		else if (msgData[0] == "JOIN" && msgData.size() > 1 && msgData[1] != ":\r")
+			handleJOIN(msgData[1], client);
 		else if (msgData[0] == "PING")
 			replyPONG(client);
 		else if (msgData[0] == "QUIT")
