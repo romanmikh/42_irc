@@ -28,11 +28,6 @@ void MsgHandler::handlePART(std::string &channelName, Client &client)
 	_manager.leaveChannel(client, channelName);
 }
 
-void MsgHandler::handleNICK(std::string &nickname, Client &client)
-{
-	client.setNickname(nickname);
-}
-
 void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
@@ -85,24 +80,15 @@ void MsgHandler::handleKICK(std::string &username, std::string &channel, Client 
 	}
 }
 
-void MsgHandler::replyPONG(Client &client)
-{
-	sendMSG(client.getFd(), PONG);
-}
-
-void MsgHandler::replyBadPassword(Client &client)
-{
-	sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
-}
-
 void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
 {
-	std::map<std::string, std::string>	allowedOpers = _server.getOpers();
-
+	std::map<std::string, std::string> allowedOpers = _server.getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
-	if (it == allowedOpers.end()){
-		// send 491 
-		// return
+
+	if (it == allowedOpers.end())
+	{
+		sendMSG(client.getFd(), RPL_NOOPERHOST(client));
+		return ;
 	}
 	if (it->second == password)
 	{
@@ -111,7 +97,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
 	else {
-	 	replyBadPassword(client);
+		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
 	}
 }
 
@@ -125,30 +111,35 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
-	if (msgData[0] == "USER")
-		replyUSER(msg, client); 
-	else if (msgData[0] == "NICK")
-		handleNICK(msgData[1], client);
-	else if (msgData[0] == "JOIN" && msgData.size() > 1 && msgData[1][0] == '#')
-		handleJOIN(msgData[1], client);
-	else if (msgData[0] == "PART" && msgData.size() > 1 && msgData[1][0] == '#')
-		handlePART(msgData[1], client);
-	else if (msgData[0] == "INVITE" && msgData.size() > 2 && msgData[2][0] == '#')
-		handleINVITE(msgData[1], msgData[2], client);
-	else if (msgData[0] == "KICK" && msgData.size() > 2 && msgData[2][0] == '#')
-		handleKICK(msgData[1], msgData[2], client);
-	else if (msgData[0] == "MODE" && msgData.size() > 2 && msgData[1][0] == '#')
-		handleMODE(msgData[1], msgData[2], client);
-	else if (msgData[0] == "TOPIC" && msgData.size() > 2 && msgData[1][0] == '#')
-		handleTOPIC(msgData[1], msgData[2], client);
-	else if (msgData[0] == "PING")
-		replyPONG(client);
-	else if (msgData[0] == "QUIT")
-		_server.disconnectClient(client);
-	else if (msgData[0] == "OPER")
-		handleOPER(msgData[1], msgData[2], client);
-	else if (msgData[0] == "PRIVMSG"){
-		handlePRIVMSG(msg, client);
+
+	switch (getCommandType(msgData[0]))
+	{
+		case USER: replyUSER(msg, client);
+			break ;
+		case NICK: if (msgData.size() == 2) client.setNickname(msgData[1]);
+			break ;
+		case JOIN: if (msgData.size() > 1 && msgData[1][0] == '#') handleJOIN(msgData[1], client);
+			break ;
+		case PART: if (msgData.size() > 1 && msgData[1][0] == '#') handlePART(msgData[1], client);
+			break ;
+		case INVITE: if (msgData.size() > 1 && msgData[2][0] == '#') handleINVITE(msgData[1], msgData[2], client);
+			break ;
+		case KICK: if (msgData.size() > 1 && msgData[2][0] == '#') handleKICK(msgData[1], msgData[2], client);
+			break ;
+		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msgData[1], msgData[2], client);
+			break ;
+		case TOPIC: if (msgData.size() > 1 && msgData[1][0] == '#') handleTOPIC(msgData[1], msgData[2], client);
+			break ;
+		case PING: sendMSG(client.getFd(), PONG);
+			break ;
+		case QUIT: _server.disconnectClient(client);
+			break ;
+		case OPER: if (msgData.size() == 3) handleOPER(msgData[1], msgData[2], client);
+			break ;
+		case PRIVMSG:handlePRIVMSG(msg, client);
+			break ;
+		case UNKNOWN:
+			break ;
 	}
 }
 

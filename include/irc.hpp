@@ -66,6 +66,7 @@
 #define RPL_MYINFO(client) std::string(":") + SERVER_NAME + " 004 " + client.nickname() + " " + SERVER_NAME + " 1.0 o itkol\r\n"
 #define RPL_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
+#define RPL_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
 
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
 
@@ -93,6 +94,26 @@ void 			sendMSG(int fd, std::string RPL);
 void info(const std::string& message);
 void error(const std::string& message);
 void warning(const std::string& message);
+
+//Command
+enum Command
+{
+    USER,
+    NICK,
+    JOIN,
+    PART,
+    INVITE,
+    KICK,
+    MODE,
+    TOPIC,
+    PING,
+    QUIT,
+    OPER,
+    PRIVMSG,
+    UNKNOWN
+};
+std::map<std::string, Command> createCommandMap();
+Command getCommandType(const std::string& cmd);
 
 /* Colours */
 #define RESET   "\e[0m"
