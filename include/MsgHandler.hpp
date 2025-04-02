@@ -33,6 +33,7 @@ class MsgHandler
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
 
 		void sendMSG(int fd, std::string RPL);
+		void handlePRIVMSG(std::string &msg, Client &client);
 };
 
 #endif

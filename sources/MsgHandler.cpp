@@ -36,7 +36,7 @@ void MsgHandler::handleNICK(std::string &nickname, Client &client)
 void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isIRCOp())
+	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		info(client.username() + " invited " + username + " to channel " + channel);
 		_manager.joinChannel(client, channel);
@@ -49,7 +49,7 @@ void MsgHandler::handleINVITE(std::string &username, std::string &channel, Clien
 void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isIRCOp())
+	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		info(client.username() + " changed mode of channel " + channel + " to: " + mode);
 		chan->setMode(mode);
@@ -62,7 +62,7 @@ void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &cli
 void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isIRCOp())
+	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		info(client.username() + " changed topic of channel " + channel + " to: " + topic);
 		chan->setTopic(topic);
@@ -75,7 +75,7 @@ void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &c
 void MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isIRCOp())
+	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		info(client.username() + " kicked " + username + " from channel " + channel);
 		_manager.leaveChannel(client, channel);
@@ -115,6 +115,13 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	}
 }
 
+void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
+{
+	std::string msgToSend = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " " + msg + "\r\n";
+	Channel* chan = _manager.getChannels().at(client.getChannels()[0]);
+	chan->broadcastToChannel(msgToSend, &client);
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
@@ -138,10 +145,11 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		replyPONG(client);
 	else if (msgData[0] == "QUIT")
 		_server.disconnectClient(client);
-	//else if (msgData[0] == "JOIN")
-		//add to channel ...
 	else if (msgData[0] == "OPER")
 		handleOPER(msgData[1], msgData[2], client);
+	else if (msgData[0] == "PRIVMSG"){
+		handlePRIVMSG(msg, client);
+	}
 }
 
 void MsgHandler::receiveMessage(Client &client)
