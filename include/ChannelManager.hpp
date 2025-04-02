@@ -2,6 +2,7 @@
 #include "irc.hpp"
 
 class Channel;
+class Client;
 
 class ChannelManager
 {
@@ -12,25 +13,25 @@ class ChannelManager
         typedef std::pair<std::string, Channel *>   channel_pair_t;
 
         /* construcotrs & destructors */
-        ChannelManager(Server& server);
+        ChannelManager(void);
+        // ChannelManager(Server& server);
         ChannelManager(const std::string name);
         ChannelManager(const ChannelManager &other);
         ~ChannelManager(void);
         
         /* accessors */
-        channels_t      getChannels(void) const;
-        clients_t       getClients(void) const;
+        const channels_t&       getChannels(void) const;
+        clients_t               getClients(void) const;
 
         /* member variables */
-        Server& server;
+        // Server& server;
 
         /* member functions */
         void    createChannel(std::string channelName);
         void    deleteChannel(std::string channelName);
-        void    createClient(int clientFd);
-        void    deleteClient(int clientFd);
-        void    joinChannel(int clientFd, std::string channelName);
-        void    leaveChannel(int clientFd, std::string channelName);
+
+        void    removeFromChannel(Client& client, std::string channelName);
+        void    joinChannel(Client& client, std::string channelName);
 
         /* nested classes */
         class ChannelNonExistentException: public std::exception {};

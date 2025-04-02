@@ -11,6 +11,7 @@ class Client
 		std::string _hostname;
 		std::string _IP;
 		pollfd		_socket;
+		std::vector<std::string> _channels;
 
 		/* member functions */
         bool    _isNicknameValid(const std::string nickname) const;
@@ -26,14 +27,20 @@ class Client
         /* accessors */
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
-		std::string 	username(void) const;
-		std::string 	nickname(void) const;
-		std::string 	hostname(void) const;
+		std::vector<std::string> getChannels() const;
 		
 		void			setIP(std::string IP);
 		void 			setFullName(std::string &fullname);
 		void 			setNickname(std::string &nickname);
 		void 			setUsername(std::string &username);
 		void 			setHostname(std::string &hostname);
+
+		std::string 	username(void) const;
+		std::string 	nickname(void) const;
+		std::string 	hostname(void) const;
+
+		void    		joinChannel(std::string channelName);
+        void    		leaveChannel(std::string channelName);
+		
 
 };

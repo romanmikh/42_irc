@@ -29,6 +29,7 @@ class Channel
         bool    _isEmptyChannel(std::string channelName);
 
 
+
     public:
         /* construcotrs & destructors */
         Channel(void);
@@ -40,8 +41,10 @@ class Channel
         Channel & operator = (const Channel &other);
         
         /* accessors */
-        std::vector<Client *>   getClients(void) const;
-        std::string             getName(void) const;
+        void addClient(Client* client);
+        bool hasClient(Client* client) const;
+        std::vector<Client*>&       getClients();
+        std::string                 getName(void) const;
 
         /* member functions */
 
