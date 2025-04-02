@@ -105,7 +105,6 @@ void Server::run()
 			if (_sockets[0].revents & POLLIN)
 			{
 				handleNewConnectionRequest();
-				serverActivity--;
 			}
 			for (unsigned int i = 1; i < _sockets.size();)
 			{
