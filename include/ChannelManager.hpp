@@ -14,7 +14,6 @@ class ChannelManager
 
         /* construcotrs & destructors */
         ChannelManager(void);
-        // ChannelManager(Server& server);
         ChannelManager(const std::string name);
         ChannelManager(const ChannelManager &other);
         ~ChannelManager(void);
@@ -23,17 +22,12 @@ class ChannelManager
         const channels_t&       getChannels(void) const;
         clients_t               getClients(void) const;
 
-        /* member variables */
-        // Server& server;
-
         /* member functions */
         void    createChannel(std::string channelName);
         void    deleteChannel(std::string channelName);
-
-        void    removeFromChannel(Client& client, std::string channelName);
+        void    leaveChannel(Client& client, std::string channelName);
         void    joinChannel(Client& client, std::string channelName);
 
-        /* nested classes */
         class ChannelNonExistentException: public std::exception {};
         class ChannelAlreadyExistsException: public std::exception {};
 
@@ -42,9 +36,5 @@ class ChannelManager
         /* member variables */
         channels_t         _channels;
         size_t             _channelCount;
-        
-        /* member functions */  
 
 };
-
-/* non-member functions & operators */

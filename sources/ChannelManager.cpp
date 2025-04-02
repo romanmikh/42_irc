@@ -8,6 +8,10 @@ ChannelManager::ChannelManager(void) {
 }
 
 ChannelManager::~ChannelManager(void){
+    for (channels_t::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+        delete it->second;
+    }
+    _channels.clear();
     printStr("ChannelManager destroyed", PURPLE);
 }
 
@@ -43,21 +47,16 @@ void ChannelManager::joinChannel(Client& client, std::string channelName) {
     if (_channels.find(channelName) == _channels.end()) {
         createChannel(channelName);
     }
-
     Channel* channel = _channels[channelName];
     std::vector<Client *>& clients = channel->getClients();
     if (std::find(clients.begin(), clients.end(), &client) == clients.end()) {
         clients.push_back(&client);
         client.joinChannel(channelName);
     }
-    // printStr("clients in channel " + channelName + ": ", RED);
-    // for (std::vector<Client *>::iterator it = channel->getClients().begin(); it != channel->getClients().end(); ++it) {
-    //     printStr((*it)->username() + ", fd: " + intToString((*it)->getSocket().fd), RED);
-    // }
-    // printStr("-----------------------------------------", RED);
+    info(client.username() + " joined channel " + channelName);
 }
 
-void ChannelManager::removeFromChannel(Client& client, std::string channelName) {
+void ChannelManager::leaveChannel(Client& client, std::string channelName) {
     channels_t::iterator it = _channels.find(channelName);
     if (it == _channels.end()) {
         warning("Channel " + channelName + " does not exist");

@@ -20,14 +20,65 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 
 void MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
-	_manager.joinChannel(client, channelName);
-	info(client.username() + " joined channel " + channelName);
+    _manager.joinChannel(client, channelName);
+}
+
+void MsgHandler::handlePART(std::string &channelName, Client &client)
+{
+	_manager.leaveChannel(client, channelName);
 }
 
 void MsgHandler::handleNICK(std::string &nickname, Client &client)
 {
 	client.setNickname(nickname);
-	//info("Client " + client.nickname() + " has set their nickname");
+}
+
+void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
+{
+	Channel* chan = _manager.getChannels().at(channel);
+	if (chan->isClientOperator(&client) || client.isOperator()) {
+		info(client.username() + " invited " + username + " to channel " + channel);
+		_manager.joinChannel(client, channel);
+	}
+	else {
+		warning(client.username() + " is not an operator in channel " + channel);
+	}
+}
+
+void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
+{
+	Channel* chan = _manager.getChannels().at(channel);
+	if (chan->isClientOperator(&client) || client.isOperator()) {
+		info(client.username() + " changed mode of channel " + channel + " to: " + mode);
+		chan->setMode(mode);
+	}
+	else {
+		warning(client.username() + " is not an operator in channel " + channel);
+	}
+}
+
+void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
+{
+	Channel* chan = _manager.getChannels().at(channel);
+	if (chan->isClientOperator(&client) || client.isOperator()) {
+		info(client.username() + " changed topic of channel " + channel + " to: " + topic);
+		chan->setTopic(topic);
+	}
+	else {
+		warning(client.username() + " is not an operator in channel " + channel);
+	}
+}
+
+void MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
+{
+	Channel* chan = _manager.getChannels().at(channel);
+	if (chan->isClientOperator(&client) || client.isOperator()) {
+		info(client.username() + " kicked " + username + " from channel " + channel);
+		_manager.leaveChannel(client, channel);
+	}
+	else {
+		warning(client.username() + " is not an operator in channel " + channel);
+	}
 }
 
 void MsgHandler::replyPONG(Client &client)
@@ -43,8 +94,18 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		replyUSER(msg, client); 
 	else if (msgData[0] == "NICK")
 		handleNICK(msgData[1], client);
-	else if (msgData[0] == "JOIN" && msgData.size() > 1 && msgData[1] != ":\r")
+	else if (msgData[0] == "JOIN" && msgData.size() > 1 && msgData[1][0] == '#')
 		handleJOIN(msgData[1], client);
+	else if (msgData[0] == "PART" && msgData.size() > 1 && msgData[1][0] == '#')
+		handlePART(msgData[1], client);
+	else if (msgData[0] == "INVITE" && msgData.size() > 2 && msgData[2][0] == '#')
+		handleINVITE(msgData[1], msgData[2], client);
+	else if (msgData[0] == "KICK" && msgData.size() > 2 && msgData[2][0] == '#')
+		handleKICK(msgData[1], msgData[2], client);
+	else if (msgData[0] == "MODE" && msgData.size() > 2 && msgData[1][0] == '#')
+		handleMODE(msgData[1], msgData[2], client);
+	else if (msgData[0] == "TOPIC" && msgData.size() > 2 && msgData[1][0] == '#')
+		handleTOPIC(msgData[1], msgData[2], client);
 	else if (msgData[0] == "PING")
 		replyPONG(client);
 	else if (msgData[0] == "QUIT")

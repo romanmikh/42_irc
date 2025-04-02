@@ -11,34 +11,34 @@ class Client
 		std::string _hostname;
 		std::string _IP;
 		pollfd		_socket;
+		bool 		_isOperator;
 		std::vector<std::string> _channels;
 
-		/* member functions */
-        bool    _isNicknameValid(const std::string nickname) const;
-        bool    _isUsernameValid(const std::string username) const;
-        bool    _isOperator(void) const;
-
-	public:
+		
+		public:
 		/* construcotrs & destructors */
 		Client(void);
 		Client(pollfd &clientSocket);
 		~Client(void);
         
         /* accessors */
+		std::vector<std::string> getChannels() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
-		std::vector<std::string> getChannels() const;
 		
 		void			setIP(std::string IP);
 		void 			setFullName(std::string &fullname);
 		void 			setNickname(std::string &nickname);
 		void 			setUsername(std::string &username);
 		void 			setHostname(std::string &hostname);
-
+		void 			setOperator(bool isOperator);
+		
 		std::string 	username(void) const;
 		std::string 	nickname(void) const;
 		std::string 	hostname(void) const;
-
+        bool    		isOperator(void) const;
+		
+		/* member functions */
 		void    		joinChannel(std::string channelName);
         void    		leaveChannel(std::string channelName);
 		

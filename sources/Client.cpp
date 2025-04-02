@@ -7,6 +7,7 @@ Client::Client()
 {
 	_nickname = "default";
 	_username = "default";
+	_isOperator = false;
 }
 
 Client::Client(pollfd &clientSocket)
@@ -52,6 +53,7 @@ void Client::setFullName(std::string &fullname) {
 
 void Client::setNickname(std::string &nickname) {
 	_nickname = nickname;
+	// info("Client " + username() + "'s nickname was set to "	+ nickname);
 }
 
 void Client::setUsername(std::string &username) {
@@ -66,9 +68,18 @@ void Client::setIP(std::string IP) {
 	_IP = IP;
 }
 
+bool Client::isOperator() const {
+	return _isOperator;
+}
+
+void Client::setOperator(bool isOperator) {
+	_isOperator = isOperator;
+}
+
 std::vector<std::string> Client::getChannels() const {
 	return (_channels);
 }
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //

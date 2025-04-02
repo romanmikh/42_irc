@@ -6,29 +6,14 @@ class Channel
     private:
         /* member variables */
         std::vector<Client *>   _channelClients;
+        std::vector<Client *>   _channelOperators;
         std::string             _channelName;
         std::string             _channelPassword;
         std::string             _channelTopic;
         std::string             _channelMode;
         size_t                  _channelClientCount;
         size_t                  _channelClientLimit;
-
-        /* member functions */
-        void    _createChannel(std::string channelName);
-        void    _deleteChannel(std::string channelName);
-
-        bool    _isClientInChannel(std::string channelName, std::string Clientname);
-        void    _addClientToChannel(std::string channelName, std::string Clientname);
-        void    _removeClientFromChannel(std::string channelName, std::string Clientname);
         
-        bool    _isClientOperator(std::string channelName, std::string Clientname);
-        void    _makeClientOperator(std::string channelName, std::string Clientname);
-        void    _removeClientOperator(std::string channelName, std::string Clientname);
-
-        void    _sendMessageToChannel(std::string channelName, std::string message);
-        bool    _isEmptyChannel(std::string channelName);
-
-
 
     public:
         /* construcotrs & destructors */
@@ -36,18 +21,31 @@ class Channel
         Channel(const std::string name);
         Channel(const Channel &other);
         ~Channel(void);
-
-        /* operator overloads */
-        Channel & operator = (const Channel &other);
         
         /* accessors */
-        void addClient(Client* client);
-        bool hasClient(Client* client) const;
-        std::vector<Client*>&       getClients();
+        std::vector<Client*>&       getClients(void);
+        std::vector<Client*>&       getOperators(void);
         std::string                 getName(void) const;
+        std::string                 getPassword(void) const;
+        std::string                 getTopic(void) const;
+        std::string                 getMode(void) const;
+        size_t                      getClientCount(void) const;
+        size_t                      getClientLimit(void) const;
 
+        void                        setName(std::string name);
+        void                        setPassword(std::string password);
+        void                        setTopic(std::string topic);
+        void                        setMode(std::string mode);
+        
         /* member functions */
-
+        bool    isEmpty(void) const;
+        bool    hasClient(Client* client) const;
+        void    addOperator(Client* client);
+        void    removeOperator(Client* client);
+        bool    isClientOperator(Client* client) const;
+        void    sendMessageToChannel(std::string message);
+        // void addClient(Client* client);
+        
 };
 
 /* non-member functions & operators */
