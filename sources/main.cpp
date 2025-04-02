@@ -23,9 +23,9 @@ int main(int ac, char **av) {
     info("Starting server...");
 
     int port = atoi(av[1]);
-    std::string passwd = av[2];
+    std::string password = av[2];
 
-    Server server(port, passwd);
+    Server server(port, password);
     server.run();
 
     return 0;

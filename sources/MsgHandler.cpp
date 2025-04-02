@@ -36,7 +36,7 @@ void MsgHandler::handleNICK(std::string &nickname, Client &client)
 void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isOperator()) {
+	if (chan->isClientOperator(&client) || client.isChanOp()) {
 		info(client.username() + " invited " + username + " to channel " + channel);
 		_manager.joinChannel(client, channel);
 	}
@@ -48,7 +48,7 @@ void MsgHandler::handleINVITE(std::string &username, std::string &channel, Clien
 void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isOperator()) {
+	if (chan->isClientOperator(&client) || client.isChanOp()) {
 		info(client.username() + " changed mode of channel " + channel + " to: " + mode);
 		chan->setMode(mode);
 	}
@@ -60,7 +60,7 @@ void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &cli
 void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isOperator()) {
+	if (chan->isClientOperator(&client) || client.isChanOp()) {
 		info(client.username() + " changed topic of channel " + channel + " to: " + topic);
 		chan->setTopic(topic);
 	}
@@ -72,7 +72,7 @@ void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &c
 void MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isOperator()) {
+	if (chan->isClientOperator(&client) || client.isChanOp()) {
 		info(client.username() + " kicked " + username + " from channel " + channel);
 		_manager.leaveChannel(client, channel);
 	}
@@ -87,7 +87,6 @@ void MsgHandler::replyPONG(Client &client)
 	send(client.getFd(), pongMsg.c_str(), 6, 0);
 }
 
-
 void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
 {
 	std::map<std::string, std::string>	allowedOpers = _server.getOpers();
@@ -95,7 +94,7 @@ void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	if (allowedOpers[nickname] == password)
 	{
 		std::cout << nickname << " set as operator.\n";
-		client.setOper(true);
+		client.setIRCOp(true);
 	}
 }
 
