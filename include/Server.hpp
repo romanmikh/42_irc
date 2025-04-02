@@ -7,12 +7,13 @@ class Client;
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
 
+#define SERVER_NAME std::string("42irc.local")
+
 class Server
 {
 	protected:
 
 	private:
-		std::string				_serverName;
 		std::vector<pollfd>		_sockets;
 		clients_t				_clients;
 		std::string				_password;
@@ -31,7 +32,6 @@ class Server
 		void 			handleNewConnectionRequest();
 		void 			disconnectClient(Client &client);
 		void 			addclient(pollfd &clientSocket);
-		std::string 	name();
 		
 		std::map<std::string,std::string> getOpers();
 

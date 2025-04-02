@@ -7,7 +7,6 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
-	_serverName = "42irc.local";
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -62,11 +61,6 @@ void Server::parseOpersConfigFile(const char *fileName)
 std::map<std::string,std::string> Server::getOpers()
 {
 	return (_opers);
-}
-
-std::string Server::name()
-{
-	return (_serverName);
 }
 
 void Server::addclient(pollfd &clientSocket)

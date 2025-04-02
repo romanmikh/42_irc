@@ -31,7 +31,6 @@ void MsgHandler::handlePART(std::string &channelName, Client &client)
 void MsgHandler::handleNICK(std::string &nickname, Client &client)
 {
 	client.setNickname(nickname);
-	std::cout << "nickname = " << nickname << std::endl;
 }
 
 void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
@@ -88,13 +87,13 @@ void MsgHandler::handleKICK(std::string &username, std::string &channel, Client 
 
 void MsgHandler::replyPONG(Client &client)
 {
-	std::string pongMsg = "PONG " + _server.name() + "\r\n";
+	std::string pongMsg = "PONG " + SERVER_NAME + "\r\n";
 	send(client.getFd(), pongMsg.c_str(), 6, 0);
 }
 
 void MsgHandler::replyBadPassword(Client &client)
 {
-	std::string msg = ":" + _server.name() + " 464 " + client.nickname() + " :Password incorrect\r\n"; 
+	std::string msg = ":" + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"; 
 	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
 }
 
@@ -102,13 +101,21 @@ void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 {
 	std::map<std::string, std::string>	allowedOpers = _server.getOpers();
 
-	if (allowedOpers[nickname] == password)
+	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
+	if (it == allowedOpers.end()){
+		// send 491 
+		// return
+	}
+	if (it->second == password)
 	{
 		std::cout << nickname << " set as operator.\n";
 		client.setIRCOp(true);
+		std::string rpl_youroper = ":" + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n";
+		send(client.getFd(), rpl_youroper.c_str(), rpl_youroper.length(), MSG_DONTWAIT);
 	}
-	else
+	else {
 	 	replyBadPassword(client);
+	}
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
@@ -165,10 +172,10 @@ void MsgHandler::receiveMessage(Client &client)
 
 void MsgHandler::sendWelcomeProtocol(Client &client)
 {
-	std::string rpl_welcome = ":" + _server.name() + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
-	std::string rpl_yourhost = ":" + _server.name() + " 002 " + client.nickname() + " :Your host is " + _server.name() + ", running version 1.0\r\n";
-	std::string rpl_created = ":" + _server.name() + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n";
-	std::string rpl_myinfo = ":" + _server.name() + " 004 " + client.nickname() + " " + _server.name() + " 1.0 o itkol\r\n";
+	std::string rpl_welcome = ":" + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
+	std::string rpl_yourhost = ":" + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n";
+	std::string rpl_created = ":" + SERVER_NAME + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n";
+	std::string rpl_myinfo = ":" + SERVER_NAME + " 004 " + client.nickname() + " " + SERVER_NAME + " 1.0 o itkol\r\n";
 	
 	send(client.getFd(), rpl_welcome.c_str(), rpl_welcome.length(), MSG_DONTWAIT);
 	send(client.getFd(), rpl_yourhost.c_str(), rpl_yourhost.length(), MSG_DONTWAIT);
