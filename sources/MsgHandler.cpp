@@ -103,9 +103,8 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	std::string msgToSend = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " " + msg + "\r\n";
 	Channel* chan = _manager.getChannels().at(client.getChannels()[0]);
-	chan->broadcastToChannel(msgToSend, &client);
+	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg + "\r\n", &client);
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
