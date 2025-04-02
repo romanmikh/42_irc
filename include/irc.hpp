@@ -108,6 +108,7 @@ enum Command
     QUIT,
     OPER,
     PRIVMSG,
+    PASS,
     UNKNOWN
 };
 std::map<std::string, Command> createCommandMap();

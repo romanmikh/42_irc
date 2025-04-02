@@ -7,7 +7,6 @@ Client::Client()
 {
 	_nickname = "default";
 	_username = "default";
-	_isOperator = false;
 	_isRegistered = false;
 	_isIRCOp = false;
 

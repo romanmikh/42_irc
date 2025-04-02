@@ -112,7 +112,8 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	else
 	{
 		send(client.getFd(), "Invalid password\r\n", 18, MSG_DONTWAIT);
-		_server.disconnectClient(client);
+			_server.disconnectClient(client);
+		}
 	}
 
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
@@ -151,8 +152,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG:handlePRIVMSG(msg, client);
 			break ;
-    case PASS:handlePASS(msgData[1], client);
-      break ;
+    	case PASS:handlePASS(msgData[1], client);
+      		break ;
 		case UNKNOWN:
 			break ;
 	}
