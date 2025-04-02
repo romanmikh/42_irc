@@ -172,13 +172,13 @@ void MsgHandler::receiveMessage(Client &client)
 
 void MsgHandler::sendWelcomeProtocol(Client &client)
 {
-	std::string rpl_welcome = ":" + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
-	std::string rpl_yourhost = ":" + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n";
-	std::string rpl_created = ":" + SERVER_NAME + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n";
-	std::string rpl_myinfo = ":" + SERVER_NAME + " 004 " + client.nickname() + " " + SERVER_NAME + " 1.0 o itkol\r\n";
-	
-	send(client.getFd(), rpl_welcome.c_str(), rpl_welcome.length(), MSG_DONTWAIT);
-	send(client.getFd(), rpl_yourhost.c_str(), rpl_yourhost.length(), MSG_DONTWAIT);
-	send(client.getFd(), rpl_created.c_str(), rpl_created.length(), MSG_DONTWAIT);
-	send(client.getFd(), rpl_myinfo.c_str(), rpl_myinfo.length(), MSG_DONTWAIT);
+	sendMSG(client.getFd(), RPL_WELCOME(client));
+	sendMSG(client.getFd(), RPL_YOURHOST(client));
+	sendMSG(client.getFd(), RPL_CREATED(client));
+	sendMSG(client.getFd(), RPL_MYINFO(client));
+}
+
+void MsgHandler::sendMSG(int fd, std::string RPL)
+{
+	send(fd, RPL.c_str(), RPL.length(), MSG_DONTWAIT);
 }

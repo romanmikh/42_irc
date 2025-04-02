@@ -58,11 +58,12 @@
 # define ERR_INVALID_PASSWORD_LENGTH "Password must be 1 characters long"
 
 // Reply codes for server responses
-#define RPL_WELCOME "001"
-#define RPL_YOURHOST "002"
-#define RPL_CREATED "003"
-#define RPL_MYINFO "004"
-#define RPL_BOUNCE "005"
+
+// RPL MESSAGE MACROS
+#define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
+#define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
+#define RPL_CREATED(client) std::string(":") + SERVER_NAME + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n"
+#define RPL_MYINFO(client) std::string(":") + SERVER_NAME + " 004 " + client.nickname() + " " + SERVER_NAME + " 1.0 o itkol\r\n"
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;

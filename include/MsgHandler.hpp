@@ -2,6 +2,7 @@
 #define MSGHANDLER_HPP
 #include "irc.hpp"
 
+
 class ChannelManager;
 
 class MsgHandler
@@ -30,6 +31,8 @@ class MsgHandler
 		void handleTOPIC(std::string &channelName, std::string &topic, Client &client);
 
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
+
+		void sendMSG(int fd, std::string RPL);
 };
 
 #endif
