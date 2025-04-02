@@ -48,11 +48,12 @@
 #define MIN_PORT 1024
 #define MAX_PORT 65535
 
-#define ERR_USAGE "Usage: ./ircserv <port> <password>"
-#define ERR_PORT "Invalid port number"
-#define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
-#define ERR_INVALID_PASSWORD "Invalid password"
-#define ERR_INVALID_PASSWORD_LENGTH "Password must be 1 characters long"
+/* Error messages */
+# define ERR_USAGE "Usage: ./ircserv <port> <password>"
+# define ERR_PORT "Invalid port number"
+# define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
+# define ERR_INVALID_PASSWORD "Invalid password"
+# define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
@@ -71,6 +72,7 @@ typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
 
 /* Function prototypes */ 
+
 std::vector<std::string>    split(const std::string& str, char delimiter);
 std::string                 getCurrentTime(void);
 std::string                 intToString(int value);
@@ -84,6 +86,7 @@ int                         isDigits(const std::string& s);
 int                         isValidPort(const std::string& s);
 void                        printStr(const std::string& text, const std::string& colour);
 void 			            sendMSG(int fd, std::string RPL);
+int             isValidPassword(const std::string& pwd);
 
 // Logging
 void                        info(const std::string& message);

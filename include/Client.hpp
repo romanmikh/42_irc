@@ -10,7 +10,10 @@ class Client
 		std::string _hostname;
 		std::string _IP;
 		pollfd		_socket;
+
+		bool		_isRegistered;
 		bool 		_isIRCOp;
+
 		std::vector<std::string> _channels;
 
 		
@@ -32,12 +35,18 @@ class Client
 		void 			setNickname(std::string &nickname);
 		void 			setUsername(std::string &username);
 		void 			setHostname(std::string &hostname);
+		void			setRegistered(bool status);
 		void 			setIRCOp(bool status);
+
 		
 		std::string 	username(void) const;
 		std::string 	nickname(void) const;
 		std::string 	hostname(void) const;
+
+        bool    		isOperator(void) const;
+		bool			isRegistered(void) const;
 		bool 			isIRCOp() const;
+
 		
 		/* member functions */
 		void    		joinChannel(std::string channelName);

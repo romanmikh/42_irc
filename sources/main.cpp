@@ -7,8 +7,8 @@ int    checkInput(int ac, char **av) {
     if (!isValidPort(av[1])) {
         return(errMsg("", ERR_PORT_NUMERIC, 1));
     }
-    if (strlen(av[2]) != 1) {
-        return(errMsg("", ERR_INVALID_PASSWORD_LENGTH, 1));
+    if (!isValidPassword(av[2])) {
+        return(errMsg("", ERR_PASSWORD_FORMAT, 1));
     }
     // ...
     return 0;

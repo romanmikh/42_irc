@@ -101,6 +101,20 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	}
 }
 
+
+void	MsgHandler::handlePASS(std::string &password, Client &client)
+{
+	if (password == _server.getPassword())
+	{
+		client.setRegistered(true);
+		send(client.getFd(), "Client authenticated with the mserver\r\n", 23, MSG_DONTWAIT);
+	}
+	else
+	{
+		send(client.getFd(), "Invalid password\r\n", 18, MSG_DONTWAIT);
+		_server.disconnectClient(client);
+	}
+
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(client.getChannels()[0]);
@@ -137,6 +151,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG:handlePRIVMSG(msg, client);
 			break ;
+    case PASS:handlePASS(msgData[1], client);
+      break ;
 		case UNKNOWN:
 			break ;
 	}
