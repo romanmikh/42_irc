@@ -31,12 +31,14 @@ void MsgHandler::handlePART(std::string &channelName, Client &client)
 void MsgHandler::handleNICK(std::string &nickname, Client &client)
 {
 	client.setNickname(nickname);
+	std::cout << "nickname = " << nickname << std::endl;
 }
 
 void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isChanOp()) {
+	if (chan->isClientOperator(&client) || client.isIRCOp())
+	{
 		info(client.username() + " invited " + username + " to channel " + channel);
 		_manager.joinChannel(client, channel);
 	}
@@ -48,7 +50,8 @@ void MsgHandler::handleINVITE(std::string &username, std::string &channel, Clien
 void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isChanOp()) {
+	if (chan->isClientOperator(&client) || client.isIRCOp())
+	{
 		info(client.username() + " changed mode of channel " + channel + " to: " + mode);
 		chan->setMode(mode);
 	}
@@ -60,7 +63,8 @@ void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &cli
 void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isChanOp()) {
+	if (chan->isClientOperator(&client) || client.isIRCOp())
+	{
 		info(client.username() + " changed topic of channel " + channel + " to: " + topic);
 		chan->setTopic(topic);
 	}
@@ -72,7 +76,8 @@ void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &c
 void MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientOperator(&client) || client.isChanOp()) {
+	if (chan->isClientOperator(&client) || client.isIRCOp())
+	{
 		info(client.username() + " kicked " + username + " from channel " + channel);
 		_manager.leaveChannel(client, channel);
 	}
@@ -87,6 +92,12 @@ void MsgHandler::replyPONG(Client &client)
 	send(client.getFd(), pongMsg.c_str(), 6, 0);
 }
 
+void MsgHandler::replyBadPassword(Client &client)
+{
+	std::string msg = ":" + _server.name() + " 464 " + client.nickname() + " :Password incorrect\r\n"; 
+	send(client.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT);
+}
+
 void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
 {
 	std::map<std::string, std::string>	allowedOpers = _server.getOpers();
@@ -96,6 +107,8 @@ void MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 		std::cout << nickname << " set as operator.\n";
 		client.setIRCOp(true);
 	}
+	else
+	 	replyBadPassword(client);
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)

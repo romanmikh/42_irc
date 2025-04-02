@@ -83,7 +83,7 @@ bool    Channel::isClientOperator(Client* client) const
 {
     for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
     {
-        if (*it == client && (*it)->isChanOp())
+        if (*it == client && (*it)->isIRCOp())
             return true;
     }
     return false;
@@ -99,7 +99,7 @@ void    Channel::addOperator(Client* client) {
 }
 
 void    Channel::removeOperator(Client* client) {
-    if (client->isChanOp()) {
+    if (client->isIRCOp()) {
         warning(client->username() + " is a global operator");
         return;
     }

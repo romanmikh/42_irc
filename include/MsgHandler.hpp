@@ -20,6 +20,7 @@ class MsgHandler
 		void replyUSER(std::string &msg, Client &client);
 		void handleNICK(std::string &msg, Client &client);
 		void replyPONG(Client &client);
+		void replyBadPassword(Client &client);
 
 		void handleJOIN(std::string &channelName, Client &client);
 		void handlePART(std::string &channelName, Client &client);

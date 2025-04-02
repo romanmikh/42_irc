@@ -7,7 +7,7 @@ Client::Client()
 {
 	_nickname = "default";
 	_username = "default";
-	_isChanOp = false;
+	_isIRCOp = false;
 }
 
 Client::Client(pollfd &clientSocket)
@@ -15,7 +15,7 @@ Client::Client(pollfd &clientSocket)
 	_nickname = "default";
 	_username = "default";
 	_socket = clientSocket;
-	_isChanOp = false;
+	_isIRCOp = false;
 }
 
 Client::~Client() {}
@@ -72,14 +72,6 @@ void Client::setHostname(std::string &hostname)
 void Client::setIP(std::string IP)
 {
 	_IP = IP;
-}
-
-bool Client::isChanOp() const {
-	return _isChanOp;
-}
-
-void Client::setChanOp(bool isOperator) {
-	_isChanOp = isOperator;
 }
 
 std::vector<std::string> Client::getChannels() const {
