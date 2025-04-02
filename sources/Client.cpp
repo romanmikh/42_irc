@@ -9,6 +9,8 @@ Client::Client()
 	_username = "default";
 	_isOperator = false;
 	_isRegistered = false;
+	_isIRCOp = false;
+
 }
 
 Client::Client(pollfd &clientSocket)
@@ -16,8 +18,8 @@ Client::Client(pollfd &clientSocket)
 	_nickname = "default";
 	_username = "default";
 	_socket = clientSocket;
-	_isOperator = false;
 	_isRegistered = false;
+	_isIRCOp = false;
 }
 
 Client::~Client() {}
@@ -76,13 +78,14 @@ void Client::setIP(std::string IP)
 	_IP = IP;
 }
 
-void Client::setOperator(bool isOperator) {
-	_isOperator = isOperator;
+
+std::vector<std::string> Client::getChannels() const {
+	return (_channels);
 }
 
-void 	Client::setOper(bool status)
+void 	Client::setIRCOp(bool status)
 {
-	_isOperator = status;
+	_isIRCOp = status;
 }
 
 void Client::setRegistered(bool status)
@@ -90,19 +93,15 @@ void Client::setRegistered(bool status)
 	_isRegistered = status;
 }
 
-bool Client::isOperator() const
-{
-	return (_isOperator);
-}
 
 bool Client::isRegistered() const
 {
 	return (_isRegistered);
 }
 
-std::vector<std::string> Client::getChannels() const
-{
-	return (_channels);
+
+bool Client::isIRCOp() const {
+	return _isIRCOp;
 }
 
 // ************************************************************************** //

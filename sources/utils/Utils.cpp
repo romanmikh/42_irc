@@ -96,3 +96,9 @@ int isValidPassword(const std::string& pwd)
     }
     return (pwd.length() >= 4 && pwd.length() <= 6);
 }
+
+void sendMSG(int fd, std::string RPL)
+{
+	send(fd, RPL.c_str(), RPL.length(), MSG_DONTWAIT);
+}
+

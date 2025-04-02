@@ -7,7 +7,6 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
-	_serverName = "42irc.local";
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -64,11 +63,6 @@ std::map<std::string,std::string> Server::getOpers()
 	return (_opers);
 }
 
-std::string Server::name()
-{
-	return (_serverName);
-}
-
 std::string Server::getPassword()
 {
 	return (_password);
@@ -97,7 +91,9 @@ void Server::handleNewConnectionRequest()
 	}
 
 	info("New connection request received");
-	send(clientSocket.fd, "CAP * LS : \r\n", 13, 0);
+
+	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
+
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }

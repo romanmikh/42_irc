@@ -66,11 +66,11 @@ void                    Channel::setMode(std::string mode) {
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-bool                    Channel::isEmpty(void) const{
+bool Channel::isEmpty(void) const{
     return _channelClients.empty();
 }
 
-bool                    Channel::hasClient(Client* client) const {
+bool    Channel::hasClient(Client* client) const {
     for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
                                            it != _channelClients.end(); ++it) {
         if (*it == client)
@@ -79,17 +79,22 @@ bool                    Channel::hasClient(Client* client) const {
     return false;
 }
 
-bool                    Channel::isClientOperator(Client* client) const {
-    for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
-                                           it != _channelClients.end(); ++it) {
-        if (*it == client && (*it)->isOperator())
+bool    Channel::isClientChanOp(Client* client) const
+{
+    for (std::vector<Client *>::const_iterator it = _channelOperators.begin(); \
+                                        it != _channelOperators.end(); ++it) {
+        if (*it == client)
             return true;
     }
     return false;
 }
 
-void                    Channel::addOperator(Client* client) {
-    if (isClientOperator(client)) {
+void    Channel::addChanOp(Client* client) {
+    if (client->isIRCOp()) {
+        warning(client->username() + " is a global operator");
+        return;
+    }
+    if (isClientChanOp(client)) {
         warning(client->username() + " is already an operator in channel " + _channelName);
         return;
     }
@@ -97,12 +102,12 @@ void                    Channel::addOperator(Client* client) {
     info(client->username() + " is now an operator in channel " + _channelName);
 }
 
-void                    Channel::removeOperator(Client* client) {
-    if (client->isOperator()) {
+void    Channel::removeChanOp(Client* client) {
+    if (client->isIRCOp()) {
         warning(client->username() + " is a global operator");
         return;
     }
-    if (!isClientOperator(client)) {
+    if (!isClientChanOp(client)) {
         warning(client->username() + " is not an operator in channel " + _channelName);
         return;
     }
@@ -116,10 +121,12 @@ void                    Channel::removeOperator(Client* client) {
     info(client->username() + " is no longer an operator in channel " + _channelName);
 }
 
-void                    Channel::sendMessageToChannel(std::string message) {
+void    Channel::broadcastToChannel(std::string message, Client* client) {
     for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
                                            it != _channelClients.end(); ++it) {
-        send((*it)->getFd(), message.c_str(), message.length(), 0);
+        if (*it != client) {
+            send((*it)->getFd(), (message + "\r\n").c_str(), message.length() + 2, 0);
+        }
     }
 }
 

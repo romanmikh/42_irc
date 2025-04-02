@@ -2,6 +2,7 @@
 #define MSGHANDLER_HPP
 #include "irc.hpp"
 
+
 class ChannelManager;
 
 class MsgHandler
@@ -18,8 +19,6 @@ class MsgHandler
 		void receiveMessage(Client &client);
 		void sendWelcomeProtocol(Client &client);
 		void replyUSER(std::string &msg, Client &client);
-		void handleNICK(std::string &msg, Client &client);
-		void replyPONG(Client &client);
 
 		void handleJOIN(std::string &channelName, Client &client);
 		void handlePART(std::string &channelName, Client &client);
@@ -30,6 +29,8 @@ class MsgHandler
 		void handlePASS(std::string &password, Client &client);
 
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
+
+		void handlePRIVMSG(std::string &msg, Client &client);
 };
 
 #endif
