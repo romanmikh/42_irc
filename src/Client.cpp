@@ -6,7 +6,6 @@ Client::Client(int listeningSocketFd)
 	_username = "";
 	socklen_t addrLen = sizeof(_clientAddr);
 	_socket.fd = accept(listeningSocketFd, (sockaddr *)&_clientAddr, &addrLen);
-	
 }
 
 Client::~Client()
