@@ -86,7 +86,7 @@ int                         isDigits(const std::string& s);
 int                         isValidPort(const std::string& s);
 void                        printStr(const std::string& text, const std::string& colour);
 void 			            sendMSG(int fd, std::string RPL);
-int             isValidPassword(const std::string& pwd);
+int                         isValidPassword(const std::string& pwd);
 
 // Logging
 void                        info(const std::string& message);
@@ -111,7 +111,8 @@ enum Command
     PASS,
     UNKNOWN
 };
-std::map<std::string, Command> createCommandMap();
+
+std::map<std::string, Command>  createCommandMap();
 Command getCommandType(const std::string& cmd);
 
 /* Colours */

@@ -107,14 +107,14 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	if (password == _server.getPassword())
 	{
 		client.setRegistered(true);
-		send(client.getFd(), "Client authenticated with the mserver\r\n", 23, MSG_DONTWAIT);
+		send(client.getFd(), "Client authenticated with the mserver\r\n", strlen("Client authenticated with the mserver\r\n"), MSG_DONTWAIT);
 	}
 	else
 	{
-		send(client.getFd(), "Invalid password\r\n", 18, MSG_DONTWAIT);
-			_server.disconnectClient(client);
-		}
+		send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
+		_server.disconnectClient(client);
 	}
+}
 
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
@@ -150,10 +150,10 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case OPER: if (msgData.size() == 3) handleOPER(msgData[1], msgData[2], client);
 			break ;
-		case PRIVMSG:handlePRIVMSG(msg, client);
+		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
-    	case PASS:handlePASS(msgData[1], client);
-      		break ;
+		case PASS: handlePASS(msgData[1], client);
+			break ;
 		case UNKNOWN:
 			break ;
 	}
