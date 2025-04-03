@@ -58,7 +58,7 @@ void Server::parseOpersConfigFile(const char *fileName)
 		_opers.insert(std::pair<std::string, std::string>(oper[0], oper[1]));
 	}
 }
-std::map<std::string,std::string> Server::getOpers()
+std::map<std::string,std::string> &Server::getOpers()
 {
 	return (_opers);
 }
@@ -66,6 +66,10 @@ std::map<std::string,std::string> Server::getOpers()
 std::string Server::getPassword()
 {
 	return (_password);
+}
+clients_t 	&Server::getClients()
+{
+	return (_clients);
 }
 
 void Server::addclient(pollfd &clientSocket)

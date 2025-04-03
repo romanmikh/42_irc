@@ -65,6 +65,7 @@
 #define ERR_NOPRIVILAGES(client) std::string(":") + SERVER_NAME + " 481 " + client.nickname() + ": :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
 
+#define QUIT(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT: Killed by " + killer.nickname() + " (" + reason + ")\r\n"
 #define CMD_STD_FMT(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
 

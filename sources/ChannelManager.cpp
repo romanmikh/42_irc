@@ -55,7 +55,9 @@ void ChannelManager::joinChannel(Client& client, const std::string& channelName)
 
 void ChannelManager::leaveChannel(Client& client, const std::string& channelName) {
     channels_t::iterator it = _channels.find(channelName);
-    if (it == _channels.end()) {
+    if (it == _channels.end())
+    {
+        // we need to send an ERR 403 here
         warning("Channel " + channelName + " does not exist");
         throw ChannelManager::ChannelNonExistentException();
     }

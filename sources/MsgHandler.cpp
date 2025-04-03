@@ -37,6 +37,7 @@ void MsgHandler::handleINVITE(std::string &username, std::string &channel, Clien
 		_manager.joinChannel(client, channel);
 	}
 	else {
+		// need to send 482 ERR_CHANOPRIVSNEEDED
 		warning(client.username() + " is not an operator in channel " + channel);
 	}
 }
@@ -50,6 +51,7 @@ void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &cli
 		chan->setMode(mode);
 	}
 	else {
+		// need to send 482 ERR_CHANOPRIVSNEEDED
 		warning(client.username() + " is not an operator in channel " + channel);
 	}
 }
@@ -76,6 +78,7 @@ void MsgHandler::handleKICK(std::string &username, std::string &channel, Client 
 		_manager.leaveChannel(client, channel);
 	}
 	else {
+		// need to send 482 ERR_CHANOPRIVSNEEDED
 		warning(client.username() + " is not an operator in channel " + channel);
 	}
 }
@@ -155,11 +158,11 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
 }
 
-void handleKILL(std::string &msg, Client &client)
+void MsgHandler::handleKILL(std::string &msg, Client &killer)
 {
-	if (!client.isIRCOp())
+	if (!killer.isIRCOp())
 	{
-		sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
+		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
 		return ;
 	}
 	std::istringstream ss(msg);
@@ -171,6 +174,19 @@ void handleKILL(std::string &msg, Client &client)
 	getline(ss, userToKill, ' ');
 	getline(ss, reasonToKill);
 
+	clients_t &clients = _server.getClients();
+	for (clients_t::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		if (it->second->nickname() == userToKill)
+		{
+			int client_fd = it->first;
+			Client &client = *it->second;
+			// need to broadcast QUIT to all client channels
+			sendMSG(client_fd, QUIT(client, killer, reasonToKill));
+			_server.disconnectClient(*it->second);
+			return ;
+		}
+	}
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
