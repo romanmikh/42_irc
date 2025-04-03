@@ -78,7 +78,8 @@ void Client::setIP(std::string IP)
 }
 
 
-std::vector<std::string> Client::getChannels() const {
+std::vector<std::string> Client::getChannels() const
+{
 	return (_channels);
 }
 

@@ -165,11 +165,9 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
 		return ;
 	}
-	std::istringstream ss(msg);
-	std::string killCommand;
-	std::string userToKill;
-	std::string reasonToKill;
 
+	std::istringstream ss(msg);
+	std::string killCommand, userToKill, reasonToKill;
 	getline(ss, killCommand, ' ');
 	getline(ss, userToKill, ' ');
 	getline(ss, reasonToKill);
@@ -177,12 +175,21 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	clients_t &clients = _server.getClients();
 	for (clients_t::iterator it = clients.begin(); it != clients.end(); it++)
 	{
-		if (it->second->nickname() == userToKill)
+		Client *client = it->second;
+		if (client->nickname() == userToKill)
 		{
-			int client_fd = it->first;
-			Client &client = *it->second;
-			// need to broadcast QUIT to all client channels
-			sendMSG(client_fd, QUIT(client, killer, reasonToKill));
+			// broadcast QUIT to all client's channels
+			std::map<std::string, Channel*> allChannels = _manager.getChannels();
+			std::vector<std::string> clientChannels = client->getChannels();
+			for (size_t i = 0; i < clientChannels.size(); i++)
+			{
+				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]);
+				if (it == allChannels.end())
+					continue ;
+				Channel *channel = it->second;
+				channel->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
+			}
+			sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 			_server.disconnectClient(*it->second);
 			return ;
 		}
