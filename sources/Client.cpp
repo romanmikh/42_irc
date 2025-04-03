@@ -68,7 +68,6 @@ void 			Client::setIP(std::string IP)
 	_IP = IP;
 }
 
-
 void 			Client::setIRCOp(bool status)
 {
 	_isIRCOp = status;

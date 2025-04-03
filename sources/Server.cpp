@@ -7,6 +7,7 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
+	_running = true;
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -78,6 +79,11 @@ Client* 		Server::getClientByNick(std::string& nickname) const
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
+void	Server::shutdown()
+{
+	_running = false;
+}
+
 void Server::parseOpersConfigFile(const char *fileName)
 {
 	std::ifstream file;
@@ -145,7 +151,7 @@ void Server::run(void)
 	MsgHandler		msg(*this, manager);
 
 	info("Running...");
-	while (1)
+	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
 		if (serverActivity > 0)

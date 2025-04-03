@@ -6,7 +6,6 @@ class Client;
 
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
-
 #define SERVER_NAME std::string("42irc.local")
 
 class Server
@@ -18,6 +17,7 @@ class Server
 		clients_t				_clients;
 		std::string				_password;
 		unsigned int			_port;
+		bool					_running;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -39,12 +39,13 @@ class Server
 		void 			run(void);
 		void 			parseOpersConfigFile(const char *file);
 		void 			handleNewConnectionRequest();
-		void 			disconnectClient(Client &client);
 		void 			addclient(pollfd &clientSocket);
+		void 			disconnectClient(Client &client);
 		bool			validatePassword(std::string &password);
-		std::string 	name(void);
+  
+// 		std::string 	name(void);
 
-		
+		void			shutdown();
 };
 
 #endif

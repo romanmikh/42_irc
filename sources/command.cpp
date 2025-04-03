@@ -1,4 +1,5 @@
 #include "../include/irc.hpp"
+
 std::map<std::string, Command> createCommandMap()
 {
     std::map<std::string, Command> commandMap;
@@ -15,6 +16,8 @@ std::map<std::string, Command> createCommandMap()
     commandMap["PASS"] = PASS;
     commandMap["PART"] = PART;
     commandMap["PRIVMSG"] = PRIVMSG;
+    commandMap["KILL"] = KILL;
+    commandMap["DIE"] = DIE;
     return commandMap;
 }
 

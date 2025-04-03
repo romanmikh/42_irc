@@ -23,7 +23,7 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 
 	sendWelcomeProtocol(client);
 }
-
+// can we remove wrappers for single line function call and just call them directly inside respond() ??
 void MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
     _manager.addToChannel(client, channelName);
@@ -37,6 +37,7 @@ void MsgHandler::handlePART(std::string &channelName, Client &client)
 void MsgHandler::handleINVITE(std::string &username, std::string &channelName, 
 																Client &client)
 {
+  // need to send 482 ERR_CHANOPRIVSNEEDED
 	_manager.inviteClient(username, channelName, client);
 }
 
@@ -54,6 +55,7 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode,
 		else
 			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");	
 	}
+  // need to send 482 ERR_CHANOPRIVSNEEDED
 	else
 		return warning(client.username() + " is not an operator in channel " + 
 																channelName);
@@ -92,6 +94,7 @@ void MsgHandler::handleKICK(std::string &username, std::string &channelName,
 		_manager.removeFromChannel(client, channelName);
 	}
 	else {
+  // need to send 482 ERR_CHANOPRIVSNEEDED
 		warning(client.username() + " is not an operator in channel " + 
 																channelName);
 	}
@@ -105,7 +108,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password,
 
 	if (it == allowedOpers.end())
 	{
-		sendMSG(client.getFd(), RPL_NOOPERHOST(client));
+		sendMSG(client.getFd(), ERR_NOOPERHOST(client));
 		return ;
 	}
 	if (it->second == password)
@@ -119,7 +122,6 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password,
 	}
 }
 
-
 void	MsgHandler::handlePASS(std::string &password, Client &client)
 {
 	if (password == _server.getPassword())
@@ -129,7 +131,9 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 	else
 	{
-		send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
+		// Needs to use RPL standard: 
+		//send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
+		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
 		_server.disconnectClient(client);
 	}
 }
@@ -165,12 +169,60 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
 }
 
+void MsgHandler::handleKILL(std::string &msg, Client &killer)
+{
+	if (!killer.isIRCOp())
+	{
+		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
+		return ;
+	}
+
+	std::istringstream ss(msg);
+	std::string killCommand, userToKill, reasonToKill;
+	getline(ss, killCommand, ' ');
+	getline(ss, userToKill, ' ');
+	getline(ss, reasonToKill);
+
+	clients_t &clients = _server.getClients();
+	for (clients_t::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		Client *client = it->second;
+		if (client->nickname() == userToKill)
+		{
+			// broadcast QUIT to all client's channels
+			std::map<std::string, Channel*> allChannels = _manager.getChannels();
+			std::vector<std::string> clientChannels = client->getChannels();
+			for (size_t i = 0; i < clientChannels.size(); i++)
+			{
+				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]);
+				if (it == allChannels.end())
+					continue ;
+				Channel *channel = it->second;
+				channel->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
+			}
+			sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
+			_server.disconnectClient(*it->second);
+			return ;
+		}
+	}
+}
+
+void	MsgHandler::handleDIE(Client &client)
+{
+	if (client.isIRCOp())
+		_server.shutdown();
+	else
+		sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
 	switch (getCommandType(msgData[0]))
 	{
+		case PASS: handlePASS(msgData[1], client);
+			break ;
 		case USER: replyUSER(msg, client);
 			break ;
 		case NICK: if (msgData.size() == 2) client.setNickname(msgData[1]);
@@ -195,9 +247,11 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
-		case PASS: handlePASS(msgData[1], client);
-			break ;
 		case UNKNOWN:
+			break ;
+		case KILL: handleKILL(msg, client);
+			break ;
+		case DIE: handleDIE(client);
 			break ;
 	}
 }

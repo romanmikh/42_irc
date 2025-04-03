@@ -87,8 +87,10 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 void ChannelManager::removeFromChannel(Client& client, const std::string& channelName)
 {
     Channel* channel = getChanByName(channelName);
+  // we need to send an ERR 403 here
 	if (!channel)
 		return warning("Channel " + channelName + " does not exist");
+
 
     std::vector<Client*>& channelClients = channel->getClients();
     std::vector<Client*>::iterator clientIt = std::find(channelClients.begin(), 

@@ -26,9 +26,10 @@ class MsgHandler
 		void handleMODE(std::string &channelName, std::string &mode, Client &client);
 		void handleTOPIC(std::string &channelName, std::string &topic, Client &client);
 		void handlePASS(std::string &password, Client &client);
-		void handlePRIVMSG(std::string &msg, Client &client);
+		void handleDIE(Client &client);
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
-
+		void handleKILL(std::string &msg, Client &client);
+		void handlePRIVMSG(std::string &msg, Client &client);
 
 };
 
