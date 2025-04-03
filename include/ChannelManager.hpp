@@ -13,22 +13,24 @@ class ChannelManager
         typedef std::pair<std::string, Channel *>   channel_pair_t;
 
         /* construcotrs & destructors */
-        ChannelManager(void);
-        ChannelManager(const std::string name);
-        ChannelManager(const ChannelManager &other);
+        ChannelManager(Server& server);
         ~ChannelManager(void);
+        Server& _server;
         
         /* accessors */
         const channels_t&       getChannels(void) const;
+        size_t                  getChannelCount(void) const;
+        size_t                  incChannelCount(void);
+        size_t                  decChannelCount(void);
 
         /* member functions */
-        void    createChannel(std::string channelName);
-        void    deleteChannel(std::string channelName);
-        void    leaveChannel(Client& client, const std::string& channelName);
-        void    joinChannel(Client& client, const std::string& channelName);
-
-        class ChannelNonExistentException: public std::exception {};
-        class ChannelAlreadyExistsException: public std::exception {};
+        void        createChannel(std::string channelName);
+        void        deleteChannel(std::string channelName);
+        void        removeFromChannel(Client& client, const std::string& channelName);
+        void        addToChannel(Client& client, const std::string& channelName);
+        bool        channelExists(const std::string& channelName) const;
+        void        inviteClient(std::string user, const std::string& chan, Client client);
+        Channel*    getChanByName(const std::string& channelName);
 
     private:       
 

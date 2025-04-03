@@ -11,6 +11,11 @@ class Channel
         std::string             _channelPassword;
         std::string             _channelTopic;
         std::string             _channelMode;
+        bool                    _channelIsInviteOnly;
+        bool                    _channelIsTopicRestricted;
+        bool                    _channelIsKeyProtected;
+        bool                    _channelIsOperatorRestricted;
+        bool                    _channelIsLimitRestricted;
         size_t                  _channelClientCount;
         size_t                  _channelClientLimit;
         
@@ -23,14 +28,22 @@ class Channel
         ~Channel(void);
         
         /* accessors */
+        bool                        isInviteOnly(void) const;
+        bool                        isTopicRestricted(void) const;
+        bool                        isKeyProtected(void) const;
+        bool                        isOperatorRestricted(void) const;
+        bool                        isLimitRestricted(void) const;
+
         std::vector<Client*>&       getClients(void);
         std::vector<Client*>&       getOperators(void);
         std::string                 getName(void) const;
         std::string                 getPassword(void) const;
         std::string                 getTopic(void) const;
         std::string                 getMode(void) const;
-        size_t                      getClientCount(void) const;
         size_t                      getClientLimit(void) const;
+        size_t                      getClientCount(void) const;
+        size_t                      incClientCount(void);
+        size_t                      decClientCount(void);
 
         void                        setName(std::string name);
         void                        setPassword(std::string password);
@@ -39,6 +52,7 @@ class Channel
         
         /* member functions */
         bool    isEmpty(void) const;
+        bool    actionMode(std::string mode, Client& client);
         bool    hasClient(Client* client) const;
         void    addChanOp(Client* client);
         void    removeChanOp(Client* client);

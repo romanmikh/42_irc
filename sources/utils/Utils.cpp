@@ -26,6 +26,16 @@ std::string uintToString(unsigned int value) {
     return oss.str();
 }
 
+std::string boolToString(bool value) {
+    return value ? "true" : "false";
+}
+
+std::string sizeToString(size_t value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
 void	handleCtrlD(void)
 {
 	if (std::cin.eof())
