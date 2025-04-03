@@ -3,16 +3,13 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-ChannelManager::ChannelManager(void) {
-    printStr("ChannelManager(void) created", PURPLE);
-}
+ChannelManager::ChannelManager(void) {}
 
 ChannelManager::~ChannelManager(void){
     for (channels_t::iterator it = _channels.begin(); it != _channels.end(); ++it) {
         delete it->second;
     }
     _channels.clear();
-    printStr("ChannelManager destroyed", PURPLE);
 }
 
 // ************************************************************************** //
@@ -43,7 +40,7 @@ void    ChannelManager::deleteChannel(std::string channelName) {
     }
 }
 
-void ChannelManager::joinChannel(Client& client, std::string channelName) {
+void ChannelManager::joinChannel(Client& client, const std::string& channelName) {
     if (_channels.find(channelName) == _channels.end()) {
         createChannel(channelName);
     }
@@ -56,30 +53,29 @@ void ChannelManager::joinChannel(Client& client, std::string channelName) {
     info(client.username() + " joined channel " + channelName);
 }
 
-void ChannelManager::leaveChannel(Client& client, std::string channelName) {
+void ChannelManager::leaveChannel(Client& client, const std::string& channelName) {
     channels_t::iterator it = _channels.find(channelName);
     if (it == _channels.end()) {
         warning("Channel " + channelName + " does not exist");
         throw ChannelManager::ChannelNonExistentException();
     }
     Channel* channel = it->second;
-    std::vector<Client*>& clients = channel->getClients(); // by reference
-    std::vector<Client*>::iterator clientIt = std::find(clients.begin(), clients.end(), &client);
-    if (clientIt != clients.end()) {
-        clients.erase(clientIt);
-        client.leaveChannel(channelName);
-        info(client.username() + " removed from channel " + channelName);
-    }
-    // send irssi message to close channel interface: :<nickname>!<user>@<host> PART #channel
-    // causes segfaults atm...
-    // std::string PARTmsg = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PART " + channelName + "\r\n";
-    // printStr("PARTmsg: " + PARTmsg, YELLOW);
-    // send(client.getFd(), PARTmsg.c_str(), PARTmsg.length(), 0);
-}
-// ************************************************************************** //
-//                             Private Functions                              //
-// ************************************************************************** //
+    std::vector<Client*>& channelClients = channel->getClients(); // by reference
 
-// ************************************************************************** //
-//                            Non-member Functions                            //
-// ************************************************************************** //
+    std::vector<Client*>::iterator clientIt = std::find(channelClients.begin(), channelClients.end(), &client);
+    if (clientIt != channelClients.end()) {
+        std::string PARTmsg = CMD_STD_FMT(client) + " PART " + channelName + " :bye!" + "\r\n";
+        sendMSG(client.getFd(), PARTmsg);
+        
+        if (channel->isClientChanOp(&client))
+            channel->removeChanOp(&client);
+        info(client.username() + " removed from channel " + channelName);
+        client.leaveChannel(channelName);
+        channelClients.erase(clientIt);
+
+        sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
+    }
+    if (channel->getClients().empty()) {
+        deleteChannel(channelName);
+    }
+}
