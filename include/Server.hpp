@@ -17,6 +17,7 @@ class Server
 		clients_t				_clients;
 		std::string				_password;
 		unsigned int			_port;
+		bool					_running;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -32,6 +33,7 @@ class Server
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client &client);
 		bool			validatePassword(std::string &password);
+		void			shutdown();
 		
 		std::map<std::string,std::string> &getOpers();
 		std::string	getPassword();

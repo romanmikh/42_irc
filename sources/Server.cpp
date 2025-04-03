@@ -7,6 +7,7 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
+	_running = true;
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -31,14 +32,21 @@ Server::~Server()
 	for (unsigned int i = 0; i < _sockets.size(); i++)
 		close(_sockets[i].fd);
 
-	for (size_t i = 0; i < _clients.size(); i++)
-		delete &_clients[i];
+	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
+		delete it->second;
+	}
 }
 
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
 
+
+void	Server::shutdown()
+{
+	_running = false;
+}
 
 void Server::parseOpersConfigFile(const char *fileName)
 {
@@ -122,7 +130,7 @@ void Server::run()
 	MsgHandler		msg(*this, manager);
 
 	info("Running...");
-	while (1)
+	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
 		if (serverActivity > 0)

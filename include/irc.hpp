@@ -113,7 +113,8 @@ enum Command
     PRIVMSG,
     PASS,
     UNKNOWN,
-    KILL
+    KILL,
+    DIE
 };
 
 std::map<std::string, Command>  createCommandMap();

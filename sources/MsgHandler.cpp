@@ -196,17 +196,18 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	}
 }
 
+void	MsgHandler::handleDIE(Client &client)
+{
+	if (client.isIRCOp())
+		_server.shutdown();
+	else
+		sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
-	if (msgData[0] == "CAP")
-		return ;
-	if (!client.isRegistered() && msgData[0] != "PASS")
-	{
-		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
-		return ;
-	}
 	switch (getCommandType(msgData[0]))
 	{
 		case PASS: handlePASS(msgData[1], client);
@@ -238,6 +239,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		case UNKNOWN:
 			break ;
 		case KILL: handleKILL(msg, client);
+			break ;
+		case DIE: handleDIE(client);
 			break ;
 	}
 }
