@@ -47,6 +47,7 @@
 /* Macros */
 #define MIN_PORT 1024
 #define MAX_PORT 65535
+#define CHAN_CLIENT_LIMIT 42
 
 /* Error messages */
 # define ERR_USAGE "Usage: ./ircserv <port> <password>"
@@ -80,6 +81,8 @@ std::vector<std::string>    split(const std::string& str, char delimiter);
 std::string                 getCurrentTime(void);
 std::string                 intToString(int value);
 std::string                 uintToString(unsigned int value);
+std::string                 boolToString(bool value);
+std::string                 sizeToString(size_t value);
 unsigned int                getUnsignedInt(const std::string& prompt);
 int                         checkInput(int ac, char **av);
 int                         errMsgVal(int detail, const std::string& str, int code);

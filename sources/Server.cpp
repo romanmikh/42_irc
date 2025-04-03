@@ -24,7 +24,6 @@ Server::Server(int port, std::string &password)
 
 	bind(_sockets[0].fd, (struct sockaddr *)(&serverAddr), sizeof(serverAddr));
 	listen(_sockets[0].fd, 10);
-	info("Listening...");
 }
 
 Server::~Server()
@@ -39,10 +38,47 @@ Server::~Server()
 }
 
 // ************************************************************************** //
+//                               Accessors                                    //
+// ************************************************************************** //
+clients_t&		Server::getClients(void) {
+	return (_clients);
+}
+
+std::string Server::getPassword(void)
+{
+	return (_password);
+}
+
+std::map<std::string,std::string> Server::getOpers(void)
+{
+	return (_opers);
+}
+
+
+Client* 		Server::getClientByUser(std::string& username) const
+{
+	for (clients_t::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it->second->username() == username)
+			return (it->second);
+	}
+	return (NULL);
+}
+
+Client* 		Server::getClientByNick(std::string& nickname) const
+{
+	for (clients_t::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it->second->nickname() == nickname)
+		return (it->second);
+	}
+	warning("Client with nickname " + nickname + " not found");
+	return (NULL);
+}
+
+// ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-
-
 void	Server::shutdown()
 {
 	_running = false;
@@ -66,19 +102,6 @@ void Server::parseOpersConfigFile(const char *fileName)
 		_opers.insert(std::pair<std::string, std::string>(oper[0], oper[1]));
 	}
 }
-std::map<std::string,std::string> &Server::getOpers()
-{
-	return (_opers);
-}
-
-std::string Server::getPassword()
-{
-	return (_password);
-}
-clients_t 	&Server::getClients()
-{
-	return (_clients);
-}
 
 void Server::addclient(pollfd &clientSocket)
 {
@@ -87,7 +110,7 @@ void Server::addclient(pollfd &clientSocket)
 	_sockets.push_back(newClient->getSocket());
 }
 
-void Server::handleNewConnectionRequest()
+void Server::handleNewConnectionRequest(void)
 {
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
@@ -101,8 +124,6 @@ void Server::handleNewConnectionRequest()
 		close(_sockets[0].fd);
 		return ;
 	}
-
-	info("New connection request received");
 	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
@@ -124,9 +145,9 @@ void Server::disconnectClient(Client &client)
 	}
 }
 
-void Server::run()
+void Server::run(void)
 {
-	ChannelManager  manager;
+	ChannelManager  manager(*this);
 	MsgHandler		msg(*this, manager);
 
 	info("Running...");
@@ -167,29 +188,4 @@ pollfd Server::_makePollfd(int fd, short int events, short int revents)
 	pfd.events = events;
 	pfd.revents = revents;
 	return pfd;
-}
-
-// ************************************************************************** //
-//                  Unused (yet) helpful functions                            //
-// ************************************************************************** //
-
-std::vector<std::string> ftSplit(const std::string& input , char delim) {
-	std::vector<std::string> result;
-	std::stringstream ss(input);
-	std::string item;
-	while (std::getline(ss, item, delim) ) {
-		result.push_back(item);
-	}
-	return result;
-}
-
-std::vector<std::string> splitByString(const std::string& input, const std::string& delim) {
-    std::vector<std::string> result;
-    size_t start = 0, end;
-    while ((end = input.find(delim, start)) != std::string::npos) {
-        result.push_back(input.substr(start, end - start));
-        start = end + delim.length();
-    }
-    result.push_back(input.substr(start));
-    return result;
 }

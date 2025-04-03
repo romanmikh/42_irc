@@ -1,10 +1,16 @@
 #include "../include/MsgHandler.hpp"
 
+// ************************************************************************** //
+//                       Constructors & Desctructors                          //
+// ************************************************************************** //
 MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
-	: _server(server), _manager(manager) {};
+										: _server(server), _manager(manager) {};
 
 MsgHandler::~MsgHandler() {};
 
+// ************************************************************************** //
+//                             Public Functions                               //
+// ************************************************************************** //
 void MsgHandler::replyUSER(std::string &msg, Client &client)
 {
 	std::vector<std::string> names = split(msg, ':');
@@ -20,70 +26,82 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 // can we remove wrappers for single line function call and just call them directly inside respond() ??
 void MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
-    _manager.joinChannel(client, channelName);
+    _manager.addToChannel(client, channelName);
 }
 
 void MsgHandler::handlePART(std::string &channelName, Client &client)
 {
-	_manager.leaveChannel(client, channelName);
+	_manager.removeFromChannel(client, channelName);
 }
 
-void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
+void MsgHandler::handleINVITE(std::string &username, std::string &channelName, 
+																Client &client)
 {
-	Channel* chan = _manager.getChannels().at(channel);
-	if (chan->isClientChanOp(&client) || client.isIRCOp())
-	{
-		info(client.username() + " invited " + username + " to channel " + channel);
-		_manager.joinChannel(client, channel);
-	}
-	else {
-		// need to send 482 ERR_CHANOPRIVSNEEDED
-		warning(client.username() + " is not an operator in channel " + channel);
-	}
+  // need to send 482 ERR_CHANOPRIVSNEEDED
+	_manager.inviteClient(username, channelName, client);
 }
 
-void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
+void MsgHandler::handleMODE(std::string &channelName, std::string &mode, 
+																Client &client)
 {
-	Channel* chan = _manager.getChannels().at(channel);
+	Channel* chan = _manager.getChanByName(channelName);
+	if (!chan) {
+		return warning("Channel " + channelName + " does not exist");
+	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
-		info(client.username() + " changed mode of channel " + channel + " to: " + mode);
-		chan->setMode(mode);
+		if (chan->actionMode(mode, client))
+			return ;
+		else
+			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");	
 	}
-	else {
-		// need to send 482 ERR_CHANOPRIVSNEEDED
-		warning(client.username() + " is not an operator in channel " + channel);
-	}
+  // need to send 482 ERR_CHANOPRIVSNEEDED
+	else
+		return warning(client.username() + " is not an operator in channel " + 
+																channelName);
 }
 
-void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
+void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, 
+																Client &client)
 {
-	Channel* chan = _manager.getChannels().at(channel);
+	Channel* chan = _manager.getChanByName(channelName);
+	if (!chan) {
+		return warning("Channel " + channelName + " does not exist");
+	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
-		info(client.username() + " changed topic of channel " + channel + " to: " + topic);
 		chan->setTopic(topic);
+		info(client.username() + " changed topic of channel " + channelName + 
+															   " to: " + topic);
 	}
 	else {
-		warning(client.username() + " is not an operator in channel " + channel);
+		warning(client.username() + " is not an operator in channel " + 
+																channelName);
 	}
 }
 
-void MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
+void MsgHandler::handleKICK(std::string &username, std::string &channelName, 
+																Client &client)
 {
-	Channel* chan = _manager.getChannels().at(channel);
+	Channel* chan = _manager.getChanByName(channelName);
+	if (!chan) {
+		return warning("Channel " + channelName + " does not exist");
+	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
-		info(client.username() + " kicked " + username + " from channel " + channel);
-		_manager.leaveChannel(client, channel);
+		info(client.username() + " kicked " + username + " from channel " + 
+																channelName);
+		_manager.removeFromChannel(client, channelName);
 	}
 	else {
-		// need to send 482 ERR_CHANOPRIVSNEEDED
-		warning(client.username() + " is not an operator in channel " + channel);
+  // need to send 482 ERR_CHANOPRIVSNEEDED
+		warning(client.username() + " is not an operator in channel " + 
+																channelName);
 	}
 }
 
-void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
+void	MsgHandler::handleOPER(std::string &nickname, std::string &password, 
+																Client &client)
 {
 	std::map<std::string, std::string> allowedOpers = _server.getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
@@ -122,38 +140,31 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	const std::vector<std::string>& clientChannels = client.getChannels();
+	const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
 
-	if (clientChannels.empty()) {
-		error("Client is not in any channel, IRSSI applying PRIVMSG incorrectly");
-		return;
-	}
-	if (msg.empty()) {
-        warning("Empty PRIVMSG received");
-        return;
-    }
+	if (clientChannels.empty())
+		return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
+
+	if (msg.empty())
+        return warning("Empty PRIVMSG received");
+
     std::vector<std::string> tokens = split(msg, ' ');
-    if (tokens.size() < 2 || tokens[0] != "PRIVMSG") {
-        warning("Invalid PRIVMSG format");
-        return;
-    }
+    if (tokens.size() < 2 || tokens[0] != "PRIVMSG")
+        return warning("Invalid PRIVMSG format");
+
     const std::string& channel = tokens[1];
     if (channel.empty() || channel[0] != '#') {
-        warning("PRIVMSG channel is missing or invalid");
-        return;
-    }
+        return warning("PRIVMSG channel is missing or invalid");
+	}
 
 	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
-	if (it == allChannels.end()) {
-		warning("Channel " + channel + " does not exist in the server");
-		return;
-	}
+	if (it == allChannels.end())
+		return warning("Channel " + channel + " does not exist in the server");
+
 	Channel* chan = it->second;
-	if (chan->isEmpty()) {
-		warning("Channel is empty");
-		return;
-	}
+	if (chan->isEmpty())
+		return warning("Channel is empty");
 
 	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
 }
@@ -180,10 +191,10 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		{
 			// broadcast QUIT to all client's channels
 			std::map<std::string, Channel*> allChannels = _manager.getChannels();
-			std::vector<std::string> clientChannels = client->getChannels();
+			std::vector<Channel*> clientChannels = client->getClientChannels();
 			for (size_t i = 0; i < clientChannels.size(); i++)
 			{
-				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]);
+				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]->getName());
 				if (it == allChannels.end())
 					continue ;
 				Channel *channel = it->second;
