@@ -1,6 +1,9 @@
 #pragma once
 #include "irc.hpp"
 
+class Channel;
+class ChannelManager;
+
 class Client
 {
 	private:
@@ -14,19 +17,18 @@ class Client
 		bool					_isRegistered;
 		bool 					_isIRCOp;
 
-		std::vector<std::string> _clientChannels;
+		std::vector<Channel*>   _clientChannels;
 
 	public:
 
 		/* construcotrs & destructors */
-		Client(void);
 		Client(pollfd &clientSocket);
 		~Client(void);
 
 		std::string msgBuffer;
         
         /* accessors */
-		std::vector<std::string> getClientChannels() const;
+		std::vector<Channel*>  getClientChannels() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
 		
@@ -49,8 +51,8 @@ class Client
 
 		
 		/* member functions */
-		void    		joinChannel(std::string channelName);
-        void    		leaveChannel(std::string channelName);
+		void    		joinChannel(ChannelManager& manager, std::string channelName);
+        void    		leaveChannel(ChannelManager& manager, std::string channelName);
 		
 
 };

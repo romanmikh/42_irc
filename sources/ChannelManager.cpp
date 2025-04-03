@@ -78,7 +78,7 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
     std::vector<Client *>& clients = channel->getClients();
     if (std::find(clients.begin(), clients.end(), &client) == clients.end()) {
         clients.push_back(&client);
-        client.joinChannel(channelName);
+        client.joinChannel(*this, channelName);
     }
     info(client.username() + " joined channel " + channelName);
     channel->incClientCount();
@@ -101,7 +101,7 @@ void ChannelManager::removeFromChannel(Client& client, const std::string& channe
         if (channel->isClientChanOp(&client))
             channel->removeChanOp(&client);
         info(client.username() + " removed from channel " + channelName);
-        client.leaveChannel(channelName);
+        client.leaveChannel(*this, channelName);
         channelClients.erase(clientIt);
         channel->decClientCount();
 

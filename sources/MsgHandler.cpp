@@ -44,8 +44,9 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode,
 																Client &client)
 {
 	Channel* chan = _manager.getChanByName(channelName);
-	if (!chan)
+	if (!chan) {
 		return warning("Channel " + channelName + " does not exist");
+	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		if (chan->actionMode(mode, client))
@@ -62,8 +63,9 @@ void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic,
 																Client &client)
 {
 	Channel* chan = _manager.getChanByName(channelName);
-	if (!chan)
+	if (!chan) {
 		return warning("Channel " + channelName + " does not exist");
+	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		chan->setTopic(topic);
@@ -80,8 +82,9 @@ void MsgHandler::handleKICK(std::string &username, std::string &channelName,
 																Client &client)
 {
 	Channel* chan = _manager.getChanByName(channelName);
-	if (!chan)
+	if (!chan) {
 		return warning("Channel " + channelName + " does not exist");
+	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		info(client.username() + " kicked " + username + " from channel " + 
@@ -133,7 +136,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	const std::vector<std::string>& clientChannels = client.getClientChannels();
+	const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
 
 	if (clientChannels.empty())
