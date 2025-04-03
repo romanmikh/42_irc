@@ -4,20 +4,20 @@
 class Client
 {
 	private:
-		std::string	_username;
-		std::string _nickname;
-		std::string _fullname;
-		std::string _hostname;
-		std::string _IP;
-		pollfd		_socket;
+		std::string				_username;
+		std::string 			_nickname;
+		std::string 			_fullname;
+		std::string 			_hostname;
+		std::string 			_IP;
+		pollfd					_socket;
 
-		bool		_isRegistered;
-		bool 		_isIRCOp;
+		bool					_isRegistered;
+		bool 					_isIRCOp;
 
-		std::vector<std::string> _channels;
+		std::vector<std::string> _clientChannels;
 
-		
-		public:
+	public:
+
 		/* construcotrs & destructors */
 		Client(void);
 		Client(pollfd &clientSocket);
@@ -26,7 +26,7 @@ class Client
 		std::string msgBuffer;
         
         /* accessors */
-		std::vector<std::string> getChannels() const;
+		std::vector<std::string> getClientChannels() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
 		
@@ -45,7 +45,7 @@ class Client
 
         bool    		isOperator(void) const;
 		bool			isRegistered(void) const;
-		bool 			isIRCOp() const;
+		bool 			isIRCOp(void) const;
 
 		
 		/* member functions */

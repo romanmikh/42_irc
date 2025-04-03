@@ -70,7 +70,7 @@ void    ChannelManager::deleteChannel(std::string channelName) {
     }
 }
 
-void ChannelManager::joinChannel(Client& client, const std::string& channelName) {
+void ChannelManager::addToChannel(Client& client, const std::string& channelName) {
     if (_channels.find(channelName) == _channels.end()) {
         createChannel(channelName);
     }
@@ -84,7 +84,7 @@ void ChannelManager::joinChannel(Client& client, const std::string& channelName)
     channel->incClientCount();
 }
 
-void ChannelManager::leaveChannel(Client& client, const std::string& channelName)
+void ChannelManager::removeFromChannel(Client& client, const std::string& channelName)
 {
     Channel* channel = getChanByName(channelName);
 	if (!channel)
@@ -119,7 +119,7 @@ void ChannelManager::inviteClient(std::string username,
         Client* targetClient = _server.getClientByUser(username);
         if (!targetClient)
             return warning("Client " + username + " not found");
-		joinChannel(*targetClient, channel);
+        addToChannel(*targetClient, channel);
 		return info(client.username() + " invited " + username + " to channel " 
                                                                     + channel);
 	}
@@ -131,7 +131,7 @@ void ChannelManager::inviteClient(std::string username,
 		Channel* chan = getChannels().at(channel);
 		if (chan->isClientChanOp(&client))
 		{
-            joinChannel(client, channel);
+            addToChannel(client, channel);
 			return info(client.username() + " invited " + username + 
                                                     " to channel " + channel);
 		}

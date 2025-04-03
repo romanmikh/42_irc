@@ -99,8 +99,8 @@ bool Client::isIRCOp() const {
 	return _isIRCOp;
 }
 
-std::vector<std::string> Client::getChannels() const {
-	return (_channels);
+std::vector<std::string> Client::getClientChannels() const {
+	return (_clientChannels);
 }
 
 // ************************************************************************** //
@@ -108,14 +108,14 @@ std::vector<std::string> Client::getChannels() const {
 // ************************************************************************** //
 void Client::joinChannel(std::string channelName)
 {
-	_channels.push_back(channelName);
+	_clientChannels.push_back(channelName);
 }
 
 void Client::leaveChannel(std::string channelName)
 {
-	std::vector<std::string>::iterator it = std::find(_channels.begin(), 
-												  _channels.end(), channelName);
-	if (it != _channels.end()) {
-		_channels.erase(it);
+	std::vector<std::string>::iterator it = std::find(_clientChannels.begin(), 
+											_clientChannels.end(), channelName);
+	if (it != _clientChannels.end()) {
+		_clientChannels.erase(it);
 	}
 }

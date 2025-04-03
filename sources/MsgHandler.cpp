@@ -26,12 +26,12 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 
 void MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
-    _manager.joinChannel(client, channelName);
+    _manager.addToChannel(client, channelName);
 }
 
 void MsgHandler::handlePART(std::string &channelName, Client &client)
 {
-	_manager.leaveChannel(client, channelName);
+	_manager.removeFromChannel(client, channelName);
 }
 
 void MsgHandler::handleINVITE(std::string &username, std::string &channelName, 
@@ -86,7 +86,7 @@ void MsgHandler::handleKICK(std::string &username, std::string &channelName,
 	{
 		info(client.username() + " kicked " + username + " from channel " + 
 																channelName);
-		_manager.leaveChannel(client, channelName);
+		_manager.removeFromChannel(client, channelName);
 	}
 	else {
 		warning(client.username() + " is not an operator in channel " + 
@@ -133,8 +133,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	printStr("msg: " + msg, RED);
-	const std::vector<std::string>& clientChannels = client.getChannels();
+	const std::vector<std::string>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
 
 	if (clientChannels.empty())
