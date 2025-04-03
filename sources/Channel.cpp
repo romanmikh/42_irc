@@ -66,7 +66,7 @@ void                    Channel::setMode(std::string mode) {
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-bool Channel::isEmpty(void) const{
+bool Channel::isEmpty(void) const {
     return _channelClients.empty();
 }
 
@@ -79,8 +79,7 @@ bool    Channel::hasClient(Client* client) const {
     return false;
 }
 
-bool    Channel::isClientChanOp(Client* client) const
-{
+bool    Channel::isClientChanOp(Client* client) const {
     for (std::vector<Client *>::const_iterator it = _channelOperators.begin(); \
                                         it != _channelOperators.end(); ++it) {
         if (*it == client)
@@ -122,11 +121,22 @@ void    Channel::removeChanOp(Client* client) {
 }
 
 void    Channel::broadcastToChannel(std::string message, Client* client) {
+    if (isEmpty()) {
+        warning("Channel is empty");
+        return;
+    }
+    if (message.empty()) {
+        warning("Empty message");
+        return;
+    }
+    if (message.length() > 512) {
+        warning("Message too long");
+        return;
+    }
     for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
                                            it != _channelClients.end(); ++it) {
-        if (*it != client) {
-            send((*it)->getFd(), (message + "\r\n").c_str(), message.length() + 2, 0);
-        }
+        if (*it != client)
+            sendMSG((*it)->getFd(), (message + "\r\n"));
     }
 }
 

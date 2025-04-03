@@ -62,6 +62,7 @@
 #define RPL_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
+#define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
 
 #define CMD_STD_FMT(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"

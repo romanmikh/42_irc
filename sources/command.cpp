@@ -13,6 +13,7 @@ std::map<std::string, Command> createCommandMap()
     commandMap["QUIT"] = QUIT;
     commandMap["OPER"] = OPER;
     commandMap["PASS"] = PASS;
+    commandMap["PART"] = PART;
     commandMap["PRIVMSG"] = PRIVMSG;
     return commandMap;
 }
