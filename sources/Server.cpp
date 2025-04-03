@@ -30,8 +30,10 @@ Server::~Server()
 	for (unsigned int i = 0; i < _sockets.size(); i++)
 		close(_sockets[i].fd);
 
-	for (size_t i = 0; i < _clients.size(); i++)
-		delete &_clients[i];
+	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
+		delete it->second;
+	}
 }
 
 // ************************************************************************** //
