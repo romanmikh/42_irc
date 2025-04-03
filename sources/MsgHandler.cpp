@@ -136,7 +136,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case OPER: if (msgData.size() == 3) handleOPER(msgData[1], msgData[2], client);
 			break ;
-		case PRIVMSG:handlePRIVMSG(msg, client);
+		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
 		case UNKNOWN:
 			break ;
