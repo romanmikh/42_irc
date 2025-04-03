@@ -191,10 +191,10 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		{
 			// broadcast QUIT to all client's channels
 			std::map<std::string, Channel*> allChannels = _manager.getChannels();
-			std::vector<std::string> clientChannels = client->getChannels();
+			std::vector<Channel*> clientChannels = client->getClientChannels();
 			for (size_t i = 0; i < clientChannels.size(); i++)
 			{
-				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]);
+				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]->getName());
 				if (it == allChannels.end())
 					continue ;
 				Channel *channel = it->second;
