@@ -101,11 +101,57 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	}
 }
 
+
+void	MsgHandler::handlePASS(std::string &password, Client &client)
+{
+	if (password == _server.getPassword())
+	{
+		client.setRegistered(true);
+		send(client.getFd(), "Client authenticated with the mserver\r\n", strlen("Client authenticated with the mserver\r\n"), MSG_DONTWAIT);
+	}
+	else
+	{
+		send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
+		_server.disconnectClient(client);
+	}
+}
+
 void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	std::string msgToSend = ":" + client.nickname() + "!" + client.username() + "@" + client.hostname() + " " + msg + "\r\n";
-	Channel* chan = _manager.getChannels().at(client.getChannels()[0]);
-	chan->broadcastToChannel(msgToSend, &client);
+	const std::vector<std::string>& clientChannels = client.getChannels();
+	std::map<std::string, Channel*> allChannels = _manager.getChannels();
+
+	if (clientChannels.empty()) {
+		error("Client is not in any channel, IRSSI applying PRIVMSG incorrectly");
+		return;
+	}
+	if (msg.empty()) {
+        warning("Empty PRIVMSG received");
+        return;
+    }
+    std::vector<std::string> tokens = split(msg, ' ');
+    if (tokens.size() < 2 || tokens[0] != "PRIVMSG") {
+        warning("Invalid PRIVMSG format");
+        return;
+    }
+    const std::string& channel = tokens[1];
+    if (channel.empty() || channel[0] != '#') {
+        warning("PRIVMSG channel is missing or invalid");
+        return;
+    }
+
+	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
+	if (it == allChannels.end()) {
+		warning("Channel " + channel + " does not exist in the server");
+		return;
+	}
+	Channel* chan = it->second;
+	if (chan->isEmpty()) {
+		warning("Channel is empty");
+		return;
+	}
+
+	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
@@ -137,6 +183,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		case OPER: if (msgData.size() == 3) handleOPER(msgData[1], msgData[2], client);
 			break ;
 		case PRIVMSG: handlePRIVMSG(msg, client);
+			break ;
+		case PASS: handlePASS(msgData[1], client);
 			break ;
 		case UNKNOWN:
 			break ;

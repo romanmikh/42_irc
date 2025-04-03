@@ -63,6 +63,11 @@ std::map<std::string,std::string> Server::getOpers()
 	return (_opers);
 }
 
+std::string Server::getPassword()
+{
+	return (_password);
+}
+
 void Server::addclient(pollfd &clientSocket)
 {
 	Client *newClient = new Client(clientSocket);
@@ -86,8 +91,9 @@ void Server::handleNewConnectionRequest()
 	}
 
 	info("New connection request received");
-	//if (validatePassword())
+
 	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
+
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }

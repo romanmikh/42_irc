@@ -20,13 +20,12 @@ class ChannelManager
         
         /* accessors */
         const channels_t&       getChannels(void) const;
-        clients_t               getClients(void) const;
 
         /* member functions */
         void    createChannel(std::string channelName);
         void    deleteChannel(std::string channelName);
-        void    leaveChannel(Client& client, std::string channelName);
-        void    joinChannel(Client& client, std::string channelName);
+        void    leaveChannel(Client& client, const std::string& channelName);
+        void    joinChannel(Client& client, const std::string& channelName);
 
         class ChannelNonExistentException: public std::exception {};
         class ChannelAlreadyExistsException: public std::exception {};

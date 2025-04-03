@@ -87,7 +87,18 @@ std::vector<std::string> split(const std::string& str, char delimiter)
     return result;
 }
 
+int isValidPassword(const std::string& pwd)
+{
+    for (std::string::const_iterator it = pwd.begin(); it != pwd.end(); ++it)
+    {
+        if (!std::isprint(*it))
+            return (0);
+    }
+    return (pwd.length() >= 4 && pwd.length() <= 6);
+}
+
 void sendMSG(int fd, std::string RPL)
 {
 	send(fd, RPL.c_str(), RPL.length(), MSG_DONTWAIT);
 }
+

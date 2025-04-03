@@ -32,8 +32,12 @@ class Server
 		void 			handleNewConnectionRequest();
 		void 			disconnectClient(Client &client);
 		void 			addclient(pollfd &clientSocket);
+		bool			validatePassword(std::string &password);
+		std::string 	name();
+
 		
 		std::map<std::string,std::string> getOpers();
+		std::string	getPassword();
 
 		//std::vector<std::string> ftSplit(const std::string& input , char delim);
 		//std::vector<std::string> splitByString(const std::string& input, const std::string& delim);
