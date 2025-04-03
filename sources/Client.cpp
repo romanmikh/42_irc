@@ -8,7 +8,7 @@ Client::Client()
 	_nickname = "default";
 	_username = "default";
 	_isRegistered = false;
-	_isIRCOp = false;
+	_isIRCOp = true;
 
 }
 
@@ -18,7 +18,7 @@ Client::Client(pollfd &clientSocket)
 	_username = "default";
 	_socket = clientSocket;
 	_isRegistered = false;
-	_isIRCOp = false;
+	_isIRCOp = true;
 }
 
 Client::~Client() {}
@@ -59,7 +59,7 @@ void Client::setFullName(std::string &fullname)
 void Client::setNickname(std::string &nickname)
 {
 	_nickname = nickname;
-	// info("Client " + username() + "'s nickname was set to "	+ nickname);
+	info("Client " + username() + "'s nickname was set to "	+ nickname);
 }
 
 void Client::setUsername(std::string &username)
@@ -77,10 +77,6 @@ void Client::setIP(std::string IP)
 	_IP = IP;
 }
 
-
-std::vector<std::string> Client::getChannels() const {
-	return (_channels);
-}
 
 void 	Client::setIRCOp(bool status)
 {
@@ -103,6 +99,10 @@ bool Client::isIRCOp() const {
 	return _isIRCOp;
 }
 
+std::vector<std::string> Client::getChannels() const {
+	return (_channels);
+}
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
@@ -113,16 +113,9 @@ void Client::joinChannel(std::string channelName)
 
 void Client::leaveChannel(std::string channelName)
 {
-	std::vector<std::string>::iterator it = std::find(_channels.begin(), _channels.end(), channelName);
+	std::vector<std::string>::iterator it = std::find(_channels.begin(), 
+												  _channels.end(), channelName);
 	if (it != _channels.end()) {
 		_channels.erase(it);
 	}
 }
-
-// ************************************************************************** //
-//                             Private Functions                              //
-// ************************************************************************** //
-
-// ************************************************************************** //
-//                            Non-member Functions                            //
-// ************************************************************************** //

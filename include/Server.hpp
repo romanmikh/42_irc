@@ -24,24 +24,27 @@ class Server
 		pollfd	_makePollfd(int fd, short int events, short int revents);
 
 	public:
+		/* construcotrs & destructors */
 		Server(int port_num, std::string &passwd);
-		~Server();
+		~Server(void);
 
-		void 			run();
+		/* accessors*/
+		std::map<std::string,std::string> 	getOpers(void);
+		std::string							getPassword(void);
+		clients_t&							getClients(void);
+		Client*								getClientByUser(std::string& user) const;
+		Client*								getClientByNick(std::string& nick) const;
+
+		/* member functions*/
+		void 			run(void);
 		void 			parseOpersConfigFile(const char *file);
 		void 			handleNewConnectionRequest();
 		void 			disconnectClient(Client &client);
 		void 			addclient(pollfd &clientSocket);
 		bool			validatePassword(std::string &password);
-		std::string 	name();
+		std::string 	name(void);
 
 		
-		std::map<std::string,std::string> getOpers();
-		std::string	getPassword();
-
-		//std::vector<std::string> ftSplit(const std::string& input , char delim);
-		//std::vector<std::string> splitByString(const std::string& input, const std::string& delim);
-
 };
 
 #endif

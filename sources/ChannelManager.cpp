@@ -3,9 +3,9 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-ChannelManager::ChannelManager(void) {}
+ChannelManager::ChannelManager(Server &server) : _server(server) {}
 
-ChannelManager::~ChannelManager(void){
+ChannelManager::~ChannelManager(void) {
     for (channels_t::iterator it = _channels.begin(); it != _channels.end(); ++it) {
         delete it->second;
     }
@@ -15,16 +15,46 @@ ChannelManager::~ChannelManager(void){
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
-const ChannelManager::channels_t&      ChannelManager::getChannels(void) const {
+const ChannelManager::channels_t&   ChannelManager::getChannels(void) const {
     return _channels;
+}
+
+size_t                              ChannelManager::getChannelCount(void) const {
+    return _channelCount;
+}
+
+size_t                              ChannelManager::incChannelCount(void) {
+    return ++_channelCount;
+}
+
+size_t                              ChannelManager::decChannelCount(void) {
+    if (_channelCount > 0)
+        return --_channelCount;
+    else {
+        error("Channel count is already 0");
+        return _channelCount;
+    }
 }
 
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
+bool    ChannelManager::channelExists(const std::string& channelName) const {
+    return _channels.find(channelName) != _channels.end();
+}
+
+Channel* ChannelManager::getChanByName(const std::string& channelName) {
+    channels_t::iterator it = _channels.find(channelName);
+    if (it != _channels.end()) {
+        return it->second;
+    }
+    return NULL;
+}
+
 void    ChannelManager::createChannel(std::string channelName) {
     _channels.insert(channel_pair_t (channelName, new Channel(channelName)));
     info("Channel created: " + channelName);
+    incChannelCount();
 }
 
 void    ChannelManager::deleteChannel(std::string channelName) {
@@ -33,10 +63,10 @@ void    ChannelManager::deleteChannel(std::string channelName) {
         delete it->second;
         _channels.erase(it);
         info("Channel deleted: " + channelName);
+        decChannelCount();
     }
     else {
         warning("Channel " + channelName + " does not exist");
-        throw ChannelManager::ChannelNonExistentException();
     }
 }
 
@@ -51,20 +81,21 @@ void ChannelManager::joinChannel(Client& client, const std::string& channelName)
         client.joinChannel(channelName);
     }
     info(client.username() + " joined channel " + channelName);
+    channel->incClientCount();
 }
 
-void ChannelManager::leaveChannel(Client& client, const std::string& channelName) {
-    channels_t::iterator it = _channels.find(channelName);
-    if (it == _channels.end()) {
-        warning("Channel " + channelName + " does not exist");
-        throw ChannelManager::ChannelNonExistentException();
-    }
-    Channel* channel = it->second;
-    std::vector<Client*>& channelClients = channel->getClients(); // by reference
+void ChannelManager::leaveChannel(Client& client, const std::string& channelName)
+{
+    Channel* channel = getChanByName(channelName);
+	if (!channel)
+		return warning("Channel " + channelName + " does not exist");
 
-    std::vector<Client*>::iterator clientIt = std::find(channelClients.begin(), channelClients.end(), &client);
+    std::vector<Client*>& channelClients = channel->getClients();
+    std::vector<Client*>::iterator clientIt = std::find(channelClients.begin(), 
+                                                channelClients.end(), &client);
     if (clientIt != channelClients.end()) {
-        std::string PARTmsg = CMD_STD_FMT(client) + " PART " + channelName + " :bye!" + "\r\n";
+        std::string PARTmsg = CMD_STD_FMT(client) + " PART " + channelName + 
+                                                            " :bye!" + "\r\n";
         sendMSG(client.getFd(), PARTmsg);
         
         if (channel->isClientChanOp(&client))
@@ -72,6 +103,7 @@ void ChannelManager::leaveChannel(Client& client, const std::string& channelName
         info(client.username() + " removed from channel " + channelName);
         client.leaveChannel(channelName);
         channelClients.erase(clientIt);
+        channel->decClientCount();
 
         sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
     }
@@ -79,3 +111,34 @@ void ChannelManager::leaveChannel(Client& client, const std::string& channelName
         deleteChannel(channelName);
     }
 }
+
+void ChannelManager::inviteClient(std::string username, 
+                                    const std::string& channel, Client client) {
+    if (client.isIRCOp())
+    {
+        Client* targetClient = _server.getClientByUser(username);
+        if (!targetClient)
+            return warning("Client " + username + " not found");
+		joinChannel(*targetClient, channel);
+		return info(client.username() + " invited " + username + " to channel " 
+                                                                    + channel);
+	}
+	else if (!client.isIRCOp() && !channelExists(channel))
+	    return warning(client.username() + " is not an IRC operator so cannot " + 
+					"create channel " + channel + "and invite " + username);
+	else if (channelExists(channel))
+    {
+		Channel* chan = getChannels().at(channel);
+		if (chan->isClientChanOp(&client))
+		{
+            joinChannel(client, channel);
+			return info(client.username() + " invited " + username + 
+                                                    " to channel " + channel);
+		}
+		else {
+			return warning(client.username() + " is not an operator in channel "
+                                                                     + channel);
+		}
+	}
+}
+
