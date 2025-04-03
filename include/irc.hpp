@@ -49,17 +49,18 @@
 #define MAX_PORT 65535
 
 /* Error messages */
-# define ERR_USAGE "Usage: ./ircserv <port> <password>"
-# define ERR_PORT "Invalid port number"
-# define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
-# define ERR_INVALID_PASSWORD "Invalid password"
-# define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
+#define ERR_USAGE "Usage: ./ircserv <port> <password>"
+#define ERR_PORT "Invalid port number"
+#define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
+#define ERR_INVALID_PASSWORD "Invalid password"
+#define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
+#define ERR_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
+#define ERR_NOTREGISTERED(client) std::string(":") + SERVER_NAME + " 451 " + client.nickname() + " :You have not registered\r\n"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
 #define RPL_CREATED(client) std::string(":") + SERVER_NAME + " 003 " + client.nickname() + " :This server was created, 2025-03-31\r\n"
 #define RPL_MYINFO(client) std::string(":") + SERVER_NAME + " 004 " + client.nickname() + " " + SERVER_NAME + " 1.0 o itkol\r\n"
-#define RPL_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"

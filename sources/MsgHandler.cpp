@@ -97,7 +97,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
 	else {
-		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 	}
 }
 
@@ -111,8 +111,8 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 	else
 	{
-		send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
-		_server.disconnectClient(client);
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+        _server.disconnectClient(client);
 	}
 }
 
