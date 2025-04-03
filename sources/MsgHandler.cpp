@@ -17,7 +17,7 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 
 	sendWelcomeProtocol(client);
 }
-
+// can we remove wrappers for single line function call and just call them directly inside respond() ??
 void MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
     _manager.joinChannel(client, channelName);
@@ -87,7 +87,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 
 	if (it == allowedOpers.end())
 	{
-		sendMSG(client.getFd(), RPL_NOOPERHOST(client));
+		sendMSG(client.getFd(), ERR_NOOPERHOST(client));
 		return ;
 	}
 	if (it->second == password)
@@ -101,7 +101,6 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	}
 }
 
-
 void	MsgHandler::handlePASS(std::string &password, Client &client)
 {
 	if (password == _server.getPassword())
@@ -111,7 +110,9 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 	else
 	{
-		send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
+		// Needs to use RPL standard: 
+		//send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
+		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
 		_server.disconnectClient(client);
 	}
 }
@@ -154,12 +155,32 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
 }
 
+void handleKILL(std::string &msg, Client &client)
+{
+	if (!client.isIRCOp())
+	{
+		sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
+		return ;
+	}
+	std::istringstream ss(msg);
+	std::string killCommand;
+	std::string userToKill;
+	std::string reasonToKill;
+
+	getline(ss, killCommand, ' ');
+	getline(ss, userToKill, ' ');
+	getline(ss, reasonToKill);
+
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
 	switch (getCommandType(msgData[0]))
 	{
+		case PASS: handlePASS(msgData[1], client);
+			break ;
 		case USER: replyUSER(msg, client);
 			break ;
 		case NICK: if (msgData.size() == 2) client.setNickname(msgData[1]);
@@ -184,9 +205,9 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
-		case PASS: handlePASS(msgData[1], client);
-			break ;
 		case UNKNOWN:
+			break ;
+		case KILL: handleKILL(msg, client);
 			break ;
 	}
 }

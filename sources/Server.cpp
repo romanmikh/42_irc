@@ -91,9 +91,7 @@ void Server::handleNewConnectionRequest()
 	}
 
 	info("New connection request received");
-
 	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
-
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }
