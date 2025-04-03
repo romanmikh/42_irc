@@ -5,7 +5,7 @@ MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
 
 MsgHandler::~MsgHandler() {};
 
-void MsgHandler::replyUSER(std::string &msg, Client &client)
+void	MsgHandler::replyUSER(std::string &msg, Client &client)
 {
 	std::vector<std::string> names = split(msg, ':');
 	client.setFullName(names[1]);
@@ -18,17 +18,17 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 	sendWelcomeProtocol(client);
 }
 
-void MsgHandler::handleJOIN(std::string &channelName, Client &client)
+void	MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
     _manager.joinChannel(client, channelName);
 }
 
-void MsgHandler::handlePART(std::string &channelName, Client &client)
+void	MsgHandler::handlePART(std::string &channelName, Client &client)
 {
 	_manager.leaveChannel(client, channelName);
 }
 
-void MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
+void	MsgHandler::handleINVITE(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
@@ -41,7 +41,7 @@ void MsgHandler::handleINVITE(std::string &username, std::string &channel, Clien
 	}
 }
 
-void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
+void	MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
@@ -54,9 +54,10 @@ void MsgHandler::handleMODE(std::string &channel, std::string &mode, Client &cli
 	}
 }
 
-void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
+void	MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
+	
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		info(client.username() + " changed topic of channel " + channel + " to: " + topic);
@@ -67,7 +68,7 @@ void MsgHandler::handleTOPIC(std::string &channel, std::string &topic, Client &c
 	}
 }
 
-void MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
+void	MsgHandler::handleKICK(std::string &username, std::string &channel, Client &client)
 {
 	Channel* chan = _manager.getChannels().at(channel);
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
@@ -85,8 +86,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	std::map<std::string, std::string> allowedOpers = _server.getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
 
-	if (it == allowedOpers.end())
-	{
+	if (it == allowedOpers.end()){
 		sendMSG(client.getFd(), RPL_NOOPERHOST(client));
 		return ;
 	}
@@ -116,7 +116,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 }
 
-void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
+void	MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
 	const std::vector<std::string>& clientChannels = client.getChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
@@ -154,17 +154,9 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
 }
 
-void MsgHandler::respond(std::string &msg, Client &client)
+void	MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
-
-	if (msgData[0] == "CAP")
-		return ;
-	if (!client.isRegistered() && msgData[0] != "PASS")
-	{
-		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-		return ;
-	}
 
 	switch (getCommandType(msgData[0]))
 	{
@@ -199,7 +191,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	}
 }
 
-void MsgHandler::receiveMessage(Client &client)
+void	MsgHandler::receiveMessage(Client &client)
 {
 	char		buffer[1024];
 	
@@ -210,7 +202,7 @@ void MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << RED << buffer; // only for testing
+	std::cout << buffer << RED << "(end)" << RESET << std::endl; // only for testing
 
 	client.msgBuffer += buffer;
 	size_t i;
@@ -218,11 +210,20 @@ void MsgHandler::receiveMessage(Client &client)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
 		client.msgBuffer.erase(0, i + 2);
+
+		std::vector<std::string> msgData = split(message, ' ');
+		if (msgData[0] == "CAP")
+			return ;
+		if (!client.isRegistered() && msgData[0] != "PASS")
+		{
+			sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+			return ;
+		}
 		respond(message, client);
 	}
 }
 
-void MsgHandler::sendWelcomeProtocol(Client &client)
+void	MsgHandler::sendWelcomeProtocol(Client &client)
 {
 	sendMSG(client.getFd(), RPL_WELCOME(client));
 	sendMSG(client.getFd(), RPL_YOURHOST(client));
