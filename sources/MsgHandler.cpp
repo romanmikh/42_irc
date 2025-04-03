@@ -107,7 +107,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	if (password == _server.getPassword())
 	{
 		client.setRegistered(true);
-		send(client.getFd(), "Client authenticated with the mserver\r\n", strlen("Client authenticated with the mserver\r\n"), MSG_DONTWAIT);
+		sendMSG(client.getFd(), RPL_REGISTERED(client));
 	}
 	else
 	{
@@ -202,9 +202,9 @@ void MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << buffer; // only for testing
+	std::cout << RED << buffer; // only for testing
 
-	client.msgBuffer += buffer;	
+	client.msgBuffer += buffer;
 	size_t i;
 	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{
