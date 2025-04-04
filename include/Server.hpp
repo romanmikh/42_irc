@@ -41,10 +41,7 @@ class Server
 		void 			handleNewConnectionRequest();
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client &client);
-		bool			validatePassword(std::string &password);
   
-// 		std::string 	name(void);
-
 		void			shutdown();
 };
 

@@ -256,12 +256,13 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	}
 }
 
-bool	badPassword(std::string &message, Client &client)
+bool	MsgHandler::badPassword(std::string &message, Client &client)
 {
 	std::vector<std::string> msgData = split(message, ' ');
 	if (msgData[0] == "NICK")
 	{
 		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+		_server.disconnectClient(client);
 		return (true);
 	}
 	return (false);
