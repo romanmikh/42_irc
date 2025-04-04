@@ -261,7 +261,7 @@ bool	badPassword(std::string &message, Client &client)
 	std::vector<std::string> msgData = split(message, ' ');
 	if (msgData[0] == "NICK")
 	{
-		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
 		return (true);
 	}
 	return (false);
