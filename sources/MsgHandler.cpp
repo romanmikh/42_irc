@@ -135,8 +135,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	else
 	{
 		// Needs to use RPL standard: 
-		//send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
-		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 		_server.disconnectClient(client);
 	}
 }
