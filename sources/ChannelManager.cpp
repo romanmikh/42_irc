@@ -95,7 +95,7 @@ void ChannelManager::removeFromChannel(Client& client, const std::string& channe
     std::vector<Client*>::iterator clientIt = std::find(channelClients.begin(), channelClients.end(), &client);
     if (clientIt != channelClients.end()) 
     {
-        std::string PARTmsg = CMD_STD_FMT(client) + " PART " + channelName + " :bye!" + "\r\n";
+        std::string PARTmsg = STD_PREFIX(client) + " PART " + channelName + " :bye!" + "\r\n";
         sendMSG(client.getFd(), PARTmsg);
         
         if (channel->isClientChanOp(&client))

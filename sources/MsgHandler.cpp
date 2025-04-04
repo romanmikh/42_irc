@@ -174,7 +174,7 @@ void	MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	if (chan->isEmpty())
 		return warning("Channel is empty");
 
-	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
+	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
 }
 
 void MsgHandler::handleKILL(std::string &msg, Client &killer)
