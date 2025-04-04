@@ -30,7 +30,8 @@ void MsgHandler::handleINVITE(std::string &nickname, std::string &channelName, C
   	Channel* chan = _manager.getChanByName(channelName);
   	
 	if (!chan) {
-	  return warning("Channel " + channelName + " does not exist");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+		return warning("Channel " + channelName + " does not exist");
 	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
@@ -46,6 +47,7 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client 
 {
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
@@ -66,6 +68,7 @@ void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, Clien
 {
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
@@ -103,6 +106,7 @@ void MsgHandler::handleKICK(std::string &msg, Client &kicker)
 
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
+		sendMSG(kicker.getFd(), ERR_NOSUCHCHANNEL(kicker, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
 	if (chan->isClientChanOp(&kicker) || kicker.isIRCOp())
@@ -174,13 +178,16 @@ void	MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 
     const std::string& channel = tokens[1];
     if (channel.empty() || channel[0] != '#') {
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
         return warning("PRIVMSG channel is missing or invalid");
 	}
 
 	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
 	if (it == allChannels.end())
+	{
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
 		return warning("Channel " + channel + " does not exist in the server");
-
+	}
 	Channel* chan = it->second;
 	if (chan->isEmpty())
 		return warning("Channel is empty");
