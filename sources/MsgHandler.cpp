@@ -27,8 +27,6 @@ void	MsgHandler::replyUSER(std::string &msg, Client &client)
 
 void MsgHandler::handleINVITE(std::string &nickname, std::string &channelName, Client &client)
 {
-  // need to check if ChanOP and send 482 ERR_CHANOPRIVSNEEDED if not
-  
   	Channel* chan = _manager.getChanByName(channelName);
   	
 	if (!chan) {
