@@ -4,7 +4,7 @@
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
 MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
-										: _server(server), _manager(manager) {};
+	: _server(server), _manager(manager) {};
 
 MsgHandler::~MsgHandler() {};
 
@@ -23,26 +23,14 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 
 	sendWelcomeProtocol(client);
 }
-// can we remove wrappers for single line function call and just call them directly inside respond() ??
-void MsgHandler::handleJOIN(std::string &channelName, Client &client)
-{
-    _manager.addToChannel(client, channelName);
-}
 
-void MsgHandler::handlePART(std::string &channelName, Client &client)
+void MsgHandler::handleINVITE(std::string &username, std::string &channelName, Client &client)
 {
-	_manager.removeFromChannel(client, channelName);
-}
-
-void MsgHandler::handleINVITE(std::string &username, std::string &channelName, 
-																Client &client)
-{
-  // need to send 482 ERR_CHANOPRIVSNEEDED
+  // need to check if ChanOP and send 482 ERR_CHANOPRIVSNEEDED if not
 	_manager.inviteClient(username, channelName, client);
 }
 
-void MsgHandler::handleMODE(std::string &channelName, std::string &mode, 
-																Client &client)
+void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client &client)
 {
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
@@ -55,14 +43,12 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode,
 		else
 			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");	
 	}
-  // need to send 482 ERR_CHANOPRIVSNEEDED
 	else
-		return warning(client.username() + " is not an operator in channel " + 
-																channelName);
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		return warning(client.username() + " is not an operator in channel " + channelName);
 }
 
-void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, 
-																Client &client)
+void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, Client &client)
 {
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
@@ -71,17 +57,15 @@ void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic,
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		chan->setTopic(topic);
-		info(client.username() + " changed topic of channel " + channelName + 
-															   " to: " + topic);
+		info(client.username() + " changed topic of channel " + channelName + " to: " + topic);
 	}
 	else {
-		warning(client.username() + " is not an operator in channel " + 
-																channelName);
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		warning(client.username() + " is not an operator in channel " + channelName);
 	}
 }
 
-void MsgHandler::handleKICK(std::string &username, std::string &channelName, 
-																Client &client)
+void MsgHandler::handleKICK(std::string &username, std::string &channelName, Client &client)
 {
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
@@ -89,19 +73,17 @@ void MsgHandler::handleKICK(std::string &username, std::string &channelName,
 	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
-		info(client.username() + " kicked " + username + " from channel " + 
-																channelName);
+		info(client.username() + " kicked " + username + " from channel " + channelName);
 		_manager.removeFromChannel(client, channelName);
 	}
-	else {
-  // need to send 482 ERR_CHANOPRIVSNEEDED
-		warning(client.username() + " is not an operator in channel " + 
-																channelName);
+	else 
+	{
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		warning(client.username() + " is not an operator in channel " + channelName);
 	}
 }
 
-void	MsgHandler::handleOPER(std::string &nickname, std::string &password, 
-																Client &client)
+void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
 {
 	std::map<std::string, std::string> allowedOpers = _server.getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
@@ -118,7 +100,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password,
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
 	else {
-		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 	}
 }
 
@@ -131,9 +113,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 	else
 	{
-		// Needs to use RPL standard: 
-		//send(client.getFd(), "Invalid password\r\n", strlen("Invalid password\r\n"), MSG_DONTWAIT);
-		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 		_server.disconnectClient(client);
 	}
 }
@@ -189,16 +169,11 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		Client *client = it->second;
 		if (client->nickname() == userToKill)
 		{
-			// broadcast QUIT to all client's channels
-			std::map<std::string, Channel*> allChannels = _manager.getChannels();
 			std::vector<Channel*> clientChannels = client->getClientChannels();
 			for (size_t i = 0; i < clientChannels.size(); i++)
 			{
-				std::map<std::string, Channel*>::iterator it = allChannels.find(clientChannels[i]->getName());
-				if (it == allChannels.end())
-					continue ;
-				Channel *channel = it->second;
-				channel->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
+				clientChannels[i]->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
+        		sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
 			}
 			sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 			_server.disconnectClient(*it->second);
@@ -227,9 +202,9 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case NICK: if (msgData.size() == 2) client.setNickname(msgData[1]);
 			break ;
-		case JOIN: if (msgData.size() > 1 && msgData[1][0] == '#') handleJOIN(msgData[1], client);
+		case JOIN: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.addToChannel(client, msgData[1]);
 			break ;
-		case PART: if (msgData.size() > 1 && msgData[1][0] == '#') handlePART(msgData[1], client);
+		case PART: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.removeFromChannel(client, msgData[1]);
 			break ;
 		case INVITE: if (msgData.size() > 1 && msgData[2][0] == '#') handleINVITE(msgData[1], msgData[2], client);
 			break ;
@@ -275,6 +250,16 @@ void MsgHandler::receiveMessage(Client &client)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
 		client.msgBuffer.erase(0, i + 2);
+		std::vector<std::string> msgData = split(message, ' ');
+		
+		// if (msgData[0] == "CAP" || message == "JOIN :")
+		// 	return ;
+		// if (!client.isRegistered() && msgData[0] != "PASS")
+		// {
+		// 	sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+		// 	return ;
+		// }
+
 		respond(message, client);
 	}
 }

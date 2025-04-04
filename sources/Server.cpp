@@ -40,7 +40,8 @@ Server::~Server()
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
-clients_t&		Server::getClients(void) {
+clients_t&		Server::getClients(void)
+{
 	return (_clients);
 }
 
