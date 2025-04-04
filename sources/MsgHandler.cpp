@@ -82,6 +82,7 @@ Client *MsgHandler::getClientByNick(std::string &nickname)
 
 void MsgHandler::handleKICK(std::string &channelName, std::string &userToKick, Client &kicker)
 {
+	std::cout << "Chan name: " << channelName << std::endl;
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
 		return warning("Channel " + channelName + " does not exist");
@@ -91,7 +92,9 @@ void MsgHandler::handleKICK(std::string &channelName, std::string &userToKick, C
 		info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);
 		Client *client = getClientByNick(userToKick);
 		if (client)
+		{
 			_manager.removeFromChannel(*client, channelName);
+		}
 	}
 	else 
 	{
@@ -222,7 +225,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case INVITE: if (msgData.size() > 1 && msgData[2][0] == '#') handleINVITE(msgData[1], msgData[2], client);
 			break ;
-		case KICK: if (msgData.size() > 1 && msgData[2][0] == '#') handleKICK(msgData[1], msgData[2], client);
+		case KICK: if (msgData.size() > 1 && msgData[1][0] == '#') handleKICK(msgData[1], msgData[2], client);
 			break ;
 		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msgData[1], msgData[2], client);
 			break ;
@@ -256,6 +259,7 @@ void	MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
+	std::cout << buffer; // for testing only 
 
 	client.msgBuffer += buffer;
 	size_t i;
