@@ -115,8 +115,9 @@ void MsgHandler::handleKICK(std::string &msg, Client &kicker)
 		Client *client = getClientByNick(userToKick);
 		if (client)
 		{
-			//sendMSG(client->getFd(), KICK(kicker, channelName, client->nickname(), reason));
+			chan->broadcastToChannel(KICK(kicker, channelName, client->nickname(), reason), &kicker);
 			_manager.removeFromChannel(*client, channelName);
+			sendMSG(client->getFd(), KICK(kicker, channelName, client->nickname(), reason));
 		}
 	}
 	else 
