@@ -106,6 +106,14 @@ bool    Channel::isEmpty(void) const {
     return _channelClients.empty();
 }
 
+
+
+
+
+
+
+
+
 bool    Channel::actionMode(std::string mode, Client& client) {
     if (mode == "+i" || mode == "-i") {
         _channelMode = mode;

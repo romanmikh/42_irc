@@ -47,7 +47,7 @@
 /* Macros */
 #define MIN_PORT 1024
 #define MAX_PORT 65535
-#define CHAN_CLIENT_LIMIT 42
+#define CHAN_CLIENT_LIMIT 2
 
 /* Error messages */
 #define ERR_USAGE "Usage: ./ircserv <port> <password>"
@@ -61,6 +61,9 @@
 #define ERR_NOPRIVILAGES(client) std::string(":") + SERVER_NAME + " 481 " + client.nickname() + ": :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
 #define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " : You're not a channel operator\r\n"
+#define ERR_CHANNELISFULL (client, channelName) std::string(":") + SERVER_NAME + " 471 " + client.nickname() + " " + channelName + " :Cannot join channel (+l)\r\n"
+// #define ERR_UNKNOWNMODE(client, char c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + c + " : is unknown mode char to me\r\n"
+
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
