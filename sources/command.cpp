@@ -16,6 +16,8 @@ std::map<std::string, Command> createCommandMap()
     commandMap["PASS"] = PASS;
     commandMap["PART"] = PART;
     commandMap["PRIVMSG"] = PRIVMSG;
+    commandMap["KILL"] = KILL;
+    commandMap["DIE"] = DIE;
     return commandMap;
 }
 
