@@ -22,7 +22,7 @@ class MsgHandler
 		void handleJOIN(std::string &channelName, Client &client);
 		void handlePART(std::string &channelName, Client &client);
 		void handleINVITE(std::string &username, std::string &channelName, Client &client);
-		void handleKICK(std::string &username, std::string &channelName, Client &client);
+		void handleKICK(std::string &msg, Client &client);
 		void handleMODE(std::string &channelName, std::string &mode, Client &client);
 		void handleTOPIC(std::string &channelName, std::string &topic, Client &client);
 		void handlePASS(std::string &password, Client &client);
