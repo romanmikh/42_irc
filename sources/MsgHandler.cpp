@@ -8,10 +8,12 @@ MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
 
 MsgHandler::~MsgHandler() {};
 
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void MsgHandler::replyUSER(std::string &msg, Client &client)
+void	MsgHandler::replyUSER(std::string &msg, Client &client)
+
 {
 	std::vector<std::string> names = split(msg, ':');
 	client.setFullName(names[1]);
@@ -23,13 +25,14 @@ void MsgHandler::replyUSER(std::string &msg, Client &client)
 
 	sendWelcomeProtocol(client);
 }
+
 // can we remove wrappers for single line function call and just call them directly inside respond() ??
-void MsgHandler::handleJOIN(std::string &channelName, Client &client)
+void	MsgHandler::handleJOIN(std::string &channelName, Client &client)
 {
     _manager.addToChannel(client, channelName);
 }
 
-void MsgHandler::handlePART(std::string &channelName, Client &client)
+void	MsgHandler::handlePART(std::string &channelName, Client &client)
 {
 	_manager.removeFromChannel(client, channelName);
 }
@@ -118,7 +121,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password,
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
 	else {
-		sendMSG(client.getFd(), RPL_PASSWDMISMATCH(client));
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 	}
 }
 
@@ -127,7 +130,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	if (password == _server.getPassword())
 	{
 		client.setRegistered(true);
-		send(client.getFd(), "Client authenticated with the mserver\r\n", strlen("Client authenticated with the mserver\r\n"), MSG_DONTWAIT);
+		sendMSG(client.getFd(), RPL_REGISTERED(client));
 	}
 	else
 	{
@@ -138,7 +141,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 }
 
-void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
+void	MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
 	const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
@@ -216,6 +219,7 @@ void	MsgHandler::handleDIE(Client &client)
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
+
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
@@ -256,7 +260,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	}
 }
 
-void MsgHandler::receiveMessage(Client &client)
+void	MsgHandler::receiveMessage(Client &client)
 {
 	char		buffer[1024];
 	
@@ -267,19 +271,29 @@ void MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << buffer; // only for testing
+	std::cout << buffer << RED << "(end)" << RESET << std::endl; // only for testing
 
-	client.msgBuffer += buffer;	
+	client.msgBuffer += buffer;
 	size_t i;
 	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
 		client.msgBuffer.erase(0, i + 2);
+
+		std::vector<std::string> msgData = split(message, ' ');
+		if (msgData[0] == "CAP" || message == "JOIN :")
+			continue;
+		else if (!client.isRegistered() && msgData[0] != "PASS")
+		{
+			if (msgData[0] == "NICK")
+				sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+			return ;
+		}
 		respond(message, client);
 	}
 }
 
-void MsgHandler::sendWelcomeProtocol(Client &client)
+void	MsgHandler::sendWelcomeProtocol(Client &client)
 {
 	sendMSG(client.getFd(), RPL_WELCOME(client));
 	sendMSG(client.getFd(), RPL_YOURHOST(client));
