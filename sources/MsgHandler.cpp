@@ -41,11 +41,11 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client 
 	{
 		if (chan->actionMode(mode, client))
 			return ;
-		// else
-		// {
-		// 	sendMsg(client.getFd(), ERR_UNKNOWNMODE(mode))
-		// }
-		return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
+		else
+		{
+			sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
+			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
+		}
 	}
 	else
 	{
