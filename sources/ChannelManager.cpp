@@ -75,9 +75,9 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 		createChannel(channelName);
 	}
 	Channel* channel = _channels[channelName];
-	if (channel->isLimitRestricted() && (channel->getClientLimit() >= channel->getClientCount())) 
+	if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
 	{
-		// sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));
+		sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));
 		return;
 	}
 	std::vector<Client *>& clients = channel->getClients();
