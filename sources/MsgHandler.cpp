@@ -137,7 +137,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	if (password == _server.getPassword())
 	{
 		client.setRegistered(true);
-		//sendMSG(client.getFd(), RPL_REGISTERED(client));
+		sendMSG(client.getFd(), RPL_REGISTERED(client));
 	}
 	else
 	{
