@@ -68,6 +68,7 @@
 #define RPL_MYINFO(client) std::string(":") + SERVER_NAME + " 004 " + client.nickname() + " " + SERVER_NAME + " 1.0 o itkol\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
+#define RPL_REGISTERED(client) std::string(":") + SERVER_NAME + client.nickname() + " You're registered now\r\n"
 
 #define QUIT(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT: Killed by " + killer.nickname() + " (" + reason + ")\r\n"
 #define CMD_STD_FMT(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
