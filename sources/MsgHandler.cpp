@@ -256,15 +256,15 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	}
 }
 
-bool	passwordRegistered(std::string &message, Client &client)
+bool	badPassword(std::string &message, Client &client)
 {
 	std::vector<std::string> msgData = split(message, ' ');
-	if (!client.isRegistered() && msgData[0] == "NICK")
+	if (msgData[0] == "NICK")
 	{
 		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-		return (false);
+		return (true);
 	}
-	return (true);
+	return (false);
 }
 
 void	MsgHandler::receiveMessage(Client &client)
@@ -286,7 +286,7 @@ void	MsgHandler::receiveMessage(Client &client)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
 		client.msgBuffer.erase(0, i + 2);
-		if (!passwordRegistered(message, client))
+		if (!client.isRegistered() && badPassword(message, client))
 			return ;
 		respond(message, client);
 	}
