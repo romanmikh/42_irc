@@ -113,30 +113,14 @@ void ChannelManager::removeFromChannel(Client& client, const std::string& channe
     }
 }
 
-void ChannelManager::inviteClient(std::string username, const std::string& channel, Client client)
+void ChannelManager::inviteClient(std::string nickname, const std::string& channel, Client client)
 {
-    if (client.isIRCOp())
-    {
-        Client* targetClient = _server.getClientByUser(username);
-        if (!targetClient)
-            return warning("Client " + username + " not found");
-        addToChannel(*targetClient, channel);
-		return info(client.username() + " invited " + username + " to channel " + channel);
-	}
-	else if (!client.isIRCOp() && !channelExists(channel))
-	    return warning(client.username() + " is not an IRC operator so cannot " + 
-					"create channel " + channel + "and invite " + username);
-	else if (channelExists(channel))
-    {
-		Channel* chan = getChannels().at(channel);
-		if (chan->isClientChanOp(&client))
-		{
-            addToChannel(client, channel);
-			return info(client.username() + " invited " + username + " to channel " + channel);
-		}
-		else {
-			return warning(client.username() + " is not an operator in channel " + channel);
-		}
-	}
-}
+    Client* targetClient = _server.getClientByNick(nickname);
+    if (!targetClient)
+        return warning("Client " + nickname + " not found");
 
+    sendMSG(targetClient->getFd(), INVITE(client, nickname, channel));
+    sendMSG(targetClient->getFd(), RPL_INVITING(client, nickname, channel));
+	info(client.username() + " invited " + nickname + " to channel " + channel);
+    addToChannel(*targetClient, channel);
+}

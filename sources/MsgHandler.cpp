@@ -25,10 +25,23 @@ void	MsgHandler::replyUSER(std::string &msg, Client &client)
 	sendWelcomeProtocol(client);
 }
 
-void MsgHandler::handleINVITE(std::string &username, std::string &channelName, Client &client)
+void MsgHandler::handleINVITE(std::string &nickname, std::string &channelName, Client &client)
 {
   // need to check if ChanOP and send 482 ERR_CHANOPRIVSNEEDED if not
-	_manager.inviteClient(username, channelName, client);
+  
+  	Channel* chan = _manager.getChanByName(channelName);
+  	
+	if (!chan) {
+	  return warning("Channel " + channelName + " does not exist");
+	}
+	if (chan->isClientChanOp(&client) || client.isIRCOp())
+	{
+		_manager.inviteClient(nickname, channelName, client);
+	}
+	else {
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
+	}
 }
 
 void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client &client)
