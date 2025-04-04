@@ -193,7 +193,7 @@ void	MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	if (chan->isEmpty())
 		return warning("Channel is empty");
 
-	chan->broadcastToChannel(CMD_STD_FMT(client) + " " + msg, &client);
+	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
 }
 
 void MsgHandler::handleKILL(std::string &msg, Client &killer)
@@ -213,11 +213,15 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	Client *client = getClientByNick(userToKill);
 	if (client)
 	{
+		Client& victim = *client;
+
 		std::vector<Channel*> clientChannels = client->getClientChannels();
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			clientChannels[i]->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
+			clientChannels[i]->broadcastToChannel(KILL(killer, victim, 
+										clientChannels[i], reasonToKill), NULL);
+			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), 
+												 clientChannels[i]->getName()));
 		}
 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 		_server.disconnectClient(*client);

@@ -72,11 +72,16 @@
 #define RPL_REGISTERED(client) std::string(":") + SERVER_NAME + client.nickname() + " You're registered now\r\n"
 #define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 
+#define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " PRIVMSG " + channel->getName() + " :" + victim.nickname() + " was killed by " + killer.nickname() + " (" + reason + ")\r\n"
 #define QUIT(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT: Killed by " + killer.nickname() + " (" + reason + ")\r\n"
-#define CMD_STD_FMT(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
+#define STD_PREFIX(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
 #define KICK(kicker, channel, client, reason) std::string(":") + kicker.nickname() + "!" + kicker.username() + "@" + kicker.hostname() + " KICK " + channel + " " + client + " :" + reason + "\r\n"
 #define INVITE(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " INVITE " + nickname + " :" + channel + "\r\n"
+
+
+
+
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;
