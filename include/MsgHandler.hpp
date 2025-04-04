@@ -30,6 +30,8 @@ class MsgHandler
 		void handleOPER(std::string &nickname, std::string &password, Client &client);
 		void handleKILL(std::string &msg, Client &client);
 		void handlePRIVMSG(std::string &msg, Client &client);
+		
+		Client *getClientByNick(std::string &nickname);
 
 };
 

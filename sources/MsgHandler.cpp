@@ -8,7 +8,6 @@ MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
 
 MsgHandler::~MsgHandler() {};
 
-
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
@@ -48,7 +47,7 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client 
 	else
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
-		return warning(client.username() + " is not an operator in channel " + channelName);
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 }
 
@@ -61,29 +60,43 @@ void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, Clien
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		chan->setTopic(topic);
-		info(client.username() + " changed topic of channel " + channelName + " to: " + topic);
+		info(client.nickname() + " changed topic of channel " + channelName + " to: " + topic);
 	}
 	else {
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
-		warning(client.username() + " is not an operator in channel " + channelName);
+		warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 }
 
-void MsgHandler::handleKICK(std::string &username, std::string &channelName, Client &client)
+Client *MsgHandler::getClientByNick(std::string &nickname)
+{
+	clients_t &clients = _server.getClients();
+	for (clients_t::iterator it = clients.begin(); it != clients.end(); it++)
+	{
+		Client *client = it->second;
+		if (client->nickname() == nickname)
+			return (client);
+	}
+	return (NULL);
+}
+
+void MsgHandler::handleKICK(std::string &channelName, std::string &userToKick, Client &kicker)
 {
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
 		return warning("Channel " + channelName + " does not exist");
 	}
-	if (chan->isClientChanOp(&client) || client.isIRCOp())
+	if (chan->isClientChanOp(&kicker) || kicker.isIRCOp())
 	{
-		info(client.username() + " kicked " + username + " from channel " + channelName);
-		_manager.removeFromChannel(client, channelName);
+		info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);
+		Client *client = getClientByNick(userToKick);
+		if (client)
+			_manager.removeFromChannel(*client, channelName);
 	}
 	else 
 	{
-		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
-		warning(client.username() + " is not an operator in channel " + channelName);
+		sendMSG(kicker.getFd(), ERR_CHANOPPROVSNEEDED(kicker, channelName));
+		warning(kicker.nickname() + " is not an operator in channel " + channelName);
 	}
 }
 
@@ -167,22 +180,18 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	getline(ss, userToKill, ' ');
 	getline(ss, reasonToKill);
 
-	clients_t &clients = _server.getClients();
-	for (clients_t::iterator it = clients.begin(); it != clients.end(); it++)
+	Client *client = getClientByNick(userToKill);
+	if (client)
 	{
-		Client *client = it->second;
-		if (client->nickname() == userToKill)
+		std::vector<Channel*> clientChannels = client->getClientChannels();
+		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			std::vector<Channel*> clientChannels = client->getClientChannels();
-			for (size_t i = 0; i < clientChannels.size(); i++)
-			{
-				clientChannels[i]->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
-        		sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
-			}
-			sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
-			_server.disconnectClient(*it->second);
-			return ;
+			clientChannels[i]->broadcastToChannel(QUIT((*client), killer, reasonToKill), client);
+			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
 		}
+		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
+		_server.disconnectClient(*client);
+		return ;
 	}
 }
 
@@ -247,7 +256,6 @@ void	MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << buffer << RED << "(end)" << RESET << std::endl; // only for testing
 
 	client.msgBuffer += buffer;
 	size_t i;
