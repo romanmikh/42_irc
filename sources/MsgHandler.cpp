@@ -212,11 +212,12 @@ void	MsgHandler::receiveMessage(Client &client)
 		client.msgBuffer.erase(0, i + 2);
 
 		std::vector<std::string> msgData = split(message, ' ');
-		if (msgData[0] == "CAP")
-			return ;
-		if (!client.isRegistered() && msgData[0] != "PASS")
+		if (msgData[0] == "CAP" || message == "JOIN :")
+			continue;
+		else if (!client.isRegistered() && msgData[0] != "PASS")
 		{
-			sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+			if (msgData[0] == "NICK")
+				sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 			return ;
 		}
 		respond(message, client);
