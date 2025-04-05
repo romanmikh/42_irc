@@ -7,7 +7,6 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
-	_running = true;
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -22,6 +21,8 @@ Server::Server(int port, std::string &password)
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port = htons(_port);
 
+	int opt = 1;
+	setsockopt(_sockets[0].fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	bind(_sockets[0].fd, (struct sockaddr *)(&serverAddr), sizeof(serverAddr));
 	listen(_sockets[0].fd, 10);
 }
@@ -146,11 +147,30 @@ void Server::disconnectClient(Client &client)
 	}
 }
 
+void Server::SIGINTHandler(int signum)
+{
+	if (instance == NULL)
+		return error("Server instance is NULL, cannot handle signal");
+	if (signum == SIGINT)
+	{
+		info("SIGINT received, shutting server down...");
+		_running = false;
+	}
+	for (clients_t::iterator it = instance->_clients.begin(); 
+										it != instance->_clients.end(); ++it) {
+		Client &c = *it->second;
+		sendMSG(c.getFd(), DIE(c));
+	}
+	instance->shutdown();
+}
+
 void Server::run(void)
 {
 	ChannelManager  manager(*this);
 	MsgHandler		msg(*this, manager);
 
+	Server::instance = this;
+	signal(SIGINT, SIGINTHandler);
 	info("Running...");
 	while (_running)
 	{
@@ -190,3 +210,9 @@ pollfd Server::_makePollfd(int fd, short int events, short int revents)
 	pfd.revents = revents;
 	return pfd;
 }
+
+// ************************************************************************** //
+//                             Static Variables                               //
+// ************************************************************************** //
+Server* Server::instance = NULL;
+bool Server::_running = true;

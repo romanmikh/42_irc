@@ -73,6 +73,7 @@
 #define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 
 #define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " PRIVMSG " + channel->getName() + " :" + victim.nickname() + " was killed by " + killer.nickname() + " (" + reason + ")\r\n"
+#define DIE(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " DIE: server terminated\r\n"
 #define QUIT(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT: Killed by " + killer.nickname() + " (" + reason + ")\r\n"
 #define STD_PREFIX(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"

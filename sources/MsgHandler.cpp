@@ -229,12 +229,17 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	}
 }
 
-void	MsgHandler::handleDIE(Client &client)
+void MsgHandler::handleDIE(Client &client)
 {
-	if (client.isIRCOp())
-		_server.shutdown();
-	else
-		sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
+	if (!client.isIRCOp())
+		return sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
+
+	clients_t &allClients = _server.getClients();
+	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it) {
+		Client &c = *it->second;
+		sendMSG(c.getFd(), DIE(c));
+	}
+	_server.shutdown();
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
