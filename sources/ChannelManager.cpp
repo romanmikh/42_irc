@@ -51,13 +51,13 @@ Channel* ChannelManager::getChanByName(const std::string& channelName) {
     return NULL;
 }
 
-void    ChannelManager::createChannel(std::string channelName) {
+void    ChannelManager::createChannel(const std::string &channelName) {
     _channels.insert(channel_pair_t (channelName, new Channel(channelName)));
     info("Channel created: " + channelName);
     incChannelCount();
 }
 
-void    ChannelManager::deleteChannel(std::string channelName) {
+void    ChannelManager::deleteChannel(const std::string &channelName) {
     channels_t::iterator it = _channels.find(channelName);
     if (it != _channels.end()) {
         delete it->second;
@@ -114,7 +114,7 @@ void ChannelManager::removeFromChannel(Client& client, const std::string& channe
     }
 }
 
-void ChannelManager::inviteClient(std::string nickname, const std::string& channelName, Client client)
+void ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
 {
   	Channel* chan = getChanByName(channelName);
   	

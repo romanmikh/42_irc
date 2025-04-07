@@ -229,7 +229,8 @@ void MsgHandler::handleDIE(Client &client)
 		return sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
 
 	clients_t &allClients = _server.getClients();
-	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it) {
+	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it)
+	{
 		Client &c = *it->second;
 		sendMSG(c.getFd(), DIE(c));
 	}
