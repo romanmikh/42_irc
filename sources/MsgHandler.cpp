@@ -37,7 +37,10 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client 
 		if (chan->actionMode(mode, client))
 			return ;
 		else
-			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");	
+		{
+			sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
+			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
+		}
 	}
 	else
 	{
@@ -46,21 +49,37 @@ void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client 
 	}
 }
 
-void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, Client &client)
+void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
-	Channel* chan = _manager.getChanByName(channelName);
+	std::vector<std::string> msgData = split(msg, ' ');
+	Channel* chan = _manager.getChanByName(msgData[1]);
+
 	if (!chan) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
-		return warning("Channel " + channelName + " does not exist");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, chan->getName()));
+		return warning("Channel " + chan->getName() + " does not exist");
 	}
-	if (chan->isClientChanOp(&client) || client.isIRCOp())
+	if (msgData.size() > 1)
 	{
-		chan->setTopic(topic);
-		info(client.nickname() + " changed topic of channel " + channelName + " to: " + topic);
+		if (chan->isTopicRestricted() && (chan->isClientChanOp(&client) || client.isIRCOp()))
+		{
+			chan->setTopic(msgData[2]);
+			info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + chan->getTopic());
+		}
+		else if (!chan->isTopicRestricted())
+		{
+			chan->setTopic(msgData[2]);
+			info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + chan->getTopic());
+		}
+		else
+		{
+			sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, msgData[1]));
+			warning(client.nickname() + " is not an operator in channel " + msgData[1]);
+		}
 	}
-	else {
-		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
-		warning(client.nickname() + " is not an operator in channel " + channelName);
+	else
+	{
+		std::cout << RED << "channel name: " << chan->getName() << "\nchannel topic: " << chan->getTopic() << RESET << std::endl;
+		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
 	}
 }
 
@@ -201,7 +220,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msgData[1], msgData[2], client);
 			break ;
-		case TOPIC: if (msgData.size() > 1 && msgData[1][0] == '#') handleTOPIC(msgData[1], msgData[2], client);
+		case TOPIC: handleTOPIC(msg, client);
 			break ;
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;

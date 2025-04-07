@@ -4,74 +4,74 @@
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
 Channel::Channel(std::string name) : _channelName(name), 
-                                     _channelPassword(""),
-                                     _channelTopic("Default"),
-                                     _channelMode("Default"),
-                                     _channelIsInviteOnly(false),
-                                     _channelIsTopicRestricted(false),
-                                     _channelIsKeyProtected(false),
-                                     _channelIsOperatorRestricted(false),
-                                     _channelIsLimitRestricted(false),
-                                     _channelClientCount(0),
-                                     _channelClientLimit(CHAN_CLIENT_LIMIT) {}
+									 _channelPassword(""),
+									 _channelTopic("Default"),
+									 _channelMode("Default"),
+									 _channelIsInviteOnly(false),
+									 _channelIsTopicRestricted(false),
+									 _channelIsKeyProtected(false),
+									 _channelIsOperatorRestricted(false),
+									 _channelIsLimitRestricted(false),
+									 _channelClientCount(0),
+									 _channelClientLimit(CHAN_CLIENT_LIMIT) {}
 
 Channel::~Channel(void){
-    printStr("Channel destroyed", PURPLE);
+	printStr("Channel destroyed", PURPLE);
 }
 
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
 bool                    Channel::isInviteOnly(void) const {
-    return _channelIsInviteOnly;
+	return _channelIsInviteOnly;
 }
 
 bool                    Channel::isTopicRestricted(void) const {
-    return _channelIsTopicRestricted;
+	return _channelIsTopicRestricted;
 }
 
 bool                    Channel::isKeyProtected(void) const {
-    return _channelIsKeyProtected;
+	return _channelIsKeyProtected;
 }
 
 bool                    Channel::isOperatorRestricted(void) const {
-    return _channelIsOperatorRestricted;
+	return _channelIsOperatorRestricted;
 }
 
 bool                    Channel::isLimitRestricted(void) const {
-    return _channelIsLimitRestricted;
+	return _channelIsLimitRestricted;
 }
 
 std::string             Channel::getName(void) const {
-    return _channelName;
+	return _channelName;
 }
 
 std::string             Channel::getPassword(void) const {
-    return _channelPassword;
+	return _channelPassword;
 }
 
 std::string             Channel::getTopic(void) const {
-    return _channelTopic;
+	return _channelTopic;
 }
 
 std::string             Channel::getMode(void) const {
-    return _channelMode;
+	return _channelMode;
 }
 
 size_t                  Channel::getClientCount(void) const {
-    return _channelClientCount;
+	return _channelClientCount;
 }
 
 size_t                  Channel::getClientLimit(void) const {
-    return _channelClientLimit;
+	return _channelClientLimit;
 }
 
 std::vector<Client *>&  Channel::getClients(void) {
-    return _channelClients;
+	return _channelClients;
 }
 
 std::vector<Client *>&  Channel::getOperators(void) {
-    return _channelOperators;
+	return _channelOperators;
 }
 
 void                    Channel::setName(std::string &name) {
@@ -87,23 +87,23 @@ void                    Channel::setTopic(std::string &topic) {
 }
 
 size_t                  Channel::incClientCount(void) {
-    return ++_channelClientCount;
+	return ++_channelClientCount;
 }
 
 size_t                  Channel::decClientCount(void) {
-    if (_channelClientCount > 0)
-        return --_channelClientCount;
-    else {
-        error("Client count is already 0");
-        return _channelClientCount;
-    }
+	if (_channelClientCount > 0)
+		return --_channelClientCount;
+	else {
+		error("Client count is already 0");
+		return _channelClientCount;
+	}
 }
 
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
 bool    Channel::isEmpty(void) const {
-    return _channelClients.empty();
+	return _channelClients.empty();
 }
 
 bool    Channel::actionMode(std::string mode, Client& client) {
@@ -146,49 +146,51 @@ bool    Channel::actionMode(std::string mode, Client& client) {
 }
 
 bool    Channel::hasClient(Client* client) const {
-    for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
-        if (*it == client)
-            return true;
-    }
-    return false;
+	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
+										   it != _channelClients.end(); ++it) {
+		if (*it == client)
+			return true;
+	}
+	return false;
 }
 
 bool    Channel::isClientChanOp(Client* client) const {
-    for (std::vector<Client *>::const_iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it) {
-        if (*it == client)
-            return true;
-    }
-    return false;
+	for (std::vector<Client *>::const_iterator it = _channelOperators.begin(); \
+										it != _channelOperators.end(); ++it) {
+		if (*it == client)
+			return true;
+	}
+	return false;
 }
 
 void    Channel::addChanOp(Client* client) {
-    if (client->isIRCOp()) {
-        return warning(client->username() + " is a global operator");
-    }
-    if (isClientChanOp(client)) {
-        return warning(client->username() + " is already an operator in channel " 
-                                                                + _channelName);
-    }
-    _channelOperators.push_back(client);
-    info(client->username() + " is now an operator in channel " + _channelName);
+	if (client->isIRCOp()) {
+		return warning(client->username() + " is a global operator");
+	}
+	if (isClientChanOp(client)) {
+		return warning(client->username() + " is already an operator in channel " 
+																+ _channelName);
+	}
+	_channelOperators.push_back(client);
+	info(client->username() + " is now an operator in channel " + _channelName);
 }
 
 void    Channel::removeChanOp(Client* client) {
-    if (client->isIRCOp()) {
-        return warning(client->username() + " is a global operator");
-    }
-    if (!isClientChanOp(client)) {
-        return warning(client->username() + " is not an operator in channel " 
-                                                                + _channelName);
-    }
-    for (std::vector<Client *>::iterator it = _channelOperators.begin(); \
-                                         it != _channelOperators.end(); ++it) {
-        if (*it == client) {
-            _channelOperators.erase(it);
-            return;
-        }
-    }
-    info(client->username() + " is no longer an operator in channel " + _channelName);
+	if (client->isIRCOp()) {
+		return warning(client->username() + " is a global operator");
+	}
+	if (!isClientChanOp(client)) {
+		return warning(client->username() + " is not an operator in channel " 
+																+ _channelName);
+	}
+	for (std::vector<Client *>::iterator it = _channelOperators.begin(); \
+										 it != _channelOperators.end(); ++it) {
+		if (*it == client) {
+			_channelOperators.erase(it);
+			return;
+		}
+	}
+	info(client->username() + " is no longer an operator in channel " + _channelName);
 }
 
 void    Channel::broadcastToChannel(std::string message, Client* client) {
