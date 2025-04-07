@@ -86,6 +86,7 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 		client.joinChannel(*this, channelName);
 	}
 	info(client.username() + " joined channel " + channelName);
+	// sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
 	channel->incClientCount();
 }
 
