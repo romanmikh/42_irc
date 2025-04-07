@@ -72,11 +72,9 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	std::vector<std::string> msgData = split(msg, ' ');
 	Channel* chan = _manager.getChanByName(msgData[1]);
 
-	sendMSG(client.getFd(), "TESTE");
-
 	if (!chan) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
-		return warning("Channel " + channelName + " does not exist");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, chan->getName()));
+		return warning("Channel " + chan->getName() + " does not exist");
 	}
 	if (msgData.size() > 1)
 	{
