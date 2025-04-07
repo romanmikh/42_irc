@@ -90,18 +90,6 @@ void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, Clien
 	}
 }
 
-Client *MsgHandler::getClientByNick(std::string &nickname)
-{
-	clients_t &clients = _server.getClients();
-	for (clients_t::iterator it = clients.begin(); it != clients.end(); it++)
-	{
-		Client *client = it->second;
-		if (client->nickname() == nickname)
-			return (client);
-	}
-	return (NULL);
-}
-
 void MsgHandler::handleKICK(std::string &msg, Client &kicker)
 {
 	std::string channelName, userToKick, reason;
@@ -120,7 +108,7 @@ void MsgHandler::handleKICK(std::string &msg, Client &kicker)
 	if (chan->isClientChanOp(&kicker) || kicker.isIRCOp())
 	{
 		info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);
-		Client *client = getClientByNick(userToKick);
+		Client *client = _server.getClientByNick(userToKick);
 		if (client)
 		{
 			chan->broadcastToChannel(KICK(kicker, channelName, client->nickname(), reason), &kicker);
@@ -218,7 +206,7 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	getline(ss, userToKill, ' ');
 	getline(ss, reasonToKill);
 
-	Client *client = getClientByNick(userToKill);
+	Client *client = _server.getClientByNick(userToKill);
 	if (client)
 	{
 		Client& victim = *client;

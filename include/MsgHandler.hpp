@@ -21,7 +21,6 @@ class MsgHandler
 
 		void handleJOIN(std::string &channelName, Client &client);
 		void handlePART(std::string &channelName, Client &client);
-		void handleINVITE(std::string &username, std::string &channelName, Client &client);
 		void handleKICK(std::string &msg, Client &client);
 		void handleMODE(std::string &channelName, std::string &mode, Client &client);
 		void handleTOPIC(std::string &channelName, std::string &topic, Client &client);
@@ -31,7 +30,6 @@ class MsgHandler
 		void handleKILL(std::string &msg, Client &client);
 		void handlePRIVMSG(std::string &msg, Client &client);
 		
-		Client *getClientByNick(std::string &nickname);
 		bool			badPassword(std::string &message, Client &client);
 
 };
