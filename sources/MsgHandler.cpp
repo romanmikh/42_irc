@@ -76,10 +76,8 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 			warning(client.nickname() + " is not an operator in channel " + msgData[1]);
 		}
 	}
-	else if (msgData.size() == 2)
-	{
+	else
 		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
-	}
 }
 
 void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Client &client)

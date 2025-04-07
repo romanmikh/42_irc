@@ -78,6 +78,13 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 		createChannel(channelName, &client);
 	}
 	Channel* channel = _channels[channelName];
+	if (channel->isInviteOnly())
+	{
+		if (!channel->isClientChanOp(&client) && !client.isIRCOp()) {
+			sendMSG(client.getFd(), ERR_INVITEONLYCHAN(client, channelName));
+			return;
+		}
+	}
 	if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
 	{
 		sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));

@@ -75,15 +75,15 @@ std::vector<Client *>&  Channel::getOperators(void) {
 }
 
 void                    Channel::setName(std::string &name) {
-    _channelName = name;
+	_channelName = name;
 }
 
 void                    Channel::setPassword(std::string &password) {
-    _channelPassword = password;
+	_channelPassword = password;
 }
 
 void                    Channel::setTopic(std::string &topic) {
-    _channelTopic = topic;
+	_channelTopic = topic;
 }
 
 size_t                  Channel::incClientCount(void) {
@@ -107,42 +107,42 @@ bool    Channel::isEmpty(void) const {
 }
 
 bool    Channel::actionMode(std::string mode, Client& client) {
-    if (mode == "+i" || mode == "-i") {
-        _channelMode = mode;
-        _channelIsInviteOnly = (mode == "+i");
-        broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-        info("Channel " + _channelName + " is now invite only: " + boolToString(_channelIsInviteOnly));
-        return true;
-    }
-    else if (mode == "+t" || mode == "-t") {
-        _channelMode = mode;
-        _channelIsTopicRestricted = (mode == "+t");
-        broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-        info("Channel " + _channelName + " is now topic restricted: " + boolToString(_channelIsTopicRestricted));
-        return true;
-    }
-    else if (mode == "+k" || mode == "-k") {
-        _channelMode = mode;
-        _channelIsKeyProtected = (mode == "+k");
-        broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-        info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
-        return true;
-    }
-    else if (mode == "+o" || mode == "-o") {
-        _channelMode = mode;
-        _channelIsOperatorRestricted = (mode == "+o");
-        broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-        info("Channel " + _channelName + " is now operator restricted: " + boolToString(_channelIsOperatorRestricted));
-        return true;
-    }
-    else if (mode == "+l" || mode == "-l") {
-        _channelMode = mode;
-        _channelIsLimitRestricted = (mode == "+l");
-        broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-        info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
-        return true;
-    }
-    return false;
+	if (mode == "+i" || mode == "-i") {
+		_channelMode = mode;
+		_channelIsInviteOnly = (mode == "+i");
+		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+		info("Channel " + _channelName + " is now invite only: " + boolToString(_channelIsInviteOnly));
+		return true;
+	}
+	else if (mode == "+t" || mode == "-t") {
+		_channelMode = mode;
+		_channelIsTopicRestricted = (mode == "+t");
+		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+		info("Channel " + _channelName + " is now topic restricted: " + boolToString(_channelIsTopicRestricted));
+		return true;
+	}
+	else if (mode == "+k" || mode == "-k") {
+		_channelMode = mode;
+		_channelIsKeyProtected = (mode == "+k");
+		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+		info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
+		return true;
+	}
+	else if (mode == "+o" || mode == "-o") {
+		_channelMode = mode;
+		_channelIsOperatorRestricted = (mode == "+o");
+		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+		info("Channel " + _channelName + " is now operator restricted: " + boolToString(_channelIsOperatorRestricted));
+		return true;
+	}
+	else if (mode == "+l" || mode == "-l") {
+		_channelMode = mode;
+		_channelIsLimitRestricted = (mode == "+l");
+		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+		info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
+		return true;
+	}
+	return false;
 }
 
 bool    Channel::hasClient(Client* client) const {
@@ -164,7 +164,7 @@ bool    Channel::isClientChanOp(Client* client) const {
 }
 
 void    Channel::addChanOp(Client* client) {
-    //is this check and warning necessary?
+	//is this check and warning necessary?
 	if (client->isIRCOp()) {
 		return warning(client->username() + " is a global operator");
 	}
@@ -192,20 +192,20 @@ void    Channel::removeChanOp(Client* client) {
 }
 
 void    Channel::broadcastToChannel(std::string message, Client* client) {
-    if (isEmpty()) {
-        return warning("Channel is empty");
-    }
-    if (message.empty()) {
-        return warning("Empty message");
-    }
-    if (message.length() > 512) {
-        return warning("Message too long");
-    }
-    for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
-    {
-        if (*it != client)
-            sendMSG((*it)->getFd(), (message + "\r\n"));
-    }
+	if (isEmpty()) {
+		return warning("Channel is empty");
+	}
+	if (message.empty()) {
+		return warning("Empty message");
+	}
+	if (message.length() > 512) {
+		return warning("Message too long");
+	}
+	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
+	{
+		if (*it != client)
+			sendMSG((*it)->getFd(), (message + "\r\n"));
+	}
 }
 
 // ************************************************************************** //
