@@ -55,14 +55,17 @@
 #define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
 #define ERR_INVALID_PASSWORD "Invalid password"
 #define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
-#define ERR_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
+#define ERR_NOSUCHCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 403 " + client.nickname() + " " + channelName + " :No such channel\r\n"
 #define ERR_NOTREGISTERED(client) std::string(":") + SERVER_NAME + " 451 " + client.nickname() + " :You have not registered\r\n"
 #define ERR_NEEDMOREPARAMS(client) std::string(":") + SERVER_NAME + " 461 " + client.nickname() + " :Not enough parameters\r\n"
+#define ERR_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
 #define ERR_NOPRIVILAGES(client) std::string(":") + SERVER_NAME + " 481 " + client.nickname() + ": :Permission Denied- You're not an IRC operator\r\n"
+#define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " :You're not a channel operator\r\n"
 #define ERR_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
 #define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " : You're not a channel operator\r\n"
 #define ERR_CHANNELISFULL(client, channelName) std::string(":") + SERVER_NAME + " 471 " + client.nickname() + " " + channelName + " :Cannot join channel (+l)\r\n"
 #define ERR_UNKNOWNMODE(client, c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + " " + c + " : is unknown mode char to me\r\n"
+
 
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
@@ -73,11 +76,20 @@
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
 #define RPL_REGISTERED(client) std::string(":") + SERVER_NAME + client.nickname() + " You're registered now\r\n"
 #define RPL_TOPIC(client, channelName, topic) std::string(":") + SERVER_NAME + " 332 " + client.nickname() + " " + channelName + topic
+#define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 
+
+#define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " PRIVMSG " + channel->getName() + " :" + victim.nickname() + " was killed by " + killer.nickname() + " (" + reason + ")\r\n"
+#define DIE(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " DIE: server terminated\r\n"
 #define QUIT(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT: Killed by " + killer.nickname() + " (" + reason + ")\r\n"
-#define CMD_STD_FMT(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
+#define STD_PREFIX(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
 #define KICK(kicker, channel, client, reason) std::string(":") + kicker.nickname() + "!" + kicker.username() + "@" + kicker.hostname() + " KICK " + channel + " " + client + " :" + reason + "\r\n"
+#define INVITE(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " INVITE " + nickname + " :" + channel + "\r\n"
+
+
+
+
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;

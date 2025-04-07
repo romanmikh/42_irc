@@ -9,7 +9,7 @@ Client::Client(pollfd &clientSocket)
 	_username = "default";
 	_socket = clientSocket;
 	_isRegistered = false;
-	_isIRCOp = true;
+	_isIRCOp = false;
 }
 
 Client::~Client() {}

@@ -17,7 +17,7 @@ class Server
 		clients_t				_clients;
 		std::string				_password;
 		unsigned int			_port;
-		bool					_running;
+		static bool				_running;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -27,25 +27,25 @@ class Server
 		/* construcotrs & destructors */
 		Server(int port_num, std::string &passwd);
 		~Server(void);
-
+		
 		/* accessors*/
 		std::map<std::string,std::string> 	getOpers(void);
 		std::string							getPassword(void);
 		clients_t&							getClients(void);
 		Client*								getClientByUser(std::string& user) const;
 		Client*								getClientByNick(std::string& nick) const;
-
+		
 		/* member functions*/
 		void 			run(void);
 		void 			parseOpersConfigFile(const char *file);
 		void 			handleNewConnectionRequest();
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client &client);
-		bool			validatePassword(std::string &password);
-  
-// 		std::string 	name(void);
-
 		void			shutdown();
-};
+
+		/* static members */
+		static Server*  instance;
+		static void 	SIGINTHandler(int signum);
+	};
 
 #endif

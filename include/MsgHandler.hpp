@@ -32,6 +32,7 @@ class MsgHandler
 		void handlePRIVMSG(std::string &msg, Client &client);
 		
 		Client *getClientByNick(std::string &nickname);
+		bool			badPassword(std::string &message, Client &client);
 
 };
 
