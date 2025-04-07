@@ -51,8 +51,11 @@ Channel* ChannelManager::getChanByName(const std::string& channelName) {
 	return NULL;
 }
 
-void    ChannelManager::createChannel(const std::string &channelName) {
-	_channels.insert(channel_pair_t (channelName, new Channel(channelName)));
+void    ChannelManager::createChannel(const std::string &channelName, Client *firstClient)
+{
+    Channel *newChannel = new Channel(channelName);
+	_channels.insert(channel_pair_t (channelName, newChannel));
+    newChannel->addChanOp(firstClient);
 	info("Channel created: " + channelName);
 	incChannelCount();
 }
@@ -72,7 +75,7 @@ void    ChannelManager::deleteChannel(const std::string &channelName) {
 
 void ChannelManager::addToChannel(Client& client, const std::string& channelName) {
 	if (_channels.find(channelName) == _channels.end()) {
-		createChannel(channelName);
+		createChannel(channelName, &client);
 	}
 	Channel* channel = _channels[channelName];
 	if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 

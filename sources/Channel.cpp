@@ -164,12 +164,12 @@ bool    Channel::isClientChanOp(Client* client) const {
 }
 
 void    Channel::addChanOp(Client* client) {
+    //is this check and warning necessary?
 	if (client->isIRCOp()) {
 		return warning(client->username() + " is a global operator");
 	}
 	if (isClientChanOp(client)) {
-		return warning(client->username() + " is already an operator in channel " 
-																+ _channelName);
+		return warning(client->username() + " is already an operator in channel " + _channelName);
 	}
 	_channelOperators.push_back(client);
 	info(client->username() + " is now an operator in channel " + _channelName);
@@ -180,11 +180,9 @@ void    Channel::removeChanOp(Client* client) {
 		return warning(client->username() + " is a global operator");
 	}
 	if (!isClientChanOp(client)) {
-		return warning(client->username() + " is not an operator in channel " 
-																+ _channelName);
+		return warning(client->username() + " is not an operator in channel " + _channelName);
 	}
-	for (std::vector<Client *>::iterator it = _channelOperators.begin(); \
-										 it != _channelOperators.end(); ++it) {
+	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it) {
 		if (*it == client) {
 			_channelOperators.erase(it);
 			return;
@@ -203,8 +201,7 @@ void    Channel::broadcastToChannel(std::string message, Client* client) {
     if (message.length() > 512) {
         return warning("Message too long");
     }
-    for (std::vector<Client *>::const_iterator it = _channelClients.begin(); 
-                                            it != _channelClients.end(); ++it)
+    for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
     {
         if (*it != client)
             sendMSG((*it)->getFd(), (message + "\r\n"));

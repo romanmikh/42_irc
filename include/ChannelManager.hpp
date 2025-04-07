@@ -24,7 +24,7 @@ class ChannelManager
         size_t                  decChannelCount(void);
 
         /* member functions */
-        void        createChannel(const std::string &channelName);
+        void        createChannel(const std::string &channelName, Client *firstClient);
         void        deleteChannel(const std::string &channelName);
         void        removeFromChannel(Client& client, const std::string& channelName);
         void        kickFromChannel(std::string &msg, Client &kicker);

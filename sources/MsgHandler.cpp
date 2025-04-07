@@ -202,9 +202,9 @@ void MsgHandler::handleNICK(std::string &nickname, Client &client)
 	int i = 1;
 	while (_server.getClientByNick(newNickname))
 	{		
-		std::ostringstream tag;
-		tag << i++;
-		newNickname = nickname + std::string(tag.str());
+		std::ostringstream intTag;
+		intTag << i++;
+		newNickname = nickname + std::string(intTag.str());
 	}
 	client.setNickname(newNickname);
 }
