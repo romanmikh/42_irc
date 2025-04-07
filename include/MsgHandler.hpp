@@ -19,8 +19,7 @@ class MsgHandler
 		void sendWelcomeProtocol(Client &client);
 		void assignUserData(std::string &msg, Client &client);
 
-		void handleJOIN(std::string &channelName, Client &client);
-		void handlePART(std::string &channelName, Client &client);
+		void handleNICK(std::string &nickname, Client &client);
 		void handleMODE(std::string &channelName, std::string &mode, Client &client);
 		void handleTOPIC(std::string &msg, Client &client);
 		void validatePassword(std::string &password, Client &client);
@@ -29,7 +28,7 @@ class MsgHandler
 		void handleKILL(std::string &msg, Client &client);
 		void forwardPrivateMessage(std::string &msg, Client &client);
 		
-		bool			badPassword(std::string &message, Client &client);
+		bool badPassword(std::string &message, Client &client);
 
 };
 

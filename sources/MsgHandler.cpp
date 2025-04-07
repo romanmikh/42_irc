@@ -197,6 +197,19 @@ void MsgHandler::handleDIE(Client &client)
 	_server.shutdown();
 }
 
+void MsgHandler::handleNICK(std::string &nickname, Client &client)
+{
+	std::string newNickname = nickname;
+	int i = 1;
+	while (_server.getClientByNick(newNickname))
+	{		
+		std::ostringstream tag;
+		tag << i++;
+		newNickname = nickname + std::string(tag.str());
+	}
+	client.setNickname(newNickname);
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 
 {
@@ -208,7 +221,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case USER: assignUserData(msg, client);
 			break ;
-		case NICK: if (msgData.size() == 2) client.setNickname(msgData[1]);
+		case NICK: if (msgData.size() == 2) handleNICK(msgData[1], client);
 			break ;
 		case JOIN: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.addToChannel(client, msgData[1]);
 			break ;

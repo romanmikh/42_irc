@@ -49,6 +49,7 @@ void 			Client::setFullName(std::string &fullname)
 
 void 			Client::setNickname(std::string &nickname)
 {
+	
 	_nickname = nickname;
 	info("Client " + username() + "'s nickname was set to "	+ nickname);
 }
