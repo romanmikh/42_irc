@@ -55,10 +55,10 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	Channel* chan = _manager.getChanByName(msgData[1]);
 
 	if (!chan) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, chan->getName()));
-		return warning("Channel " + chan->getName() + " does not exist");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
+		return warning("Channel " + msgData[1] + " does not exist");
 	}
-	if (msgData.size() > 1)
+	if (msgData.size() > 2)
 	{
 		if (chan->isTopicRestricted() && (chan->isClientChanOp(&client) || client.isIRCOp()))
 		{
@@ -76,9 +76,8 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 			warning(client.nickname() + " is not an operator in channel " + msgData[1]);
 		}
 	}
-	else
+	else if (msgData.size() == 2)
 	{
-		std::cout << RED << "channel name: " << chan->getName() << "\nchannel topic: " << chan->getTopic() << RESET << std::endl;
 		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
 	}
 }

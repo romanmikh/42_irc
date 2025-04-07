@@ -74,7 +74,7 @@
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
 #define RPL_REGISTERED(client) std::string(":") + SERVER_NAME + client.nickname() + " You're registered now\r\n"
-#define RPL_TOPIC(client, channelName, topic) std::string(":") + SERVER_NAME + " 332 " + client.nickname() + " " + channelName + topic
+#define RPL_TOPIC(client, channelName, topic) std::string(":") + SERVER_NAME + " 332 " + client.nickname() + " " + channelName + " :" + topic
 #define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 
 
