@@ -113,14 +113,27 @@ void ChannelManager::removeFromChannel(Client& client, const std::string& channe
     }
 }
 
-void ChannelManager::inviteClient(std::string nickname, const std::string& channel, Client client)
+void ChannelManager::inviteClient(std::string nickname, const std::string& channelName, Client client)
 {
-    Client* targetClient = _server.getClientByNick(nickname);
-    if (!targetClient)
-        return warning("Client " + nickname + " not found");
-
-    sendMSG(targetClient->getFd(), INVITE(client, nickname, channel));
-    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channel));
-	info(client.username() + " invited " + nickname + " to channel " + channel);
-    addToChannel(*targetClient, channel);
+  	Channel* chan = getChanByName(channelName);
+  	
+	if (!chan) {
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+		return warning("Channel " + channelName + " does not exist");
+	}
+	if (chan->isClientChanOp(&client) || client.isIRCOp())
+	{
+		Client* targetClient = _server.getClientByNick(nickname);
+        if (!targetClient) {
+            return warning("Client " + nickname + " not found");
+        }
+	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
+	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
+		info(client.username() + " invited " + nickname + " to channel " + channelName);
+	    addToChannel(*targetClient, channelName);
+	}
+	else {
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
+	}
 }

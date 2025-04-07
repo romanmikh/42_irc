@@ -25,23 +25,31 @@ void	MsgHandler::replyUSER(std::string &msg, Client &client)
 	sendWelcomeProtocol(client);
 }
 
-void MsgHandler::handleINVITE(std::string &nickname, std::string &channelName, Client &client)
-{
-  	Channel* chan = _manager.getChanByName(channelName);
+// void MsgHandler::handleINVITE(std::string &nickname, std::string &channelName, Client &client)
+// {
+//   	Channel* chan = _manager.getChanByName(channelName);
   	
-	if (!chan) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
-		return warning("Channel " + channelName + " does not exist");
-	}
-	if (chan->isClientChanOp(&client) || client.isIRCOp())
-	{
-		_manager.inviteClient(nickname, channelName, client);
-	}
-	else {
-		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
-		return warning(client.nickname() + " is not an operator in channel " + channelName);
-	}
-}
+// 	if (!chan) {
+// 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+// 		return warning("Channel " + channelName + " does not exist");
+// 	}
+// 	if (chan->isClientChanOp(&client) || client.isIRCOp())
+// 	{
+// 		Client* targetClient = _server.getClientByNick(nickname);
+//     	if (!targetClient)
+//     	    return warning("Client " + nickname + " not found");
+
+// 	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
+// 	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
+// 		info(client.username() + " invited " + nickname + " to channel " + channelName);
+// 	    addToChannel(*targetClient, channelName);
+// 	//	_manager.inviteClient(nickname, channelName, client);
+// 	}
+// 	else {
+// 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+// 		return warning(client.nickname() + " is not an operator in channel " + channelName);
+// 	}
+// }
 
 void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client &client)
 {
@@ -257,7 +265,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PART: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.removeFromChannel(client, msgData[1]);
 			break ;
-		case INVITE: if (msgData.size() > 1 && msgData[2][0] == '#') handleINVITE(msgData[1], msgData[2], client);
+		case INVITE: if (msgData.size() > 1 && msgData[2][0] == '#') _manager.inviteClient(msgData[1], msgData[2], client);
 			break ;
 		case KICK: if (msgData.size() > 1 && msgData[1][0] == '#') handleKICK(msg, client);
 			break ;
