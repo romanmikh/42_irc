@@ -11,7 +11,7 @@ MsgHandler::~MsgHandler() {};
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void	MsgHandler::replyUSER(std::string &msg, Client &client)
+void	MsgHandler::assignUserData(std::string &msg, Client &client)
 
 {
 	std::vector<std::string> names = split(msg, ':');
@@ -64,7 +64,7 @@ void MsgHandler::handleTOPIC(std::string &channelName, std::string &topic, Clien
 	}
 }
 
-void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client &client)
+void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Client &client)
 {
 	std::map<std::string, std::string> allowedOpers = _server.getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
@@ -85,7 +85,7 @@ void	MsgHandler::handleOPER(std::string &nickname, std::string &password, Client
 	}
 }
 
-void	MsgHandler::handlePASS(std::string &password, Client &client)
+void	MsgHandler::validatePassword(std::string &password, Client &client)
 {
 	if (password == _server.getPassword())
 	{
@@ -99,7 +99,7 @@ void	MsgHandler::handlePASS(std::string &password, Client &client)
 	}
 }
 
-void	MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
+void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 {
 	const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
@@ -185,9 +185,9 @@ void MsgHandler::respond(std::string &msg, Client &client)
 
 	switch (getCommandType(msgData[0]))
 	{
-		case PASS: handlePASS(msgData[1], client);
+		case PASS: validatePassword(msgData[1], client);
 			break ;
-		case USER: replyUSER(msg, client);
+		case USER: assignUserData(msg, client);
 			break ;
 		case NICK: if (msgData.size() == 2) client.setNickname(msgData[1]);
 			break ;
@@ -207,9 +207,9 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case QUIT: _server.disconnectClient(client);
 			break ;
-		case OPER: if (msgData.size() == 3) handleOPER(msgData[1], msgData[2], client);
+		case OPER: if (msgData.size() == 3) validateIRCOp(msgData[1], msgData[2], client);
 			break ;
-		case PRIVMSG: handlePRIVMSG(msg, client);
+		case PRIVMSG: forwardPrivateMessage(msg, client);
 			break ;
 		case UNKNOWN:
 			break ;
