@@ -27,6 +27,7 @@ class ChannelManager
         void        createChannel(const std::string &channelName);
         void        deleteChannel(const std::string &channelName);
         void        removeFromChannel(Client& client, const std::string& channelName);
+        void        kickFromChannel(std::string &msg, Client &kicker);
         void        addToChannel(Client& client, const std::string& channelName);
         bool        channelExists(const std::string& channelName) const;
         void        inviteClient(std::string &user, const std::string& chan, Client &client);

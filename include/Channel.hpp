@@ -45,10 +45,10 @@ class Channel
         size_t                      incClientCount(void);
         size_t                      decClientCount(void);
 
-        void                        setName(std::string name);
-        void                        setPassword(std::string password);
-        void                        setTopic(std::string topic);
-        void                        setMode(std::string mode);
+        void                        setName(std::string &name);
+        void                        setPassword(std::string &password);
+        void                        setTopic(std::string &topic);
+        void                        setMode(std::string &mode);
         
         /* member functions */
         bool    isEmpty(void) const;
