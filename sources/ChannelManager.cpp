@@ -120,7 +120,7 @@ void ChannelManager::inviteClient(std::string nickname, const std::string& chann
         return warning("Client " + nickname + " not found");
 
     sendMSG(targetClient->getFd(), INVITE(client, nickname, channel));
-    sendMSG(targetClient->getFd(), RPL_INVITING(client, nickname, channel));
+    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channel));
 	info(client.username() + " invited " + nickname + " to channel " + channel);
     addToChannel(*targetClient, channel);
 }

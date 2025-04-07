@@ -218,10 +218,8 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		std::vector<Channel*> clientChannels = client->getClientChannels();
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			clientChannels[i]->broadcastToChannel(KILL(killer, victim, 
-										clientChannels[i], reasonToKill), NULL);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), 
-												 clientChannels[i]->getName()));
+			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
+			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
 		}
 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 		_server.disconnectClient(*client);

@@ -156,8 +156,7 @@ void Server::SIGINTHandler(int signum)
 		info("SIGINT received, shutting server down...");
 		_running = false;
 	}
-	for (clients_t::iterator it = instance->_clients.begin(); 
-										it != instance->_clients.end(); ++it) {
+	for (clients_t::iterator it = instance->_clients.begin(); it != instance->_clients.end(); ++it) {
 		Client &c = *it->second;
 		sendMSG(c.getFd(), DIE(c));
 	}
