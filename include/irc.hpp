@@ -65,7 +65,7 @@
 #define ERR_CHANNELISFULL(client, channelName) std::string(":") + SERVER_NAME + " 471 " + client.nickname() + " " + channelName + " :Cannot join channel (+l)\r\n"
 #define ERR_UNKNOWNMODE(client, c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + " " + c + " : is unknown mode char to me\r\n"
 #define ERR_INVITEONLYCHAN(client, channelName) std::string(":") + SERVER_NAME + " 473 " + client.nickname() + " " + channelName + " :Cannot join channel (+i)\r\n"
-
+#define ERR_BADCHANNELKEY(client, channelName) std::string(":") + SERVER_NAME + " 475 " + client.nickname() + " " + channelName + " :Cannot join channel (+k)\r\n"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"

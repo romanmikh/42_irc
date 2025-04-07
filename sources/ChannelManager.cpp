@@ -85,7 +85,7 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 			return;
 		}
 	}
-	if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
+	else if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
 	{
 		sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));
 		return;

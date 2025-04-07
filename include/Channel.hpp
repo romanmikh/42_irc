@@ -52,7 +52,7 @@ class Channel
         
         /* member functions */
         bool    isEmpty(void) const;
-        bool    actionMode(std::string mode, Client& client);
+        bool    actionMode(std::string mode, std::string arg, Client& client);
         bool    hasClient(Client* client) const;
         void    addChanOp(Client* client);
         void    removeChanOp(Client* client);

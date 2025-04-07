@@ -106,7 +106,7 @@ bool    Channel::isEmpty(void) const {
 	return _channelClients.empty();
 }
 
-bool    Channel::actionMode(std::string mode, Client& client) {
+bool    Channel::actionMode(std::string mode, std::string arg, Client& client) {
 	if (mode == "+i" || mode == "-i") {
 		_channelMode = mode;
 		_channelIsInviteOnly = (mode == "+i");
@@ -122,8 +122,20 @@ bool    Channel::actionMode(std::string mode, Client& client) {
 		return true;
 	}
 	else if (mode == "+k" || mode == "-k") {
+
+		std::cout << RED << "test 1" << std::endl;
+		if (mode == "+k" && arg.empty())
+		{
+			std::cout << RED << "test 2" << std::endl;
+			sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+			return false;
+		}
 		_channelMode = mode;
 		_channelIsKeyProtected = (mode == "+k");
+		if (_channelIsKeyProtected == true)
+			_channelPassword = arg;
+		else
+			_channelPassword = "";
 		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 		info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
 		return true;

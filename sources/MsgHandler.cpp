@@ -25,16 +25,31 @@ void	MsgHandler::assignUserData(std::string &msg, Client &client)
 	sendWelcomeProtocol(client);
 }
 
-void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client &client)
+void MsgHandler::handleMODE(std::string &msg, Client &client)
 {
-	Channel* chan = _manager.getChanByName(channelName);
+	std::vector<std::string> msgData = split(msg, ' ');
+
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
+		return warning("Insufficient parameters for MODE command");
+	}
+
+	Channel* chan = _manager.getChanByName(msgData[1]);
+	std::string channelName = msgData[1];
 	if (!chan) {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
+
+	std::string mode = msgData[2];
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
-		if (chan->actionMode(mode, client))
+		if (msgData.size() == 4 && msgData[2] == "+k")
+		{
+			chan->actionMode(mode, msgData[3], client);
+			return ;
+		}
+		else if (chan->actionMode(mode, "", client))
 			return ;
 		else
 		{
@@ -228,7 +243,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case KICK: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.kickFromChannel(msg, client);
 			break ;
-		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msgData[1], msgData[2], client);
+		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msg, client);
 			break ;
 		case TOPIC: handleTOPIC(msg, client);
 			break ;
