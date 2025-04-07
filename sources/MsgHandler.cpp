@@ -201,8 +201,6 @@ void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
-	std::cout << RED << msgData[0] << RESET << std::endl;
-
 	switch (getCommandType(msgData[0]))
 	{
 		case PASS: validatePassword(msgData[1], client);
@@ -270,8 +268,6 @@ void	MsgHandler::receiveMessage(Client &client)
 	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
-
-		std::cout << YELLOW << message << RESET << std::endl;
 		client.msgBuffer.erase(0, i + 2);
 		if (!client.isRegistered() && badPassword(message, client))
 			return ;
