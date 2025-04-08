@@ -107,7 +107,7 @@ void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Cli
 	}
 	if (it->second == password)
 	{
-		info(nickname + " set as operator");
+		info(client.nickname() + " set as operator");
 		client.setIRCOp(true);
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
@@ -294,7 +294,7 @@ void	MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
-	std::cout << buffer; // for testing only 
+	// std::cout << buffer; // for testing only 
 
 	client.msgBuffer += buffer;
 	size_t i;

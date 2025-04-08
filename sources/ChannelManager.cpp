@@ -178,7 +178,7 @@ void ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
 	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
 		sendMSG(targetClient->getFd(), JOIN(client, nickname, channelName));
-		error(JOIN(client, nickname, channelName));
+		error("tryign to trigger IRSSI chat to pop open with: " + JOIN(client, nickname, channelName));
 		info(client.username() + " invited " + nickname + " to channel " + channelName);
 	    addToChannel(*targetClient, channelName);
 	}
