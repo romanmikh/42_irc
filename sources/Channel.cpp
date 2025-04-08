@@ -6,7 +6,6 @@
 Channel::Channel(std::string name) : _channelName(name), 
 									 _channelPassword(""),
 									 _channelTopic("Default"),
-									 _channelMode("Default"),
 									 _channelIsInviteOnly(false),
 									 _channelIsTopicRestricted(false),
 									 _channelIsKeyProtected(false),
@@ -52,10 +51,6 @@ std::string             Channel::getPassword(void) const {
 
 std::string             Channel::getTopic(void) const {
 	return _channelTopic;
-}
-
-std::string             Channel::getMode(void) const {
-	return _channelMode;
 }
 
 size_t                  Channel::getClientCount(void) const {
@@ -106,55 +101,66 @@ bool    Channel::isEmpty(void) const {
 	return _channelClients.empty();
 }
 
-bool    Channel::actionMode(std::string mode, std::string arg, Client& client) {
-	if (mode == "+i" || mode == "-i") {
-		_channelMode = mode;
-		_channelIsInviteOnly = (mode == "+i");
-		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+void Channel::setModeI(std::string &mode, Client &client)
+{
+	_channelIsInviteOnly = (mode == "+i");
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	if (mode == "+i") {
 		info("Channel " + _channelName + " is now invite only: " + boolToString(_channelIsInviteOnly));
-		return true;
 	}
-	else if (mode == "+t" || mode == "-t") {
-		_channelMode = mode;
-		_channelIsTopicRestricted = (mode == "+t");
-		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-		info("Channel " + _channelName + " is now topic restricted: " + boolToString(_channelIsTopicRestricted));
-		return true;
+	else if (mode == "-i") {
+		info("Channel " + _channelName + " is no longer invite only");
 	}
-	else if (mode == "+k" || mode == "-k") {
+}
 
-		std::cout << RED << "test 1" << std::endl;
-		if (mode == "+k" && arg.empty())
-		{
-			std::cout << RED << "test 2" << std::endl;
-			sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
-			return false;
-		}
-		_channelMode = mode;
-		_channelIsKeyProtected = (mode == "+k");
-		if (_channelIsKeyProtected == true)
-			_channelPassword = arg;
-		else
-			_channelPassword = "";
-		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+void Channel::setModeT(std::string &mode, Client &client)
+{
+	_channelIsTopicRestricted = (mode == "+t");
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	if (mode == "+t") {
+		info("Channel " + _channelName + " is now topic restricted: " + boolToString(_channelIsTopicRestricted));
+	}
+	else if (mode == "-t") {
+		info("Channel " + _channelName + " is now topic unrestricted");
+	}
+}
+
+void Channel::setModeK(std::string &mode, std::string &password, Client &client)
+{
+	_channelIsKeyProtected = (mode == "+k");
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	if (mode == "+k") {
+		_channelPassword = password;
 		info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
-		return true;
 	}
-	else if (mode == "+o" || mode == "-o") {
-		_channelMode = mode;
-		_channelIsOperatorRestricted = (mode == "+o");
-		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	else if (mode == "-k") {
+		_channelPassword = "";
+		info("Channel " + _channelName + " is now key unprotected");
+	}
+}
+
+void Channel::setModeO(std::string &mode, Client &client)
+{
+	_channelIsOperatorRestricted = (mode == "+o");
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	if (mode == "+o") {
 		info("Channel " + _channelName + " is now operator restricted: " + boolToString(_channelIsOperatorRestricted));
-		return true;
 	}
-	else if (mode == "+l" || mode == "-l") {
-		_channelMode = mode;
-		_channelIsLimitRestricted = (mode == "+l");
-		broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	else if (mode == "-o") {
+		info("Channel " + _channelName + " is now operator unrestricted");
+	}
+}
+
+void Channel::setModeL(std::string &mode, Client &client)
+{
+	_channelIsLimitRestricted = (mode == "+l");
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	if (mode == "+l") {
 		info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
-		return true;
 	}
-	return false;
+	else if (mode == "-l") {
+		info("Channel " + _channelName + " is no longer limit restricted");
+	}
 }
 
 bool    Channel::hasClient(Client* client) const {

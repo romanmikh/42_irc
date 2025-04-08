@@ -33,6 +33,7 @@ class ChannelManager
         bool        channelExists(const std::string& channelName) const;
         void        inviteClient(std::string &user, const std::string& chan, Client &client);
         bool        isInvited(Client& client, const std::string& channelName) const;
+        void        setChanMode(std::vector<std::string> &msgData, Client &client);
 
     private:       
 

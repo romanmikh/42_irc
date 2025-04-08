@@ -1,4 +1,5 @@
 #include "../include/MsgHandler.hpp"
+#include "../include/irc.hpp"
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
@@ -34,29 +35,14 @@ void MsgHandler::handleMODE(std::string &msg, Client &client)
 		return warning("Insufficient parameters for MODE command");
 	}
 
-	Channel* chan = _manager.getChanByName(msgData[1]);
 	std::string channelName = msgData[1];
+	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
-
-	std::string mode = msgData[2];
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
-	{
-		if (msgData.size() == 4 && msgData[2] == "+k")
-		{
-			chan->actionMode(mode, msgData[3], client);
-			return ;
-		}
-		else if (chan->actionMode(mode, "", client))
-			return ;
-		else
-		{
-			sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
-			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
-		}
-	}
+		_manager.setChanMode(msgData, client);
 	else
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
@@ -294,7 +280,7 @@ void	MsgHandler::receiveMessage(Client &client)
 		return ;
 	}
 	buffer[bytes_read] = '\0';
-	// std::cout << buffer; // for testing only 
+	std::cout << buffer; // for testing only 
 
 	client.msgBuffer += buffer;
 	size_t i;

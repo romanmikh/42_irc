@@ -95,7 +95,7 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 			return;
 		}
 	}
-	else if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
+	if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
 	{
 		sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));
 		return;
@@ -104,10 +104,10 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 	if (std::find(clients.begin(), clients.end(), &client) == clients.end()) {
 		clients.push_back(&client);
 		client.joinChannel(*this, channelName);
+		channel->incClientCount();
 	}
 	info(client.username() + " joined channel " + channelName);
 	// sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
-	channel->incClientCount();
 }
 
 void ChannelManager::removeFromChannel(Client& client, const std::string& channelName)
@@ -195,4 +195,31 @@ void ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
+}
+
+void ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
+{
+	std::string channelName = msgData[1];
+	std::string mode = msgData[2];
+	if (!strchr("itkol", mode[1])) {
+		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
+		return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
+	}
+	Channel *channel = getChanByName(channelName);
+	if (mode[1] == 'i')
+		channel->setModeI(mode, client);
+	else if (mode[1] == 't')
+		channel->setModeT(mode, client);
+	else if (mode[1] == 'k')
+	{
+		if (msgData.size() != 4 || msgData[3] == "") {
+			//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+			return ;
+		}
+		channel->setModeK(mode, msgData[3], client);
+	}
+	else if (mode[1] == 'O')
+		channel->setModeO(mode, client);
+	else if (mode[1] == 'L')
+		channel->setModeL(mode, client);
 }

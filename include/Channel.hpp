@@ -5,19 +5,18 @@ class Channel
 {
     private:
         /* member variables */
-        std::vector<Client *>   _channelClients;
-        std::vector<Client *>   _channelOperators;
-        std::string             _channelName;
-        std::string             _channelPassword;
-        std::string             _channelTopic;
-        std::string             _channelMode;
-        bool                    _channelIsInviteOnly;
-        bool                    _channelIsTopicRestricted;
-        bool                    _channelIsKeyProtected;
-        bool                    _channelIsOperatorRestricted;
-        bool                    _channelIsLimitRestricted;
-        size_t                  _channelClientCount;
-        size_t                  _channelClientLimit;
+        std::vector<Client *>   	_channelClients;
+        std::vector<Client *>   	_channelOperators;
+        std::string             	_channelName;
+        std::string             	_channelPassword;
+        std::string             	_channelTopic;
+        bool                   	 	_channelIsInviteOnly;
+        bool                    	_channelIsTopicRestricted;
+        bool                    	_channelIsKeyProtected;
+        bool                    	_channelIsOperatorRestricted;
+        bool                    	_channelIsLimitRestricted;
+        size_t                  	_channelClientCount;
+        size_t                  	_channelClientLimit;
         
 
     public:
@@ -39,7 +38,6 @@ class Channel
         std::string                 getName(void) const;
         std::string                 getPassword(void) const;
         std::string                 getTopic(void) const;
-        std::string                 getMode(void) const;
         size_t                      getClientLimit(void) const;
         size_t                      getClientCount(void) const;
         size_t                      incClientCount(void);
@@ -48,7 +46,11 @@ class Channel
         void                        setName(std::string &name);
         void                        setPassword(std::string &password);
         void                        setTopic(std::string &topic);
-        void                        setMode(std::string &mode);
+        void                        setModeI(std::string &mode, Client &client);
+        void                        setModeT(std::string &mode, Client &client);
+        void                        setModeK(std::string &mode, std::string &password, Client &client);
+        void                        setModeO(std::string &mode, Client &client);
+        void                        setModeL(std::string &mode, Client &client);
         
         /* member functions */
         bool    isEmpty(void) const;
