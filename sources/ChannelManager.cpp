@@ -161,6 +161,7 @@ void ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 		warning(kicker.nickname() + " is not an operator in channel " + channelName);
 	}
 }
+
 void ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
 {
   	Channel* chan = getChanByName(channelName);
