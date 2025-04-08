@@ -73,14 +73,24 @@ void    ChannelManager::deleteChannel(const std::string &channelName) {
 	}
 }
 
-void ChannelManager::addToChannel(Client& client, const std::string& channelName) {
+bool ChannelManager::isInvited(Client& client, const std::string& channelName) const
+{
+	std::vector<std::string>::const_iterator it = std::find(client.getClientChannelInvites().begin(), client.getClientChannelInvites().end(), channelName);
+	return (it != client.getClientChannelInvites().end());
+}
+
+void ChannelManager::addToChannel(Client& client, const std::string& channelName) 
+{
 	if (_channels.find(channelName) == _channels.end()) {
 		createChannel(channelName, &client);
 	}
 	Channel* channel = _channels[channelName];
 	if (channel->isInviteOnly())
 	{
-		if (!channel->isClientChanOp(&client) && !client.isIRCOp()) {
+		if (isInvited(client, channelName) || channel->isClientChanOp(&client) || client.isIRCOp()) {
+			client.delClientChannelInvite(channelName);
+		}
+		else {
 			sendMSG(client.getFd(), ERR_INVITEONLYCHAN(client, channelName));
 			return;
 		}
@@ -161,6 +171,7 @@ void ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 		warning(kicker.nickname() + " is not an operator in channel " + channelName);
 	}
 }
+
 void ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
 {
   	Channel* chan = getChanByName(channelName);
@@ -177,10 +188,8 @@ void ChannelManager::inviteClient(std::string &nickname, const std::string& chan
         }
 	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
 	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
-		sendMSG(targetClient->getFd(), JOIN(client, nickname, channelName));
-		error("tryign to trigger IRSSI chat to pop open with: " + JOIN(client, nickname, channelName));
 		info(client.username() + " invited " + nickname + " to channel " + channelName);
-	    addToChannel(*targetClient, channelName);
+		client.addClientChannelInvite(channelName);
 	}
 	else {
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));

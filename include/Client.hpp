@@ -7,18 +7,19 @@ class ChannelManager;
 class Client
 {
 	private:
-		std::string				_username;
-		std::string 			_nickname;
-		std::string 			_fullname;
-		std::string 			_hostname;
-		std::string 			_IP;
-		pollfd					_socket;
+		std::string					_username;
+		std::string 				_nickname;
+		std::string 				_fullname;
+		std::string 				_hostname;
+		std::string 				_IP;
+		pollfd						_socket;
 
-		bool					_isRegistered;
-		bool 					_isIRCOp;
+		bool						_isRegistered;
+		bool 						_isIRCOp;
 
-		std::vector<Channel*>   _clientChannels;
-
+		std::vector<Channel*>   	_clientChannels;
+		std::vector<std::string>   	_clientChannelInvites;
+		
 	public:
 
 		/* construcotrs & destructors */
@@ -28,7 +29,8 @@ class Client
 		std::string msgBuffer;
         
         /* accessors */
-		std::vector<Channel*>  getClientChannels() const;
+		std::vector<Channel*>  		getClientChannels() const;
+		std::vector<std::string> 	getClientChannelInvites() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
 		
@@ -39,6 +41,8 @@ class Client
 		void 			setHostname(std::string &hostname);
 		void			setRegistered(bool status);
 		void 			setIRCOp(bool status);
+		void			addClientChannelInvite(const std::string& channelName);
+		void			delClientChannelInvite(const std::string& channelName);
 
 		
 		std::string 	username(void) const;
