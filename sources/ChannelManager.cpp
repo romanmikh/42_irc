@@ -188,8 +188,8 @@ void ChannelManager::inviteClient(std::string &nickname, const std::string& chan
         }
 	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
 	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
+		targetClient->addClientChannelInvite(channelName);
 		info(client.username() + " invited " + nickname + " to channel " + channelName);
-		client.addClientChannelInvite(channelName);
 	}
 	else {
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
