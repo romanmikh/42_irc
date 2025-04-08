@@ -15,8 +15,8 @@ Channel::Channel(std::string name) : _channelName(name),
 									 _channelClientCount(0),
 									 _channelClientLimit(CHAN_CLIENT_LIMIT) {}
 
-Channel::~Channel(void){
-	printStr("Channel destroyed", PURPLE);
+Channel::~Channel(void) {
+	info("Channel " + _channelName + " destroyed");
 }
 
 // ************************************************************************** //
@@ -176,7 +176,8 @@ bool    Channel::isClientChanOp(Client* client) const {
 }
 
 void    Channel::addChanOp(Client* client) {
-	//is this check and warning necessary?
+	//is this check and warning necessary? no but it feels more correct than 
+	// granting rights to a client that is already an op
 	if (client->isIRCOp()) {
 		return warning(client->username() + " is a global operator");
 	}

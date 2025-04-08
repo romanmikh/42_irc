@@ -107,7 +107,7 @@ void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Cli
 	}
 	if (it->second == password)
 	{
-		std::cout << nickname << " set as operator.\n";
+		info(nickname + " set as operator");
 		client.setIRCOp(true);
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
@@ -186,8 +186,10 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		std::vector<Channel*> clientChannels = client->getClientChannels();
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
+			clientChannels[i]->broadcastToChannel(KILL(killer, victim, 
+										clientChannels[i], reasonToKill), NULL);
+			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), 
+												 clientChannels[i]->getName()));
 		}
 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 		_server.disconnectClient(*client);
@@ -204,8 +206,14 @@ void MsgHandler::handleDIE(Client &client)
 	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it)
 	{
 		Client &c = *it->second;
+		std::vector<Channel*> clientChannels = c.getClientChannels();
+		for (size_t i = 0; i < clientChannels.size(); i++)
+		{
+			sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
+		}
 		sendMSG(c.getFd(), DIE(c));
 	}
+	info("DIE command received. Server shutting down...");
 	_server.shutdown();
 }
 
@@ -223,7 +231,6 @@ void MsgHandler::handleNICK(std::string &nickname, Client &client)
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
-
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
