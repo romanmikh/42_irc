@@ -210,16 +210,22 @@ void ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &clie
 		channel->setModeI(mode, client);
 	else if (mode[1] == 't')
 		channel->setModeT(mode, client);
-	else if (mode[1] == 'k')
-	{
-		if (msgData.size() != 4 || msgData[3] == "") {
-			//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
-			return ;
-		}
-		channel->setModeK(mode, msgData[3], client);
-	}
-	else if (mode[1] == 'O')
+	else if (mode[1] == 'o')
 		channel->setModeO(mode, client);
-	else if (mode[1] == 'L')
-		channel->setModeL(mode, client);
+	else if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == "")){
+		return ;
+		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+	}
+	else if (mode[1] == 'k') {
+		if (mode[0] == '+')
+			channel->setModeK(mode, msgData[3], client);
+		else if (mode[0] == '-')
+			channel->setModeK(mode, client);
+	}
+	else if (mode[1] == 'l') {
+		if (mode[0] == '+')
+			channel->setModeL(mode, msgData[3], client);
+		else if (mode[0] == '-')
+			channel->setModeL(mode, client);
+	}
 }

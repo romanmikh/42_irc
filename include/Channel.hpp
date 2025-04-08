@@ -49,7 +49,9 @@ class Channel
         void                        setModeI(std::string &mode, Client &client);
         void                        setModeT(std::string &mode, Client &client);
         void                        setModeK(std::string &mode, std::string &password, Client &client);
+        void                        setModeK(std::string &mode, Client &client);
         void                        setModeO(std::string &mode, Client &client);
+        void                        setModeL(std::string &mode, std::string &size, Client &client);
         void                        setModeL(std::string &mode, Client &client);
         
         /* member functions */

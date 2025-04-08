@@ -127,16 +127,18 @@ void Channel::setModeT(std::string &mode, Client &client)
 
 void Channel::setModeK(std::string &mode, std::string &password, Client &client)
 {
-	_channelIsKeyProtected = (mode == "+k");
+	_channelIsKeyProtected = true;
 	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	if (mode == "+k") {
-		_channelPassword = password;
-		info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
-	}
-	else if (mode == "-k") {
-		_channelPassword = "";
-		info("Channel " + _channelName + " is now key unprotected");
-	}
+	_channelPassword = password;
+	info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
+}
+
+void Channel::setModeK(std::string &mode, Client &client)
+{
+	_channelIsKeyProtected = false;
+	_channelPassword = "";
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	info("Channel " + _channelName + " is now key unprotected");
 }
 
 void Channel::setModeO(std::string &mode, Client &client)
@@ -151,16 +153,21 @@ void Channel::setModeO(std::string &mode, Client &client)
 	}
 }
 
+void Channel::setModeL(std::string &mode, std::string &size, Client &client)
+{
+	_channelIsLimitRestricted = true;
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	std::stringstream ss(size);
+	ss >> _channelClientLimit;
+	info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
+}
+
 void Channel::setModeL(std::string &mode, Client &client)
 {
-	_channelIsLimitRestricted = (mode == "+l");
+	_channelIsLimitRestricted = false;
+	_channelClientLimit = 0;
 	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	if (mode == "+l") {
-		info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
-	}
-	else if (mode == "-l") {
-		info("Channel " + _channelName + " is no longer limit restricted");
-	}
+	info("Channel " + _channelName + " is no longer limit restricted");
 }
 
 bool    Channel::hasClient(Client* client) const {
