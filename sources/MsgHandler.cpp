@@ -4,10 +4,12 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
+
 MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
 	: _server(server), _manager(manager) {};
 
 MsgHandler::~MsgHandler() {};
+
 
 // ************************************************************************** //
 //                             Public Functions                               //
@@ -36,7 +38,7 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 	}
 }
 
-void MsgHandler::handleTOPIC(std::string &msg, Client &client)
+void	MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 	Channel* chan = _manager.getChanByName(msgData[1]);
@@ -101,7 +103,7 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
 }
 
-void MsgHandler::handleKILL(std::string &msg, Client &killer)
+void	MsgHandler::handleKILL(std::string &msg, Client &killer)
 {
 	if (!killer.isIRCOp())
 	{
@@ -132,7 +134,7 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	}
 }
 
-void MsgHandler::handleDIE(Client &client)
+void	MsgHandler::handleDIE(Client &client)
 {
 	if (!client.isIRCOp())
 		return sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
@@ -175,7 +177,7 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 	client.setNickname(nickname);
 }
 
-void MsgHandler::respond(std::string &msg, Client &client)
+void	MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
