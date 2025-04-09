@@ -242,11 +242,11 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG: forwardPrivateMessage(msg, client);
 			break ;
-		case UNKNOWN:
-			break ;
 		case KILL: handleKILL(msg, client);
 			break ;
 		case DIE: handleDIE(client);
+			break ;
+		case UNKNOWN:
 			break ;
 	}
 }
