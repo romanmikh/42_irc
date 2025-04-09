@@ -19,7 +19,7 @@ class MsgHandler
 		void sendWelcomeProtocol(Client &client);
 		void assignUserData(std::string &msg, Client &client);
 
-		void handleNICK(std::string &nickname, Client &client);
+		void handleNICK(std::vector<std::string> &msgData, Client &client);
 		void handleMODE(std::string &msg, Client &client);
 		void handleTOPIC(std::string &msg, Client &client);
 		void validatePassword(std::string &password, Client &client);

@@ -203,17 +203,27 @@ void MsgHandler::handleDIE(Client &client)
 	_server.shutdown();
 }
 
-void MsgHandler::handleNICK(std::string &nickname, Client &client)
+void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 {
-	std::string newNickname = nickname;
-	int i = 1;
-	while (_server.getClientByNick(newNickname))
-	{		
-		std::ostringstream intTag;
-		intTag << i++;
-		newNickname = nickname + std::string(intTag.str());
+	if (msgData.size() < 2) {
+		return sendMSG(client.getFd(), ERR_NONICKNAMEGIVEN(client));
 	}
-	client.setNickname(newNickname);
+
+	std::string nickname = msgData[1];
+	if (client.nickname() == "undefined")
+	{
+		int i = 1;
+		while (_server.getClientByNick(nickname))
+		{		
+			std::ostringstream intTag;
+			intTag << i++;
+			nickname = msgData[1] + intTag.str();
+		}
+	}
+	else if ((_server.getClientByNick(nickname))) {
+		return sendMSG(client.getFd(), ERR_NICKNAMEINUSE(client, msgData[1]));
+	}
+	client.setNickname(nickname);
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
@@ -226,7 +236,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case USER: assignUserData(msg, client);
 			break ;
-		case NICK: if (msgData.size() == 2) handleNICK(msgData[1], client);
+		case NICK: handleNICK(msgData, client); ;
 			break ;
 		case JOIN: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.addToChannel(client, msgData[1]);
 			break ;

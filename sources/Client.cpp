@@ -5,8 +5,8 @@
 // ************************************************************************** //
 Client::Client(pollfd &clientSocket)
 {
-	_nickname = "default";
-	_username = "default";
+	_nickname = "undefined";
+	_username = "undefined";
 	_socket = clientSocket;
 	_isRegistered = false;
 	_isIRCOp = false;
@@ -49,7 +49,6 @@ void 			Client::setFullName(std::string &fullname)
 
 void 			Client::setNickname(std::string &nickname)
 {
-	
 	_nickname = nickname;
 	info("Client " + username() + "'s nickname was set to "	+ nickname);
 }

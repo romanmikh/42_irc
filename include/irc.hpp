@@ -56,6 +56,8 @@
 #define ERR_INVALID_PASSWORD "Invalid password"
 #define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
 #define ERR_NOSUCHCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 403 " + client.nickname() + " " + channelName + " :No such channel\r\n"
+#define ERR_NONICKNAMEGIVEN(client) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " :No nickname given\r\n"
+#define ERR_NICKNAMEINUSE(client, newNickname) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " " + newNickname + " :Nickname already in use\r\n"
 #define ERR_NOTREGISTERED(client) std::string(":") + SERVER_NAME + " 451 " + client.nickname() + " :You have not registered\r\n"
 #define ERR_NEEDMOREPARAMS(client) std::string(":") + SERVER_NAME + " 461 " + client.nickname() + " :Not enough parameters\r\n"
 #define ERR_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
