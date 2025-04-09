@@ -33,9 +33,7 @@ Server::~Server()
 		close(_sockets[i].fd);
 
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
-	{
 		delete it->second;
-	}
 }
 
 // ************************************************************************** //
@@ -164,7 +162,8 @@ void	Server::disconnectClient(Client &client)
 
 	close(client.getFd());
 	_clients.erase(client.getFd());
-	for (unsigned int i = 0; i < _sockets.size(); i++) {
+	for (unsigned int i = 0; i < _sockets.size(); i++)
+	{
 		if (_sockets[i].fd == client.getFd())
 		{
 			_sockets.erase(_sockets.begin() + i);
@@ -182,7 +181,8 @@ void	Server::SIGINTHandler(int signum)
 		info("SIGINT received, shutting server down...");
 		_running = false;
 	}
-	for (clients_t::iterator it = instance->_clients.begin(); it != instance->_clients.end(); ++it) {
+	for (clients_t::iterator it = instance->_clients.begin(); it != instance->_clients.end(); ++it)
+	{
 		Client &c = *it->second;
 		sendMSG(c.getFd(), DIE(c));
 	}

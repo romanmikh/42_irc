@@ -65,9 +65,8 @@ void	Client::delClientChannelInvite(const std::string& channelName)
 {
 	std::vector<std::string>::iterator it = std::find(_clientChannelInvites.begin(), 
 										_clientChannelInvites.end(), channelName);
-	if (it != _clientChannelInvites.end()) {
+	if (it != _clientChannelInvites.end())
 		_clientChannelInvites.erase(it);
-	}
 }
 
 
@@ -86,9 +85,8 @@ void	Client::leaveChannel(ChannelManager& manager,std::string channelName)
 	Channel* chan = manager.getChanByName(channelName);
 	std::vector<Channel*>::iterator it = std::find(_clientChannels.begin(), 
 												   _clientChannels.end(), chan);
-	if (it != _clientChannels.end()) {
+	if (it != _clientChannels.end())
 		_clientChannels.erase(it);
-	}
 }
 
 void	Client::assignUserData(std::string &msg)

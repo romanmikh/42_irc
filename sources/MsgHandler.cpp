@@ -25,7 +25,8 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 
 	std::string channelName = msgData[1];
 	Channel* chan = _manager.getChanByName(channelName);
-	if (!chan) {
+	if (!chan)
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
@@ -43,7 +44,8 @@ void	MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	std::vector<std::string> msgData = split(msg, ' ');
 	Channel* chan = _manager.getChanByName(msgData[1]);
 
-	if (!chan) {
+	if (!chan)
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
 		return warning("Channel " + msgData[1] + " does not exist");
 	}
@@ -85,7 +87,8 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
         return warning("Invalid PRIVMSG format");
 
     const std::string& channel = tokens[1];
-    if (channel.empty() || channel[0] != '#') {
+    if (channel.empty() || channel[0] != '#')
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
         return warning("PRIVMSG channel is missing or invalid");
 	}
