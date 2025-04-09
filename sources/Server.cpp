@@ -219,7 +219,7 @@ void	Server::setBot()
 	this->_internalBotSocket = sv[0];
 	fcntl(sv[0], F_SETFL, O_NONBLOCK);
 	fcntl(sv[1], F_SETFL, O_NONBLOCK);
-	pollfd botSocket = _makePollfd(sv[0], POLLIN | POLLHUP | POLLERR, 0);
+	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
 
 	Client *bot = new Client(botSocket);
 	std::string botNickname = "bot"; // temporary name
@@ -231,7 +231,7 @@ void	Server::setBot()
 	bot->setRegistered(true);
 	
 	_sockets.push_back(botSocket);
-	_clients.insert(client_pair_t (botSocket.fd, bot));
+	_clients.insert(client_pair_t (sv[1], bot));
 	info("Bot " + botNickname + " created with fd: " + intToString(botSocket.fd));
 }
 
