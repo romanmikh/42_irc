@@ -41,23 +41,13 @@ Server::~Server()
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
-clients_t&		Server::getClients(void)
-{
-	return (_clients);
-}
+clients_t&	Server::getClients(void) { return (_clients); }
 
-std::string Server::getPassword(void)
-{
-	return (_password);
-}
+std::string Server::getPassword(void) { return (_password); }
 
-std::map<std::string,std::string> Server::getOpers(void)
-{
-	return (_opers);
-}
+std::map<std::string,std::string> Server::getOpers(void) { return (_opers); }
 
-
-Client* 		Server::getClientByUser(std::string& username) const
+Client*	Server::getClientByUser(std::string& username) const
 {
 	for (clients_t::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
@@ -67,7 +57,7 @@ Client* 		Server::getClientByUser(std::string& username) const
 	return (NULL);
 }
 
-Client* 		Server::getClientByNick(std::string& nickname) const
+Client*	Server::getClientByNick(std::string& nickname) const
 {
 	for (clients_t::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
@@ -81,12 +71,9 @@ Client* 		Server::getClientByNick(std::string& nickname) const
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void	Server::shutdown()
-{
-	_running = false;
-}
+void	Server::shutdown() { _running = false; }
 
-void Server::parseOpersConfigFile(const char *fileName)
+void	Server::parseOpersConfigFile(const char *fileName)
 {
 	std::ifstream file;
 	
@@ -105,14 +92,14 @@ void Server::parseOpersConfigFile(const char *fileName)
 	}
 }
 
-void Server::addclient(pollfd &clientSocket)
+void	Server::addclient(pollfd &clientSocket)
 {
 	Client *newClient = new Client(clientSocket);
 	_clients.insert(client_pair_t (clientSocket.fd, newClient));
 	_sockets.push_back(newClient->getSocket());
 }
 
-void Server::handleNewConnectionRequest(void)
+void	Server::handleNewConnectionRequest(void)
 {
 	sockaddr_in		clientAddr;
 	pollfd			clientSocket;
@@ -132,7 +119,7 @@ void Server::handleNewConnectionRequest(void)
 }
 
 
-void Server::disconnectClient(Client &client)
+void	Server::disconnectClient(Client &client)
 {
 	info(client.username() + " disconnected");
 
@@ -147,7 +134,7 @@ void Server::disconnectClient(Client &client)
 	}
 }
 
-void Server::SIGINTHandler(int signum)
+void	Server::SIGINTHandler(int signum)
 {
 	if (instance == NULL)
 		return error("Server instance is NULL, cannot handle signal");
@@ -163,7 +150,7 @@ void Server::SIGINTHandler(int signum)
 	instance->shutdown();
 }
 
-void Server::run(void)
+void	Server::run(void)
 {
 	ChannelManager  manager(*this);
 	MsgHandler		msg(*this, manager);
@@ -198,10 +185,12 @@ void Server::run(void)
 	}
 }
 
+
 // ************************************************************************** //
 //                             Private Functions                              //
 // ************************************************************************** //
-pollfd Server::_makePollfd(int fd, short int events, short int revents)
+
+pollfd	Server::_makePollfd(int fd, short int events, short int revents)
 {
 	struct pollfd pfd;
 	pfd.fd = fd;
@@ -210,8 +199,10 @@ pollfd Server::_makePollfd(int fd, short int events, short int revents)
 	return pfd;
 }
 
+
 // ************************************************************************** //
 //                             Static Variables                               //
 // ************************************************************************** //
-Server* Server::instance = NULL;
+
+Server*	Server::instance = NULL;
 bool Server::_running = true;
