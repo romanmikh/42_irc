@@ -12,19 +12,7 @@ MsgHandler::~MsgHandler() {};
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void	MsgHandler::assignUserData(std::string &msg, Client &client)
 
-{
-	std::vector<std::string> names = split(msg, ':');
-	client.setFullName(names[1]);
-
-	std::vector<std::string> moreNames = split(names[0], ' ');
-	client.setUsername(moreNames[1]);
-	client.setHostname(moreNames[2]);
-	client.setIP(moreNames[3]);
-
-	sendWelcomeProtocol(client);
-}
 
 void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 {
@@ -217,7 +205,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case DIE: handleDIE(client);
 			break ;
-		case USER: assignUserData(msg, client);
+		case USER: client.assignUserData(msg);
 			break ;
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;
@@ -264,12 +252,3 @@ void	MsgHandler::receiveMessage(Client &client)
 		respond(message, client);
 	}
 }
-
-void	MsgHandler::sendWelcomeProtocol(Client &client)
-{
-	sendMSG(client.getFd(), RPL_WELCOME(client));
-	sendMSG(client.getFd(), RPL_YOURHOST(client));
-	sendMSG(client.getFd(), RPL_CREATED(client));
-	sendMSG(client.getFd(), RPL_MYINFO(client));
-}
-

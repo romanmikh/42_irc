@@ -129,3 +129,20 @@ void Client::leaveChannel(ChannelManager& manager,std::string channelName)
 		_clientChannels.erase(it);
 	}
 }
+
+void	Client::assignUserData(std::string &msg)
+
+{
+	std::vector<std::string> names = split(msg, ':');
+	setFullName(names[1]);
+
+	std::vector<std::string> moreNames = split(names[0], ' ');
+	setUsername(moreNames[1]);
+	setHostname(moreNames[2]);
+	setIP(moreNames[3]);
+
+	sendMSG(this->getFd(), RPL_WELCOME((*this)));
+	sendMSG(this->getFd(), RPL_YOURHOST((*this)));
+	sendMSG(this->getFd(), RPL_CREATED((*this)));
+	sendMSG(this->getFd(), RPL_MYINFO((*this)));
+}
