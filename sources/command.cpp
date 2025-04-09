@@ -1,6 +1,6 @@
 #include "../include/irc.hpp"
 
-std::map<std::string, Command> createCommandMap()
+std::map<std::string, Command>  createCommandMap()
 {
     std::map<std::string, Command> commandMap;
     commandMap["USER"] = USER;

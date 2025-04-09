@@ -4,10 +4,12 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
+
 MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
 	: _server(server), _manager(manager) {};
 
 MsgHandler::~MsgHandler() {};
+
 
 // ************************************************************************** //
 //                             Public Functions                               //
@@ -23,7 +25,8 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 
 	std::string channelName = msgData[1];
 	Channel* chan = _manager.getChanByName(channelName);
-	if (!chan) {
+	if (!chan)
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
@@ -36,12 +39,13 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 	}
 }
 
-void MsgHandler::handleTOPIC(std::string &msg, Client &client)
+void	MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 	Channel* chan = _manager.getChanByName(msgData[1]);
 
-	if (!chan) {
+	if (!chan)
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
 		return warning("Channel " + msgData[1] + " does not exist");
 	}
@@ -83,7 +87,8 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
         return warning("Invalid PRIVMSG format");
 
     const std::string& channel = tokens[1];
-    if (channel.empty() || channel[0] != '#') {
+    if (channel.empty() || channel[0] != '#')
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
         return warning("PRIVMSG channel is missing or invalid");
 	}
@@ -101,7 +106,7 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
 }
 
-void MsgHandler::handleKILL(std::string &msg, Client &killer)
+void	MsgHandler::handleKILL(std::string &msg, Client &killer)
 {
 	if (!killer.isIRCOp())
 	{
@@ -132,7 +137,7 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 	}
 }
 
-void MsgHandler::handleDIE(Client &client)
+void	MsgHandler::handleDIE(Client &client)
 {
 	if (!client.isIRCOp())
 		return sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
@@ -175,7 +180,7 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 	client.setNickname(nickname);
 }
 
-void MsgHandler::respond(std::string &msg, Client &client)
+void	MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 

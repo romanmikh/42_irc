@@ -3,6 +3,7 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
+
 Channel::Channel(std::string name) : _channelName(name), 
 									 _channelPassword(""),
 									 _channelTopic("Default"),
@@ -19,9 +20,11 @@ Channel::~Channel(void)
 	info("Channel " + _channelName + " destroyed");
 }
 
+
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
+
 bool	Channel::isInviteOnly(void) const {	return _channelIsInviteOnly; }
 
 bool	Channel::isTopicRestricted(void) const { return _channelIsTopicRestricted; }
@@ -65,9 +68,11 @@ size_t	Channel::decClientCount(void)
 	}
 }
 
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
+
 bool	Channel::isEmpty(void) const { return _channelClients.empty(); };
 
 void	Channel::setModeI(std::string &mode, Client &client)
@@ -75,13 +80,9 @@ void	Channel::setModeI(std::string &mode, Client &client)
 	_channelIsInviteOnly = (mode == "+i");
 	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 	if (mode == "+i")
-	{
 		info("Channel " + _channelName + " is now invite only: " + boolToString(_channelIsInviteOnly));
-	}
 	else if (mode == "-i")
-	{
 		info("Channel " + _channelName + " is no longer invite only");
-	}
 }
 
 void	Channel::setModeT(std::string &mode, Client &client)
@@ -174,7 +175,7 @@ bool    Channel::isClientChanOp(Client* client) const
 {
 	for (std::vector<Client *>::const_iterator it = _channelOperators.begin(); \
 										it != _channelOperators.end(); ++it)
-										{
+	{
 		if (*it == client)
 			return true;
 	}
@@ -186,13 +187,9 @@ void	Channel::addChanOp(Client* client)
 	//is this check and warning necessary? no but it feels more correct than 
 	// granting rights to a client that is already an op
 	if (client->isIRCOp())
-	{
 		return warning(client->username() + " is a global operator");
-	}
 	if (isClientChanOp(client))
-	{
 		return warning(client->username() + " is already an operator in channel " + _channelName);
-	}
 	_channelOperators.push_back(client);
 	info(client->username() + " is now an operator in channel " + _channelName);
 }
@@ -200,13 +197,9 @@ void	Channel::addChanOp(Client* client)
 void	Channel::removeChanOp(Client* client)
 {
 	if (client->isIRCOp())
-	{
 		return warning(client->username() + " is a global operator");
-	}
 	if (!isClientChanOp(client))
-	{
 		return warning(client->username() + " is not an operator in channel " + _channelName);
-	}
 	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it)
 	{
 		if (*it == client)
@@ -221,17 +214,11 @@ void	Channel::removeChanOp(Client* client)
 void	Channel::broadcastToChannel(std::string message, Client* client)
 {
 	if (isEmpty())
-	{
 		return warning("Channel is empty");
-	}
 	if (message.empty())
-	{
 		return warning("Empty message");
-	}
 	if (message.length() > 512)
-	{
 		return warning("Message too long");
-	}
 	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
 	{
 		if (*it != client)
