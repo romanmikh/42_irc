@@ -3,31 +3,30 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
+
 ChannelManager::ChannelManager(Server &server) : _server(server) {}
 
-ChannelManager::~ChannelManager(void) {
+ChannelManager::~ChannelManager(void)
+{
 	for (channels_t::iterator it = _channels.begin(); it != _channels.end(); ++it) {
 		delete it->second;
 	}
 	_channels.clear();
 }
 
+
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
-const ChannelManager::channels_t&   ChannelManager::getChannels(void) const {
-	return _channels;
-}
 
-size_t                              ChannelManager::getChannelCount(void) const {
-	return _channelCount;
-}
+const ChannelManager::channels_t&	ChannelManager::getChannels(void) const { return _channels; }
 
-size_t                              ChannelManager::incChannelCount(void) {
-	return ++_channelCount;
-}
+size_t	ChannelManager::getChannelCount(void) const { return _channelCount; }
 
-size_t                              ChannelManager::decChannelCount(void) {
+size_t	ChannelManager::incChannelCount(void) { return ++_channelCount; }
+
+size_t	ChannelManager::decChannelCount(void)
+{
 	if (_channelCount > 0)
 		return --_channelCount;
 	else {
@@ -36,14 +35,15 @@ size_t                              ChannelManager::decChannelCount(void) {
 	}
 }
 
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-bool    ChannelManager::channelExists(const std::string& channelName) const {
-	return _channels.find(channelName) != _channels.end();
-}
 
-Channel* ChannelManager::getChanByName(const std::string& channelName) {
+bool	ChannelManager::channelExists(const std::string& channelName) const { return _channels.find(channelName) != _channels.end(); }
+
+Channel*	ChannelManager::getChanByName(const std::string& channelName)
+{
 	channels_t::iterator it = _channels.find(channelName);
 	if (it != _channels.end()) {
 		return it->second;
@@ -51,7 +51,7 @@ Channel* ChannelManager::getChanByName(const std::string& channelName) {
 	return NULL;
 }
 
-void    ChannelManager::createChannel(const std::string &channelName, Client *firstClient)
+void	ChannelManager::createChannel(const std::string &channelName, Client *firstClient)
 {
     Channel *newChannel = new Channel(channelName);
 	_channels.insert(channel_pair_t (channelName, newChannel));
@@ -60,7 +60,8 @@ void    ChannelManager::createChannel(const std::string &channelName, Client *fi
 	incChannelCount();
 }
 
-void    ChannelManager::deleteChannel(const std::string &channelName) {
+void	ChannelManager::deleteChannel(const std::string &channelName)
+{
 	channels_t::iterator it = _channels.find(channelName);
 	if (it != _channels.end()) {
 		delete it->second;
@@ -73,13 +74,13 @@ void    ChannelManager::deleteChannel(const std::string &channelName) {
 	}
 }
 
-bool ChannelManager::isInvited(Client& client, const std::string& channelName) const
+bool	ChannelManager::isInvited(Client& client, const std::string& channelName) const
 {
 	std::vector<std::string>::const_iterator it = std::find(client.getClientChannelInvites().begin(), client.getClientChannelInvites().end(), channelName);
 	return (it != client.getClientChannelInvites().end());
 }
 
-void ChannelManager::addToChannel(Client& client, const std::string& channelName) 
+void	ChannelManager::addToChannel(Client& client, const std::string& channelName) 
 {
 	if (_channels.find(channelName) == _channels.end()) {
 		createChannel(channelName, &client);
@@ -139,7 +140,8 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
         deleteChannel(channelName);
     }
 }
-void ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
+
+void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 {
 	std::string channelName, userToKick, reason;
 	const std::vector<std::string> &msgData = split(msg, ':');
@@ -172,7 +174,7 @@ void ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 	}
 }
 
-void ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
+void	ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
 {
   	Channel* chan = getChanByName(channelName);
   	
@@ -197,7 +199,7 @@ void ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 	}
 }
 
-void ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
+void	ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
 {
 	std::string channelName = msgData[1];
 	std::string mode = msgData[2];
