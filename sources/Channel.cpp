@@ -3,6 +3,7 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
+
 Channel::Channel(std::string name) : _channelName(name), 
 									 _channelPassword(""),
 									 _channelTopic("Default"),
@@ -19,9 +20,11 @@ Channel::~Channel(void)
 	info("Channel " + _channelName + " destroyed");
 }
 
+
 // ************************************************************************** //
 //                               Accessors                                    //
 // ************************************************************************** //
+
 bool	Channel::isInviteOnly(void) const {	return _channelIsInviteOnly; }
 
 bool	Channel::isTopicRestricted(void) const { return _channelIsTopicRestricted; }
@@ -65,9 +68,11 @@ size_t	Channel::decClientCount(void)
 	}
 }
 
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
+
 bool	Channel::isEmpty(void) const { return _channelClients.empty(); };
 
 void	Channel::setModeI(std::string &mode, Client &client)
