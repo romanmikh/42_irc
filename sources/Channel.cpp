@@ -125,20 +125,24 @@ void Channel::setModeT(std::string &mode, Client &client)
 	}
 }
 
-void Channel::setModeK(std::string &mode, std::string &password, Client &client)
+void Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 {
-	_channelIsKeyProtected = true;
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	_channelPassword = password;
-	info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
-}
+	std::string mode = msgData[2];
 
-void Channel::setModeK(std::string &mode, Client &client)
-{
-	_channelIsKeyProtected = false;
-	_channelPassword = "";
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == "")) {
+		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+		return ;
+	}
+	if (mode[0] == '+') {
+		_channelIsKeyProtected = true;
+		_channelPassword = msgData[3];
+	}
+	else {
+		_channelIsKeyProtected = false;
+		_channelPassword = "";
+	}
+	info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
 	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	info("Channel " + _channelName + " is now key unprotected");
 }
 
 void Channel::setModeO(std::string &mode, Client &client)
@@ -153,21 +157,25 @@ void Channel::setModeO(std::string &mode, Client &client)
 	}
 }
 
-void Channel::setModeL(std::string &mode, std::string &size, Client &client)
+void Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 {
-	_channelIsLimitRestricted = true;
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	std::stringstream ss(size);
-	ss >> _channelClientLimit;
-	info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
-}
+	std::string mode = msgData[2];
 
-void Channel::setModeL(std::string &mode, Client &client)
-{
-	_channelIsLimitRestricted = false;
-	_channelClientLimit = 0;
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == "")) {
+		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+		return ;
+	}
+	if (mode[0] == '+') {
+		_channelIsLimitRestricted = true;
+		std::stringstream size(msgData[3]);
+		size >> _channelClientLimit;
+	}
+	else {
+		_channelIsLimitRestricted = false;
+		_channelClientLimit = 0;
+	}
+	info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
 	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	info("Channel " + _channelName + " is no longer limit restricted");
 }
 
 bool    Channel::hasClient(Client* client) const {

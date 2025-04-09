@@ -201,7 +201,7 @@ void ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &clie
 {
 	std::string channelName = msgData[1];
 	std::string mode = msgData[2];
-	if (!strchr("itkol", mode[1])) {
+	if (msgData.size() < 3 || !strchr("itkol", mode[1]) || !strchr("+-", mode[0])) {
 		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
 		return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
 	}
@@ -212,20 +212,8 @@ void ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &clie
 		channel->setModeT(mode, client);
 	else if (mode[1] == 'o')
 		channel->setModeO(mode, client);
-	else if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == "")){
-		return ;
-		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
-	}
-	else if (mode[1] == 'k') {
-		if (mode[0] == '+')
-			channel->setModeK(mode, msgData[3], client);
-		else if (mode[0] == '-')
-			channel->setModeK(mode, client);
-	}
-	else if (mode[1] == 'l') {
-		if (mode[0] == '+')
-			channel->setModeL(mode, msgData[3], client);
-		else if (mode[0] == '-')
-			channel->setModeL(mode, client);
-	}
+	else if (mode[1] == 'k')
+			channel->setModeK(msgData, client);
+	else if (mode[1] == 'l')
+		channel->setModeL(msgData, client);
 }
