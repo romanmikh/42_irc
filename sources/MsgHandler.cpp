@@ -1,4 +1,5 @@
 #include "../include/MsgHandler.hpp"
+#include "../include/irc.hpp"
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
@@ -25,23 +26,23 @@ void	MsgHandler::assignUserData(std::string &msg, Client &client)
 	sendWelcomeProtocol(client);
 }
 
-void MsgHandler::handleMODE(std::string &channelName, std::string &mode, Client &client)
+void MsgHandler::handleMODE(std::string &msg, Client &client)
 {
+	std::vector<std::string> msgData = split(msg, ' ');
+
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
+		return warning("Insufficient parameters for MODE command");
+	}
+
+	std::string channelName = msgData[1];
 	Channel* chan = _manager.getChanByName(channelName);
 	if (!chan) {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
-	{
-		if (chan->actionMode(mode, client))
-			return ;
-		else
-		{
-			sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
-			return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
-		}
-	}
+		_manager.setChanMode(msgData, client);
 	else
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
@@ -76,10 +77,8 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 			warning(client.nickname() + " is not an operator in channel " + msgData[1]);
 		}
 	}
-	else if (msgData.size() == 2)
-	{
+	else
 		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
-	}
 }
 
 void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Client &client)
@@ -94,7 +93,7 @@ void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Cli
 	}
 	if (it->second == password)
 	{
-		std::cout << nickname << " set as operator.\n";
+		info(client.nickname() + " set as operator");
 		client.setIRCOp(true);
 		sendMSG(client.getFd(), RPL_YOUROPER(client));
 	}
@@ -173,8 +172,10 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		std::vector<Channel*> clientChannels = client->getClientChannels();
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
+			clientChannels[i]->broadcastToChannel(KILL(killer, victim, 
+										clientChannels[i], reasonToKill), NULL);
+			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), 
+												 clientChannels[i]->getName()));
 		}
 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 		_server.disconnectClient(*client);
@@ -191,8 +192,14 @@ void MsgHandler::handleDIE(Client &client)
 	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it)
 	{
 		Client &c = *it->second;
+		std::vector<Channel*> clientChannels = c.getClientChannels();
+		for (size_t i = 0; i < clientChannels.size(); i++)
+		{
+			sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
+		}
 		sendMSG(c.getFd(), DIE(c));
 	}
+	info("DIE command received. Server shutting down...");
 	_server.shutdown();
 }
 
@@ -210,7 +217,6 @@ void MsgHandler::handleNICK(std::string &nickname, Client &client)
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)
-
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
@@ -230,7 +236,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case KICK: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.kickFromChannel(msg, client);
 			break ;
-		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msgData[1], msgData[2], client);
+		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msg, client);
 			break ;
 		case TOPIC: handleTOPIC(msg, client);
 			break ;

@@ -94,6 +94,24 @@ std::vector<Channel*>   Client::getClientChannels() const {
 	return (_clientChannels);
 }
 
+std::vector<std::string> 	Client::getClientChannelInvites() const {
+	return (_clientChannelInvites);
+}
+
+void Client::addClientChannelInvite(const std::string& channelName)
+{
+	_clientChannelInvites.push_back(channelName);
+}
+
+void Client::delClientChannelInvite(const std::string& channelName)
+{
+	std::vector<std::string>::iterator it = std::find(_clientChannelInvites.begin(), 
+										_clientChannelInvites.end(), channelName);
+	if (it != _clientChannelInvites.end()) {
+		_clientChannelInvites.erase(it);
+	}
+}
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //

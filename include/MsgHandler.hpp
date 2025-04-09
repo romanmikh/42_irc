@@ -20,7 +20,7 @@ class MsgHandler
 		void assignUserData(std::string &msg, Client &client);
 
 		void handleNICK(std::string &nickname, Client &client);
-		void handleMODE(std::string &channelName, std::string &mode, Client &client);
+		void handleMODE(std::string &msg, Client &client);
 		void handleTOPIC(std::string &msg, Client &client);
 		void validatePassword(std::string &password, Client &client);
 		void handleDIE(Client &client);

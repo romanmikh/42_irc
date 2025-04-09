@@ -64,8 +64,8 @@
 #define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " : You're not a channel operator\r\n"
 #define ERR_CHANNELISFULL(client, channelName) std::string(":") + SERVER_NAME + " 471 " + client.nickname() + " " + channelName + " :Cannot join channel (+l)\r\n"
 #define ERR_UNKNOWNMODE(client, c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + " " + c + " : is unknown mode char to me\r\n"
-
-
+#define ERR_INVITEONLYCHAN(client, channelName) std::string(":") + SERVER_NAME + " 473 " + client.nickname() + " " + channelName + " :Cannot join channel (+i)\r\n"
+#define ERR_BADCHANNELKEY(client, channelName) std::string(":") + SERVER_NAME + " 475 " + client.nickname() + " " + channelName + " :Cannot join channel (+k)\r\n"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
@@ -85,6 +85,7 @@
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
 #define KICK(kicker, channel, client, reason) std::string(":") + kicker.nickname() + "!" + kicker.username() + "@" + kicker.hostname() + " KICK " + channel + " " + client + " :" + reason + "\r\n"
 #define INVITE(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " INVITE " + nickname + " :" + channel + "\r\n"
+#define JOIN(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " JOIN " + " :" + channel + "\r\n"
 
 
 

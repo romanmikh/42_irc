@@ -111,4 +111,3 @@ void sendMSG(int fd, std::string RPL)
 {
 	send(fd, RPL.c_str(), RPL.length(), MSG_DONTWAIT);
 }
-

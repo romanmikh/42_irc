@@ -22,6 +22,7 @@ class ChannelManager
         size_t                  getChannelCount(void) const;
         size_t                  incChannelCount(void);
         size_t                  decChannelCount(void);
+        Channel*                getChanByName(const std::string& channelName);
 
         /* member functions */
         void        createChannel(const std::string &channelName, Client *firstClient);
@@ -31,7 +32,8 @@ class ChannelManager
         void        addToChannel(Client& client, const std::string& channelName);
         bool        channelExists(const std::string& channelName) const;
         void        inviteClient(std::string &user, const std::string& chan, Client &client);
-        Channel*    getChanByName(const std::string& channelName);
+        bool        isInvited(Client& client, const std::string& channelName) const;
+        void        setChanMode(std::vector<std::string> &msgData, Client &client);
 
     private:       
 
