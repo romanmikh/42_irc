@@ -110,7 +110,7 @@ void ChannelManager::addToChannel(Client& client, const std::string& channelName
 	// sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
 }
 
-void ChannelManager::removeFromChannel(Client& client, const std::string& channelName)
+void ChannelManager::removeFromChannel(const std::string& channelName, Client& client)
 {
     Channel* channel = getChanByName(channelName);
 
@@ -143,9 +143,9 @@ void ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 {
 	std::string channelName, userToKick, reason;
 	const std::vector<std::string> &msgData = split(msg, ':');
-	const std::vector<std::string> &names = split(msgData[0], ' ');
-	
 	reason = (msgData.size() > 1) ? msgData[1] : "No reason given";
+	
+	const std::vector<std::string> &names = split(msgData[0], ' ');
 	channelName = names[1];
 	userToKick = names[2];
 
@@ -161,7 +161,7 @@ void ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 		if (client)
 		{
 			chan->broadcastToChannel(KICK(kicker, channelName, client->nickname(), reason), &kicker);
-			removeFromChannel(*client, channelName);
+			removeFromChannel(channelName, *client);
 			sendMSG(client->getFd(), KICK(kicker, channelName, client->nickname(), reason));
 		}
 	}

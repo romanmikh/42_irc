@@ -26,10 +26,8 @@ void	MsgHandler::assignUserData(std::string &msg, Client &client)
 	sendWelcomeProtocol(client);
 }
 
-void MsgHandler::handleMODE(std::string &msg, Client &client)
+void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 {
-	std::vector<std::string> msgData = split(msg, ' ');
-
 	if (msgData.size() < 2) {
 		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
 		return warning("Insufficient parameters for MODE command");
@@ -81,25 +79,25 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
 }
 
-void	MsgHandler::validateIRCOp(std::string &nickname, std::string &password, Client &client)
+void	MsgHandler::validateIRCOp(std::vector<std::string> &msgData, Client &client)
 {
+	if (msgData.size() != 3) {
+		return sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
+	}
+	std::string nickname = msgData[1];
+	std::string password = msgData[2];
 	std::map<std::string, std::string> allowedOpers = _server.getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
 
-	if (it == allowedOpers.end())
-	{
-		sendMSG(client.getFd(), ERR_NOOPERHOST(client));
-		return ;
+	if (it == allowedOpers.end()){
+		return sendMSG(client.getFd(), ERR_NOOPERHOST(client));
 	}
-	if (it->second == password)
-	{
-		info(client.nickname() + " set as operator");
-		client.setIRCOp(true);
-		sendMSG(client.getFd(), RPL_YOUROPER(client));
+	if (it->second != password) {
+		return sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 	}
-	else {
-		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-	}
+	info(client.nickname() + " set as operator");
+	client.setIRCOp(true);
+	sendMSG(client.getFd(), RPL_YOUROPER(client));
 }
 
 void	MsgHandler::validatePassword(std::string &password, Client &client)
@@ -238,15 +236,15 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case NICK: handleNICK(msgData, client); ;
 			break ;
-		case JOIN: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.addToChannel(client, msgData[1]);
+		case JOIN: _manager.addToChannel(client, msgData[1]);
 			break ;
-		case PART: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.removeFromChannel(client, msgData[1]);
+		case PART: _manager.removeFromChannel(msgData[1], client);
 			break ;
-		case INVITE: if (msgData.size() > 1 && msgData[2][0] == '#') _manager.inviteClient(msgData[1], msgData[2], client);
+		case INVITE: _manager.inviteClient(msgData[1], msgData[2], client);
 			break ;
-		case KICK: if (msgData.size() > 1 && msgData[1][0] == '#') _manager.kickFromChannel(msg, client);
+		case KICK: _manager.kickFromChannel(msg, client);
 			break ;
-		case MODE: if (msgData.size() > 1 && msgData[1][0] == '#') handleMODE(msg, client);
+		case MODE: handleMODE(msgData, client);
 			break ;
 		case TOPIC: handleTOPIC(msg, client);
 			break ;
@@ -254,7 +252,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case QUIT: _server.disconnectClient(client);
 			break ;
-		case OPER: if (msgData.size() == 3) validateIRCOp(msgData[1], msgData[2], client);
+		case OPER: validateIRCOp(msgData, client);
 			break ;
 		case PRIVMSG: forwardPrivateMessage(msg, client);
 			break ;
