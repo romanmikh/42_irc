@@ -185,10 +185,10 @@ void	ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		Client* targetClient = _server.getClientByNick(nickname);
-        if (!targetClient)
-            return warning("Client " + nickname + " not found");
-	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
-	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
+		if (!targetClient)
+			return warning("Client " + nickname + " not found");
+		sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
+		sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
 		targetClient->addClientChannelInvite(channelName);
 		info(client.username() + " invited " + nickname + " to channel " + channelName);
 	}
