@@ -14,6 +14,7 @@ Server::Server(int port, std::string &password)
 	listeningSocket.events = POLLIN;
 	listeningSocket.revents = 0;
 	_sockets.push_back(listeningSocket);
+	_internalBotSocket = -1;
 	
 	sockaddr_in	serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
@@ -32,6 +33,12 @@ Server::~Server()
 	for (unsigned int i = 0; i < _sockets.size(); i++)
 		close(_sockets[i].fd);
 
+	if (_internalBotSocket != -1)
+	{
+		close(_internalBotSocket);
+		_internalBotSocket = -1;
+	}
+	
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
 		delete it->second;
 }
@@ -64,6 +71,19 @@ Client*	Server::getClientByNick(std::string& nickname) const
 	}
 	warning("Client with nickname " + nickname + " not found");
 	return (NULL);
+}
+
+// ************************************************************************** //
+//                             Private Functions                              //
+// ************************************************************************** //
+
+pollfd	Server::_makePollfd(int fd, short int events, short int revents)
+{
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = events;
+	pfd.revents = revents;
+	return pfd;
 }
 
 // ************************************************************************** //
@@ -105,10 +125,7 @@ void	Server::validateIRCOp(std::vector<std::string> &msgData, Client &client)
 	sendMSG(client.getFd(), RPL_YOUROPER(client));
 }
 
-void	Server::shutdown()
-{
-	_running = false;
-}
+void	Server::shutdown() { _running = false; }
 
 void	Server::parseOpersConfigFile(const char *fileName)
 {
@@ -189,6 +206,35 @@ void	Server::SIGINTHandler(int signum)
 	instance->shutdown();
 }
 
+void	Server::setBot()
+{
+	info("Setting bot...");
+
+	int	sv[2];
+	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1)
+	{
+		warning("Failed to create socket pair for bot");
+		return;
+	}
+	this->_internalBotSocket = sv[0];
+	fcntl(sv[0], F_SETFL, O_NONBLOCK);
+	fcntl(sv[1], F_SETFL, O_NONBLOCK);
+	pollfd botSocket = _makePollfd(sv[0], POLLIN | POLLHUP | POLLERR, 0);
+
+	Client *bot = new Client(botSocket);
+	std::string botNickname = "bot"; // temporary name
+	std::string botUsername = "bot";
+	std::string botHostname = "bot";
+	bot->setNickname(botNickname);
+	bot->setUsername(botUsername);
+	bot->setHostname(botHostname);
+	bot->setRegistered(true);
+	
+	_sockets.push_back(botSocket);
+	_clients.insert(client_pair_t (botSocket.fd, bot));
+	info("Bot " + botNickname + " created with fd: " + intToString(botSocket.fd));
+}
+
 void	Server::run(void)
 {
 	ChannelManager  manager(*this);
@@ -197,6 +243,7 @@ void	Server::run(void)
 	Server::instance = this;
 	signal(SIGINT, SIGINTHandler);
 	info("Running...");
+	setBot();
 	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
@@ -225,18 +272,7 @@ void	Server::run(void)
 }
 
 
-// ************************************************************************** //
-//                             Private Functions                              //
-// ************************************************************************** //
 
-pollfd	Server::_makePollfd(int fd, short int events, short int revents)
-{
-	struct pollfd pfd;
-	pfd.fd = fd;
-	pfd.events = events;
-	pfd.revents = revents;
-	return pfd;
-}
 
 
 // ************************************************************************** //

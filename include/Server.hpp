@@ -18,6 +18,7 @@ class Server
 		std::string				_password;
 		unsigned int			_port;
 		static bool				_running;
+		int						_internalBotSocket;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -44,6 +45,7 @@ class Server
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client &client);
 		void			shutdown();
+		void			setBot();
 
 		/* static members */
 		static Server*  instance;
