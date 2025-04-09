@@ -45,9 +45,8 @@ bool	ChannelManager::channelExists(const std::string& channelName) const { retur
 Channel*	ChannelManager::getChanByName(const std::string& channelName)
 {
 	channels_t::iterator it = _channels.find(channelName);
-	if (it != _channels.end()) {
+	if (it != _channels.end())
 		return it->second;
-	}
 	return NULL;
 }
 
@@ -63,15 +62,15 @@ void	ChannelManager::createChannel(const std::string &channelName, Client *first
 void	ChannelManager::deleteChannel(const std::string &channelName)
 {
 	channels_t::iterator it = _channels.find(channelName);
-	if (it != _channels.end()) {
+	if (it != _channels.end())
+	{
 		delete it->second;
 		_channels.erase(it);
 		info("Channel deleted: " + channelName);
 		decChannelCount();
 	}
-	else {
+	else
 		warning("Channel " + channelName + " does not exist");
-	}
 }
 
 bool	ChannelManager::isInvited(Client& client, const std::string& channelName) const
@@ -82,16 +81,15 @@ bool	ChannelManager::isInvited(Client& client, const std::string& channelName) c
 
 void	ChannelManager::addToChannel(Client& client, const std::string& channelName) 
 {
-	if (_channels.find(channelName) == _channels.end()) {
+	if (_channels.find(channelName) == _channels.end())
 		createChannel(channelName, &client);
-	}
 	Channel* channel = _channels[channelName];
 	if (channel->isInviteOnly())
 	{
-		if (isInvited(client, channelName) || channel->isClientChanOp(&client) || client.isIRCOp()) {
+		if (isInvited(client, channelName) || channel->isClientChanOp(&client) || client.isIRCOp())
 			client.delClientChannelInvite(channelName);
-		}
-		else {
+		else
+		{
 			sendMSG(client.getFd(), ERR_INVITEONLYCHAN(client, channelName));
 			return;
 		}
@@ -115,7 +113,8 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
 {
     Channel* channel = getChanByName(channelName);
 
-	if (!channel) {
+	if (!channel)
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
     }
@@ -136,9 +135,8 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
         info(client.username() + " removed from channel " + channelName);
         sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
     }
-    if (channel->getClients().empty()) {
+    if (channel->getClients().empty())
         deleteChannel(channelName);
-    }
 }
 
 void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
@@ -152,7 +150,8 @@ void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 	userToKick = names[2];
 
 	Channel* chan = getChanByName(channelName);
-	if (!chan) {
+	if (!chan)
+	{
 		sendMSG(kicker.getFd(), ERR_NOSUCHCHANNEL(kicker, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
@@ -178,22 +177,23 @@ void	ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 {
   	Channel* chan = getChanByName(channelName);
   	
-	if (!chan) {
+	if (!chan)
+	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
 	if (chan->isClientChanOp(&client) || client.isIRCOp())
 	{
 		Client* targetClient = _server.getClientByNick(nickname);
-        if (!targetClient) {
+        if (!targetClient)
             return warning("Client " + nickname + " not found");
-        }
 	    sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
 	    sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
 		targetClient->addClientChannelInvite(channelName);
 		info(client.username() + " invited " + nickname + " to channel " + channelName);
 	}
-	else {
+	else
+	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
@@ -203,7 +203,8 @@ void	ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &clie
 {
 	std::string channelName = msgData[1];
 	std::string mode = msgData[2];
-	if (msgData.size() < 3 || !strchr("itkol", mode[1]) || !strchr("+-", mode[0])) {
+	if (msgData.size() < 3 || !strchr("itkol", mode[1]) || !strchr("+-", mode[0]))
+	{
 		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
 		return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
 	}

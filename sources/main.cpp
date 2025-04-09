@@ -9,7 +9,7 @@ int checkInput(int ac, char **av)
     if (!isValidPassword(av[2]))
         return(errMsg("", ERR_PASSWORD_FORMAT, 1));
     // ...
-    return (0);
+    return 0;
 }
 
 int main(int ac, char **av)
@@ -27,5 +27,5 @@ int main(int ac, char **av)
     Server server(port, password);
     server.run();
 
-    return (0);
+    return 0;
 }
