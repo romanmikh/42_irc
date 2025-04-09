@@ -195,6 +195,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case KICK: _manager.kickFromChannel(msg, client);
 			break ;
+		case USER: client.assignUserData(msg);
+			break ;
 		case NICK: handleNICK(msgData, client); ;
 			break ;
 		case MODE: handleMODE(msgData, client);
@@ -204,8 +206,6 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		case KILL: handleKILL(msg, client);
 			break ;
 		case DIE: handleDIE(client);
-			break ;
-		case USER: client.assignUserData(msg);
 			break ;
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;
