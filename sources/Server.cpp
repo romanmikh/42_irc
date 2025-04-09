@@ -1,4 +1,5 @@
 #include "../include/irc.hpp"
+#include "QuoteBot.hpp"
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
@@ -117,7 +118,7 @@ void	Server::validateIRCOp(std::vector<std::string> &msgData, Client &client)
 	if (it == allowedOpers.end()){
 		return sendMSG(client.getFd(), ERR_NOOPERHOST(client));
 	}
-	if (it->second != password) {
+	if (it->second != password){
 		return sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 	}
 	info(client.nickname() + " set as operator");
@@ -222,9 +223,9 @@ void	Server::setBot()
 	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
 
 	Client *bot = new Client(botSocket);
-	std::string botNickname = "bot"; // temporary name
-	std::string botUsername = "bot";
-	std::string botHostname = "bot";
+	std::string botNickname = "QuoteBot"; // temporary name
+	std::string botUsername = "QuoteBot";
+	std::string botHostname = "QuoteBot";
 	bot->setNickname(botNickname);
 	bot->setUsername(botUsername);
 	bot->setHostname(botHostname);
@@ -243,7 +244,10 @@ void	Server::run(void)
 	Server::instance = this;
 	signal(SIGINT, SIGINTHandler);
 	info("Running...");
+
 	setBot();
+	QuoteBot quoteBot;
+	quoteBot.inititateConnection(*this);
 	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);

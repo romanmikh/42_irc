@@ -11,6 +11,8 @@ QuoteBot::~QuoteBot(void)
 
 bool	QuoteBot::inititateConnection(Server& server)
 {
+	std::cout << PURPLE << "QuoteBot::inititateConnection()" << RESET << std::endl;
+
 	if (_apiSocketFd != -1)
 	{
 		warning("QuoteBot is already connected");
@@ -20,7 +22,6 @@ bool	QuoteBot::inititateConnection(Server& server)
 	const char* hostname = "api.forismatic.com";
 	const char* port = "80";
 	addrinfo hints, *res = NULL, *p = NULL;
-	int status;
 	int socketFd = -1;
 
 	memset(&hints, 0, sizeof hints);
@@ -28,10 +29,12 @@ bool	QuoteBot::inititateConnection(Server& server)
 	hints.ai_socktype = SOCK_STREAM;
 
 	int status = getaddrinfo(hostname, port, &hints, &res);
+
+	std::cout << PURPLE << "getaddrinfo status: " << status << RESET << std::endl;
 	if (status != 0)
 	{
 		warning(std::string("getaddrinfo: ") + gai_strerror(status));
-		return;
+		return false;
 	}
 
 	for (p = res; p != NULL; p = p->ai_next)
@@ -52,7 +55,7 @@ bool	QuoteBot::inititateConnection(Server& server)
 		status = connect(socketFd, p->ai_addr, p->ai_addrlen);
 		if (status == -1 && errno == EINPROGRESS)
 		{
-			info("Connecting to QuoteBot API in fd " + std::to_string(socketFd));
+			info("Connecting to QuoteBot API in fd " + intToString(socketFd));
 			_apiSocketFd = socketFd;
 			_isConnecting = true;
 			pollfd apiPollFd = {_apiSocketFd, POLLIN, 0};

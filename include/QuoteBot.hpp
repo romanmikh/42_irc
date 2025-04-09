@@ -16,4 +16,4 @@ class QuoteBot
 
 		bool	inititateConnection(Server& server);
 
-}
+};
