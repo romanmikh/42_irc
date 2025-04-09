@@ -20,6 +20,8 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
 		return warning("Insufficient parameters for MODE command");
 	}
+	if (_server.getClientByNick(msgData[1]))
+		return ;
 
 	std::string channelName = msgData[1];
 	Channel* chan = _manager.getChanByName(channelName);
