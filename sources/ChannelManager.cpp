@@ -50,13 +50,14 @@ Channel*	ChannelManager::getChanByName(const std::string& channelName)
 	return NULL;
 }
 
-void	ChannelManager::createChannel(const std::string &channelName, Client *firstClient)
+Channel	*ChannelManager::createChannel(const std::string &channelName, Client *firstClient)
 {
     Channel *newChannel = new Channel(channelName);
 	_channels.insert(channel_pair_t (channelName, newChannel));
     newChannel->addChanOp(firstClient);
 	info("Channel created: " + channelName);
 	incChannelCount();
+	return (newChannel);
 }
 
 void	ChannelManager::deleteChannel(const std::string &channelName)
@@ -73,36 +74,48 @@ void	ChannelManager::deleteChannel(const std::string &channelName)
 		warning("Channel " + channelName + " does not exist");
 }
 
-bool	ChannelManager::isInvited(Client& client, const std::string& channelName) const
+bool ChannelManager::chanPermissionsFail(Client& client, const std::string& channelName, std::string &channelKey)
 {
-	std::vector<std::string>::const_iterator it = std::find(client.getClientChannelInvites().begin(), client.getClientChannelInvites().end(), channelName);
-	return (it != client.getClientChannelInvites().end());
-}
-
-void	ChannelManager::addToChannel(Client& client, const std::string& channelName) 
-{
-	if (_channels.find(channelName) == _channels.end())
-		createChannel(channelName, &client);
 	Channel* channel = _channels[channelName];
-	if (channel->isInviteOnly())
-	{
-		if (isInvited(client, channelName) || channel->isClientChanOp(&client) || client.isIRCOp())
-			client.delClientChannelInvite(channelName);
-		else
-		{
-			sendMSG(client.getFd(), ERR_INVITEONLYCHAN(client, channelName));
-			return;
-		}
-	}
+
 	if (channel->isLimitRestricted() && (channel->getClientCount() >= channel->getClientLimit())) 
 	{
 		sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));
-		return;
+		return (true);
+	}
+	if (channel->isKeyProtected() && channelKey != channel->getPassword()) {
+		sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, channelName));
+		return (true);
+	}
+	if (channel->isInviteOnly() && !(client.isInvited(channelName) || channel->isClientChanOp(&client) || client.isIRCOp()))
+	{
+		sendMSG(client.getFd(), ERR_INVITEONLYCHAN(client, channelName));
+		return (true);
+	}
+	return (false);
+}
+
+void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &client)
+{
+	std::string &channelName = msgData[1];
+	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
+
+	if (_channels.find(channelName) == _channels.end()) {
+		createChannel(channelName, &client);
+	}
+	Channel* channel = _channels[channelName];
+	if (!channel) {
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+		return warning("Channel " + channelName + " does not exist");
+	}
+	if (chanPermissionsFail(client, channelName, channelKey)) {
+		return ;
 	}
 	std::vector<Client *>& clients = channel->getClients();
 	if (std::find(clients.begin(), clients.end(), &client) == clients.end()) {
 		clients.push_back(&client);
 		client.joinChannel(*this, channelName);
+		client.delClientChannelInvite(channelName);
 		channel->incClientCount();
 	}
 	info(client.username() + " joined channel " + channelName);

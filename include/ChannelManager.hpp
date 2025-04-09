@@ -25,15 +25,15 @@ class ChannelManager
         Channel*                getChanByName(const std::string& channelName);
 
         /* member functions */
-        void        createChannel(const std::string &channelName, Client *firstClient);
+        Channel     *createChannel(const std::string &channelName, Client *firstClient);
         void        deleteChannel(const std::string &channelName);
         void        removeFromChannel(const std::string& channelName, Client& client);
         void        kickFromChannel(std::string &msg, Client &kicker);
-        void        addToChannel(Client& client, const std::string& channelName);
+        void        addToChannel(std::vector<std::string> &msgData, Client &client);
         bool        channelExists(const std::string& channelName) const;
         void        inviteClient(std::string &user, const std::string& chan, Client &client);
-        bool        isInvited(Client& client, const std::string& channelName) const;
         void        setChanMode(std::vector<std::string> &msgData, Client &client);
+        bool        chanPermissionsFail(Client& client, const std::string& channelName, std::string &channelKey);
 
     private:       
 

@@ -105,3 +105,9 @@ void	Client::assignUserData(std::string &msg)
 	sendMSG(this->getFd(), RPL_CREATED((*this)));
 	sendMSG(this->getFd(), RPL_MYINFO((*this)));
 }
+
+bool	Client::isInvited(const std::string& channelName) const
+{
+	std::vector<std::string>::const_iterator it = std::find(getClientChannelInvites().begin(), getClientChannelInvites().end(), channelName);
+	return (it != getClientChannelInvites().end());
+}
