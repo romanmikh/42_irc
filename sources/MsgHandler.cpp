@@ -71,11 +71,11 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 
 void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 {
-	const std::vector<Channel*>& clientChannels = client.getClientChannels();
+	// const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
 
-	if (clientChannels.empty())
-		return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
+	// if (clientChannels.empty())
+	// 	return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
 
 	if (msg.empty())
         return warning("Empty PRIVMSG received");
@@ -103,36 +103,35 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
 }
 
-void MsgHandler::handleKILL(std::string &msg, Client &killer)
-{
-	if (!killer.isIRCOp())
-	{
-		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
-		return ;
-	}
+// void MsgHandler::handleKILL(std::string &msg, Client &killer)
+// {
+// 	if (!killer.isIRCOp())
+// 	{
+// 		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
+// 		return ;
+// 	}
 
-	std::istringstream ss(msg);
-	std::string killCommand, userToKill, reasonToKill;
-	getline(ss, killCommand, ' ');
-	getline(ss, userToKill, ' ');
-	getline(ss, reasonToKill);
+// 	std::istringstream ss(msg);
+// 	std::string killCommand, userToKill, reasonToKill;
+// 	getline(ss, killCommand, ' ');
+// 	getline(ss, userToKill, ' ');
+// 	getline(ss, reasonToKill);
 
-	Client *client = _server.getClientByNick(userToKill);
-	if (client)
-	{
-		Client& victim = *client;
+// 	Client *client = _server.getClientByNick(userToKill);
+// 	if (client)
+// 	{
+// 		Client& victim = *client;
 
-		std::vector<Channel*> clientChannels = client->getClientChannels();
-		for (size_t i = 0; i < clientChannels.size(); i++)
-		{
-			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
-		}
-		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
-		_server.disconnectClient(*client);
-		return ;
-	}
-}
+// 		std::vector<Channel*> clientChannels = client->getClientChannels();
+// 		for (size_t i = 0; i < clientChannels.size(); i++)
+// 		{
+// 			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
+// 		}
+// 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
+// 		_server.disconnectClient(*client);
+// 		return ;
+// 	}
+// }
 
 void MsgHandler::handleDIE(Client &client)
 {
@@ -143,11 +142,6 @@ void MsgHandler::handleDIE(Client &client)
 	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it)
 	{
 		Client &c = *it->second;
-		std::vector<Channel*> clientChannels = c.getClientChannels();
-		for (size_t i = 0; i < clientChannels.size(); i++)
-		{
-			sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
-		}
 		sendMSG(c.getFd(), DIE(c));
 	}
 	info("DIE command received. Server shutting down...");
@@ -205,8 +199,8 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case TOPIC: handleTOPIC(msg, client);
 			break ;
-		case KILL: handleKILL(msg, client);
-			break ;
+		// case KILL: handleKILL(msg, client);
+		// 	break ;
 		case DIE: handleDIE(client);
 			break ;
 		case PING: sendMSG(client.getFd(), PONG);

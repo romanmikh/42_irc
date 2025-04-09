@@ -29,8 +29,8 @@ class Client
 		std::string msgBuffer;
         
         /* accessors */
-		std::vector<Channel*>  		getClientChannels() const;
-		std::vector<std::string> 	getClientChannelInvites() const;
+		// std::vector<Channel*>  		getClientChannels() const;
+		std::vector<std::string> 	getChannelInvites() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
 		
@@ -41,8 +41,8 @@ class Client
 		void 			setHostname(std::string &hostname);
 		void			setRegistered(bool status);
 		void 			setIRCOp(bool status);
-		void			addClientChannelInvite(const std::string& channelName);
-		void			delClientChannelInvite(const std::string& channelName);
+		void			addChannelInvite(const std::string& channelName);
+		void			delChannelInvite(const std::string& channelName);
 		void 			assignUserData(std::string &msg);
 
 		std::string 	username(void) const;
@@ -55,8 +55,8 @@ class Client
         bool	        isInvited(const std::string& channelName) const;
 		
 		/* member functions */
-		void    		joinChannel(ChannelManager& manager, std::string channelName);
-        void    		leaveChannel(ChannelManager& manager, std::string channelName);
+		// void    		joinChannel(ChannelManager& manager, std::string channelName);
+        // void    		leaveChannel(ChannelManager& manager, std::string channelName);
 		
 
 };

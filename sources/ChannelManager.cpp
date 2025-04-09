@@ -82,7 +82,7 @@ bool ChannelManager::chanPermissionsFail(Client& client, const std::string& chan
 		sendMSG(client.getFd(), ERR_CHANNELISFULL(client, channelName));
 		return (true);
 	}
-	if (channel->isKeyProtected() && channelKey != channel->getPassword()) {
+	if (channel->isKeyProtected() && channelKey != channel->getPasskey()) {
 		sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, channelName));
 		return (true);
 	}
@@ -110,8 +110,8 @@ void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &cli
 	std::vector<Client *>& clients = channel->getClients();
 	if (std::find(clients.begin(), clients.end(), &client) == clients.end()) {
 		clients.push_back(&client);
-		client.joinChannel(*this, channelName);
-		client.delClientChannelInvite(channelName);
+		// client.joinChannel(*this, channelName);
+		client.delChannelInvite(channelName);
 		channel->incClientCount();
 	}
 	info(client.username() + " joined channel " + channelName);
@@ -137,7 +137,7 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
         if (channel->isClientChanOp(&client))
             channel->removeChanOp(&client);
         
-        client.leaveChannel(*this, channelName);
+        // client.leaveChannel(*this, channelName);
         channelClients.erase(clientIt);
         channel->decClientCount();
             
@@ -198,7 +198,7 @@ void	ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 			return warning("Client " + nickname + " not found");
 		sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
 		sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
-		targetClient->addClientChannelInvite(channelName);
+		targetClient->addChannelInvite(channelName);
 		info(client.username() + " invited " + nickname + " to channel " + channelName);
 	}
 	else

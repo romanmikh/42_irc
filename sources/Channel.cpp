@@ -10,7 +10,6 @@ Channel::Channel(std::string name) : _channelName(name),
 									 _channelIsInviteOnly(false),
 									 _channelIsTopicRestricted(false),
 									 _channelIsKeyProtected(false),
-									 _channelIsOperatorRestricted(false),
 									 _channelIsLimitRestricted(false),
 									 _channelClientCount(0),
 									 _channelClientLimit(CHAN_CLIENT_LIMIT) {}
@@ -31,13 +30,11 @@ bool	Channel::isTopicRestricted(void) const { return _channelIsTopicRestricted; 
 
 bool	Channel::isKeyProtected(void) const { return _channelIsKeyProtected; }
 
-bool	Channel::isOperatorRestricted(void) const { return _channelIsOperatorRestricted; }
-
 bool	Channel::isLimitRestricted(void) const { return _channelIsLimitRestricted; }
 
 std::string	Channel::getName(void) const { return _channelName; }
 
-std::string	Channel::getPassword(void) const { return _channelPassword; }
+std::string	Channel::getPasskey(void) const { return _channelPassword; }
 
 std::string	Channel::getTopic(void) const { return _channelTopic; }
 
@@ -103,7 +100,7 @@ void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 {
 	std::string mode = msgData[2];
 
-	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == "")) {
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3].empty())) {
 		//sendMSG();
 		return ;
 	}
@@ -148,7 +145,7 @@ void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 {
 	std::string mode = msgData[2];
 
-	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == ""))
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3].empty()))
 	{
 		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
 		return ;
@@ -192,8 +189,6 @@ bool    Channel::isClientChanOp(Client* client) const
 
 void	Channel::addChanOp(Client* client)
 {
-	//is this check and warning necessary? no but it feels more correct than 
-	// granting rights to a client that is already an op
 	if (client->isIRCOp())
 		return warning(client->nickname() + " is a global operator");
 	if (isClientChanOp(client))
@@ -208,10 +203,8 @@ void	Channel::removeChanOp(Client* client)
 		return warning(client->nickname() + " is a global operator");
 	if (!isClientChanOp(client))
 		return warning(client->nickname() + " is not an operator in channel " + _channelName);
-	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it)
-	{
-		if (*it == client)
-		{
+	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it) {
+		if (*it == client) {
 			_channelOperators.erase(it);
 			return;
 		}

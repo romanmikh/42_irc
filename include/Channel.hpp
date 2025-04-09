@@ -13,7 +13,6 @@ class Channel
         bool                   	 	_channelIsInviteOnly;
         bool                    	_channelIsTopicRestricted;
         bool                    	_channelIsKeyProtected;
-        bool                    	_channelIsOperatorRestricted;
         bool                    	_channelIsLimitRestricted;
         size_t                  	_channelClientCount;
         size_t                  	_channelClientLimit;
@@ -21,22 +20,19 @@ class Channel
 
     public:
         /* construcotrs & destructors */
-        Channel(void);
         Channel(const std::string name);
-        Channel(const Channel &other);
         ~Channel(void);
         
         /* accessors */
         bool                        isInviteOnly(void) const;
         bool                        isTopicRestricted(void) const;
         bool                        isKeyProtected(void) const;
-        bool                        isOperatorRestricted(void) const;
         bool                        isLimitRestricted(void) const;
 
         std::vector<Client*>&       getClients(void);
         std::vector<Client*>&       getOperators(void);
         std::string                 getName(void) const;
-        std::string                 getPassword(void) const;
+        std::string                 getPasskey(void) const;
         std::string                 getTopic(void) const;
         size_t                      getClientLimit(void) const;
         size_t                      getClientCount(void) const;
