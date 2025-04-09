@@ -49,12 +49,11 @@ class Channel
         void                        setModeI(std::string &mode, Client &client);
         void                        setModeT(std::string &mode, Client &client);
         void                        setModeK(std::vector<std::string> &msgData, Client &client);
-        void                        setModeO(std::string &mode, Client &client);
+        void                        setModeO(std::vector<std::string> &msgData, Client &client, Server &server);
         void                        setModeL(std::vector<std::string> &msgData, Client &client);
         
         /* member functions */
         bool    isEmpty(void) const;
-        bool    actionMode(std::string mode, std::string arg, Client& client);
         bool    hasClient(Client* client) const;
         void    addChanOp(Client* client);
         void    removeChanOp(Client* client);

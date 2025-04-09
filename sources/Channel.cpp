@@ -103,18 +103,15 @@ void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 {
 	std::string mode = msgData[2];
 
-	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == ""))
-	{
-		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == "")) {
+		//sendMSG();
 		return ;
 	}
-	if (mode[0] == '+')
-	{
+	if (mode[0] == '+') {
 		_channelIsKeyProtected = true;
 		_channelPassword = msgData[3];
 	}
-	else
-	{
+	else {
 		_channelIsKeyProtected = false;
 		_channelPassword = "";
 	}
@@ -122,18 +119,29 @@ void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 }
 
-void	Channel::setModeO(std::string &mode, Client &client)
+void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server &server)
 {
-	_channelIsOperatorRestricted = (mode == "+o");
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	if (mode == "+o")
-	{
-		info("Channel " + _channelName + " is now operator restricted: " + boolToString(_channelIsOperatorRestricted));
+	std::string &channelName = msgData[1];
+	std::string mode = msgData[2];
+
+	if (msgData.size() != 4) {
+		//sendMSG();
+		return ;
 	}
-	else if (mode == "-o")
-	{
-		info("Channel " + _channelName + " is now operator unrestricted");
+	Client *recipient = server.getClientByNick(msgData[3]);
+	if (!recipient) {
+		return sendMSG(client.getFd(), ERR_NOSUCHNICK(client, msgData[3]));
 	}
+	if (mode[0] == '+') {
+		addChanOp(recipient);	
+		info("Client " + recipient->nickname() + "added as " + _channelName + " channel Operator by " + client.nickname());
+	}
+	else {
+		removeChanOp(recipient);	
+		info("Client " + recipient->nickname() + "removed as " + _channelName + " channel Operator by " + client.nickname());
+	}
+	sendMSG(recipient->getFd(), SETCHANOP(channelName, mode, (*recipient)));
+	//broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 }
 
 void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
@@ -187,19 +195,19 @@ void	Channel::addChanOp(Client* client)
 	//is this check and warning necessary? no but it feels more correct than 
 	// granting rights to a client that is already an op
 	if (client->isIRCOp())
-		return warning(client->username() + " is a global operator");
+		return warning(client->nickname() + " is a global operator");
 	if (isClientChanOp(client))
-		return warning(client->username() + " is already an operator in channel " + _channelName);
+		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
-	info(client->username() + " is now an operator in channel " + _channelName);
+	info(client->nickname() + " is now an operator in channel " + _channelName);
 }
 
 void	Channel::removeChanOp(Client* client)
 {
 	if (client->isIRCOp())
-		return warning(client->username() + " is a global operator");
+		return warning(client->nickname() + " is a global operator");
 	if (!isClientChanOp(client))
-		return warning(client->username() + " is not an operator in channel " + _channelName);
+		return warning(client->nickname() + " is not an operator in channel " + _channelName);
 	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it)
 	{
 		if (*it == client)
@@ -208,7 +216,7 @@ void	Channel::removeChanOp(Client* client)
 			return;
 		}
 	}
-	info(client->username() + " is no longer an operator in channel " + _channelName);
+	info(client->nickname() + " is no longer an operator in channel " + _channelName);
 }
 
 void	Channel::broadcastToChannel(std::string message, Client* client)

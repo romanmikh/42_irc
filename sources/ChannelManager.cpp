@@ -50,11 +50,10 @@ Channel*	ChannelManager::getChanByName(const std::string& channelName)
 	return NULL;
 }
 
-Channel	*ChannelManager::createChannel(const std::string &channelName, Client *firstClient)
+Channel	*ChannelManager::createChannel(const std::string &channelName)
 {
     Channel *newChannel = new Channel(channelName);
 	_channels.insert(channel_pair_t (channelName, newChannel));
-    newChannel->addChanOp(firstClient);
 	info("Channel created: " + channelName);
 	incChannelCount();
 	return (newChannel);
@@ -98,16 +97,13 @@ bool ChannelManager::chanPermissionsFail(Client& client, const std::string& chan
 void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &client)
 {
 	std::string &channelName = msgData[1];
-	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
+	Channel	*channel = getChanByName(channelName);
 
-	if (_channels.find(channelName) == _channels.end()) {
-		createChannel(channelName, &client);
-	}
-	Channel* channel = _channels[channelName];
 	if (!channel) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
-		return warning("Channel " + channelName + " does not exist");
+		channel = createChannel(channelName);
+		channel->addChanOp(&client);
 	}
+	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
 	if (chanPermissionsFail(client, channelName, channelKey)) {
 		return ;
 	}
@@ -214,22 +210,23 @@ void	ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 
 void	ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
 {
+	if (msgData.size() < 3 || !strchr("+-", msgData[2][0]) || !strchr("itkol", msgData[2][1]))
+	{
+		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, msgData[2]));
+		return warning("Invalid mode: " + msgData[1] + ". +/- {i, t, k, o, l}");
+	}
 	std::string channelName = msgData[1];
 	std::string mode = msgData[2];
-	if (msgData.size() < 3 || !strchr("itkol", mode[1]) || !strchr("+-", mode[0]))
-	{
-		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, mode));
-		return warning("Invalid mode: " + mode + ". +/- {i, t, k, o, l}");
-	}
+
 	Channel *channel = getChanByName(channelName);
 	if (mode[1] == 'i')
 		channel->setModeI(mode, client);
 	else if (mode[1] == 't')
 		channel->setModeT(mode, client);
-	else if (mode[1] == 'o')
-		channel->setModeO(mode, client);
 	else if (mode[1] == 'k')
-			channel->setModeK(msgData, client);
+		channel->setModeK(msgData, client);
+	else if (mode[1] == 'o')
+		channel->setModeO(msgData, client, _server);
 	else if (mode[1] == 'l')
 		channel->setModeL(msgData, client);
 }

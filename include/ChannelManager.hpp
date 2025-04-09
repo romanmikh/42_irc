@@ -25,7 +25,7 @@ class ChannelManager
         Channel*                getChanByName(const std::string& channelName);
 
         /* member functions */
-        Channel     *createChannel(const std::string &channelName, Client *firstClient);
+        Channel     *createChannel(const std::string &channelName);
         void        deleteChannel(const std::string &channelName);
         void        removeFromChannel(const std::string& channelName, Client& client);
         void        kickFromChannel(std::string &msg, Client &kicker);

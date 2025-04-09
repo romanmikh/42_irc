@@ -55,6 +55,7 @@
 #define ERR_PORT_NUMERIC "Port number must be numeric (1024 - 65535)"
 #define ERR_INVALID_PASSWORD "Invalid password"
 #define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
+#define ERR_NOSUCHNICK(client, nick) std::string(":") + SERVER_NAME + " 401 " + client.nickname() + " " + nick + " :No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 403 " + client.nickname() + " " + channelName + " :No such channel\r\n"
 #define ERR_NONICKNAMEGIVEN(client) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " :No nickname given\r\n"
 #define ERR_NICKNAMEINUSE(client, newNickname) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " " + newNickname + " :Nickname already in use\r\n"
@@ -88,6 +89,7 @@
 #define KICK(kicker, channel, client, reason) std::string(":") + kicker.nickname() + "!" + kicker.username() + "@" + kicker.hostname() + " KICK " + channel + " " + client + " :" + reason + "\r\n"
 #define INVITE(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " INVITE " + nickname + " :" + channel + "\r\n"
 #define JOIN(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " JOIN " + " :" + channel + "\r\n"
+#define SETCHANOP(channelName, mode, client) std::string(":") + SERVER_NAME + " MODE " + channelName + " " + mode + " " + client.nickname() + "\r\n"
 
 
 

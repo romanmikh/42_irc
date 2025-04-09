@@ -45,7 +45,6 @@ class Client
 		void			delClientChannelInvite(const std::string& channelName);
 		void 			assignUserData(std::string &msg);
 
-		
 		std::string 	username(void) const;
 		std::string 	nickname(void) const;
 		std::string 	hostname(void) const;
@@ -54,7 +53,6 @@ class Client
 		bool 			isIRCOp(void) const;
 		bool 			isChanOp(const std::string &channelName, ChannelManager &manager) const;
         bool	        isInvited(const std::string& channelName) const;
-
 		
 		/* member functions */
 		void    		joinChannel(ChannelManager& manager, std::string channelName);
