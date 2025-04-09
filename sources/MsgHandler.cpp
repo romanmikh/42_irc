@@ -79,41 +79,6 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
 }
 
-void	MsgHandler::validateIRCOp(std::vector<std::string> &msgData, Client &client)
-{
-	if (msgData.size() != 3) {
-		return sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
-	}
-	std::string nickname = msgData[1];
-	std::string password = msgData[2];
-	std::map<std::string, std::string> allowedOpers = _server.getOpers();
-	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
-
-	if (it == allowedOpers.end()){
-		return sendMSG(client.getFd(), ERR_NOOPERHOST(client));
-	}
-	if (it->second != password) {
-		return sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-	}
-	info(client.nickname() + " set as operator");
-	client.setIRCOp(true);
-	sendMSG(client.getFd(), RPL_YOUROPER(client));
-}
-
-void	MsgHandler::validatePassword(std::string &password, Client &client)
-{
-	if (password == _server.getPassword())
-	{
-		client.setRegistered(true);
-		sendMSG(client.getFd(), RPL_REGISTERED(client));
-	}
-	else
-	{
-		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-		_server.disconnectClient(client);
-	}
-}
-
 void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 {
 	const std::vector<Channel*>& clientChannels = client.getClientChannels();
@@ -170,10 +135,8 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		std::vector<Channel*> clientChannels = client->getClientChannels();
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			clientChannels[i]->broadcastToChannel(KILL(killer, victim, 
-										clientChannels[i], reasonToKill), NULL);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), 
-												 clientChannels[i]->getName()));
+			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
+			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
 		}
 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 		_server.disconnectClient(*client);
@@ -230,11 +193,11 @@ void MsgHandler::respond(std::string &msg, Client &client)
 
 	switch (getCommandType(msgData[0]))
 	{
-		case PASS: validatePassword(msgData[1], client);
+		case PASS: _server.validatePassword(msgData[1], client);
 			break ;
-		case USER: assignUserData(msg, client);
+		case QUIT: _server.disconnectClient(client);
 			break ;
-		case NICK: handleNICK(msgData, client); ;
+		case OPER: _server.validateIRCOp(msgData, client);
 			break ;
 		case JOIN: _manager.addToChannel(client, msgData[1]);
 			break ;
@@ -244,21 +207,21 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case KICK: _manager.kickFromChannel(msg, client);
 			break ;
+		case NICK: handleNICK(msgData, client); ;
+			break ;
 		case MODE: handleMODE(msgData, client);
 			break ;
 		case TOPIC: handleTOPIC(msg, client);
 			break ;
-		case PING: sendMSG(client.getFd(), PONG);
-			break ;
-		case QUIT: _server.disconnectClient(client);
-			break ;
-		case OPER: validateIRCOp(msgData, client);
-			break ;
-		case PRIVMSG: forwardPrivateMessage(msg, client);
-			break ;
 		case KILL: handleKILL(msg, client);
 			break ;
 		case DIE: handleDIE(client);
+			break ;
+		case USER: assignUserData(msg, client);
+			break ;
+		case PING: sendMSG(client.getFd(), PONG);
+			break ;
+		case PRIVMSG: forwardPrivateMessage(msg, client);
 			break ;
 		case UNKNOWN:
 			break ;

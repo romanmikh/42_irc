@@ -71,7 +71,46 @@ Client*	Server::getClientByNick(std::string& nickname) const
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
-void	Server::shutdown() { _running = false; }
+
+void	Server::validatePassword(std::string &password, Client &client)
+{
+	if (password == getPassword())
+	{
+		client.setRegistered(true);
+		sendMSG(client.getFd(), RPL_REGISTERED(client));
+	}
+	else
+	{
+		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+		disconnectClient(client);
+	}
+}
+
+void	Server::validateIRCOp(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() != 3) {
+		return sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
+	}
+	std::string nickname = msgData[1];
+	std::string password = msgData[2];
+	std::map<std::string, std::string> allowedOpers = getOpers();
+	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
+
+	if (it == allowedOpers.end()){
+		return sendMSG(client.getFd(), ERR_NOOPERHOST(client));
+	}
+	if (it->second != password) {
+		return sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+	}
+	info(client.nickname() + " set as operator");
+	client.setIRCOp(true);
+	sendMSG(client.getFd(), RPL_YOUROPER(client));
+}
+
+void	Server::shutdown()
+{
+	_running = false;
+}
 
 void	Server::parseOpersConfigFile(const char *fileName)
 {

@@ -39,6 +39,8 @@ class Server
 		void 			run(void);
 		void 			parseOpersConfigFile(const char *file);
 		void 			handleNewConnectionRequest();
+		void			validatePassword(std::string &password, Client &client);
+		void			validateIRCOp(std::vector<std::string> &msgData, Client &client);
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client &client);
 		void			shutdown();

@@ -22,9 +22,7 @@ class MsgHandler
 		void handleNICK(std::vector<std::string> &msgData, Client &client);
 		void handleMODE(std::vector<std::string> &msgData, Client &client);
 		void handleTOPIC(std::string &msg, Client &client);
-		void validatePassword(std::string &password, Client &client);
 		void handleDIE(Client &client);
-		void validateIRCOp(std::vector<std::string> &msgData, Client &client);
 		void handleKILL(std::string &msg, Client &client);
 		void forwardPrivateMessage(std::string &msg, Client &client);
 		
