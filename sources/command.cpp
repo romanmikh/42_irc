@@ -18,6 +18,7 @@ std::map<std::string, Command>  createCommandMap()
     commandMap["PRIVMSG"] = PRIVMSG;
     commandMap["KILL"] = KILL;
     commandMap["DIE"] = DIE;
+    commandMap["QUOTE"] = QUOTE;
     return commandMap;
 }
 

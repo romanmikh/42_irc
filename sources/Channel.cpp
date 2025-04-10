@@ -13,7 +13,7 @@ Channel::Channel(std::string name) : _channelName(name),
 									 _channelIsOperatorRestricted(false),
 									 _channelIsLimitRestricted(false),
 									 _channelClientCount(0),
-									 _channelClientLimit(CHAN_CLIENT_LIMIT) {}
+									 _channelClientLimit(0) {}
 
 Channel::~Channel(void)
 {

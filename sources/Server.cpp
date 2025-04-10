@@ -74,6 +74,13 @@ Client*	Server::getClientByNick(std::string& nickname) const
 	return (NULL);
 }
 
+QuoteBot&	Server::getQuoteBot(void)
+{
+	if (_internalBotSocket == -1)
+		warning("QuoteBot not initialized");
+	return (*_quoteBot);
+}
+
 // ************************************************************************** //
 //                             Private Functions                              //
 // ************************************************************************** //
@@ -223,7 +230,7 @@ void	Server::setBot()
 	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
 
 	Client *bot = new Client(botSocket);
-	std::string botNickname = "QuoteBot"; // temporary name
+	std::string botNickname = "QuoteBot";
 	std::string botUsername = "QuoteBot";
 	std::string botHostname = "QuoteBot";
 	bot->setNickname(botNickname);
@@ -246,8 +253,7 @@ void	Server::run(void)
 	info("Running...");
 
 	setBot();
-	QuoteBot quoteBot;
-	quoteBot.inititateConnection(*this);
+	QuoteBot	quoteBot;
 	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
@@ -260,7 +266,15 @@ void	Server::run(void)
 			}
 			for (unsigned int i = _sockets.size() - 1; i > 0 && serverActivity > 0; --i)
 			{
-				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+				if (_sockets[i].fd == quoteBot.getApiSocketFd())
+				{
+					if (_sockets[i].revents & POLLIN)
+					{
+						quoteBot.handleAPIMessage(*this);
+						serverActivity--;
+					}
+				}
+				else if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					disconnectClient(*(_clients[_sockets[i].fd]));
 					serverActivity--;
@@ -274,9 +288,6 @@ void	Server::run(void)
 		}
 	}
 }
-
-
-
 
 
 // ************************************************************************** //

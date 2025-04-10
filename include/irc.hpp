@@ -47,7 +47,6 @@
 /* Macros */
 #define MIN_PORT 1024
 #define MAX_PORT 65535
-#define CHAN_CLIENT_LIMIT 2
 
 /* Error messages */
 #define ERR_USAGE "Usage: ./ircserv <port> <password>"
@@ -68,6 +67,7 @@
 #define ERR_UNKNOWNMODE(client, c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + " " + c + " : is unknown mode char to me\r\n"
 #define ERR_INVITEONLYCHAN(client, channelName) std::string(":") + SERVER_NAME + " 473 " + client.nickname() + " " + channelName + " :Cannot join channel (+i)\r\n"
 #define ERR_BADCHANNELKEY(client, channelName) std::string(":") + SERVER_NAME + " 475 " + client.nickname() + " " + channelName + " :Cannot join channel (+k)\r\n"
+#define ERR_QUOTEBOTCONNECTING(client) std::string(":") + SERVER_NAME + client.nickname() + " QuoteBot is busy right now. Try again later\r\n"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
@@ -139,7 +139,8 @@ enum Command
     PASS,
     UNKNOWN,
     KILL,
-    DIE
+    DIE,
+    QUOTE
 };
 
 std::map<std::string, Command>  createCommandMap();

@@ -180,6 +180,25 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 	client.setNickname(nickname);
 }
 
+void	MsgHandler::handleQuote(std::string& channelTarget, Client& client)
+{
+	std::cout << RED << ""
+
+
+	if (_server.getQuoteBot().isConnecting())
+	{
+		sendMSG(client.getFd(), ERR_QUOTEBOTCONNECTING(client));
+		return;
+	}
+	if (!_server.getQuoteBot().inititateConnection(_server))
+	{
+		info("Failed to connect to QuoteBot API");
+		return;
+	}
+	_server.getQuoteBot().setRequesterClient(&client);
+	_server.getQuoteBot().setRequesterChannel(channelTarget);
+}
+
 void	MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
@@ -215,6 +234,8 @@ void	MsgHandler::respond(std::string &msg, Client &client)
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;
 		case PRIVMSG: forwardPrivateMessage(msg, client);
+			break ;
+		case QUOTE: handleQuote(msgData[1], client);
 			break ;
 		case UNKNOWN:
 			break ;

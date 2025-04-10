@@ -21,6 +21,7 @@ class MsgHandler
 		void handleTOPIC(std::string &msg, Client &client);
 		void handleDIE(Client &client);
 		void handleKILL(std::string &msg, Client &client);
+		void handleQuote(std::string &channelTarget, Client &client);
 		void forwardPrivateMessage(std::string &msg, Client &client);
 		bool badPassword(std::string &message, Client &client);
 

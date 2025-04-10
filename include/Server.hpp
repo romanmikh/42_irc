@@ -1,8 +1,10 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 #include "irc.hpp"
+#include "QuoteBot.hpp"
 
 class Client;
+class QuoteBot;
 
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
@@ -19,6 +21,7 @@ class Server
 		unsigned int			_port;
 		static bool				_running;
 		int						_internalBotSocket;
+		QuoteBot*				_quoteBot;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -35,6 +38,7 @@ class Server
 		clients_t&							getClients(void);
 		Client*								getClientByUser(std::string& user) const;
 		Client*								getClientByNick(std::string& nick) const;
+		QuoteBot&							getQuoteBot(void);
 		
 		/* member functions*/
 		void 			run(void);
