@@ -23,6 +23,10 @@ Server::Server(int port, std::string &password)
 
 	int opt = 1;
 	setsockopt(_sockets[0].fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	if (fcntl(_sockets[0].fd, F_SETFL, O_NONBLOCK) < 0) {
+		error("fcntl failure");
+		exit(-1);
+	}
 	bind(_sockets[0].fd, (struct sockaddr *)(&serverAddr), sizeof(serverAddr));
 	listen(_sockets[0].fd, 10);
 }
@@ -79,15 +83,11 @@ void	Server::validatePassword(std::string &password, Client &client)
 	else
 	{
 		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-		disconnectClient(client);
 	}
 }
 
 void	Server::validateIRCOp(std::vector<std::string> &msgData, Client &client)
 {
-	if (msgData.size() != 3) {
-		return sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
-	}
 	std::string nickname = msgData[1];
 	std::string password = msgData[2];
 	std::map<std::string, std::string> allowedOpers = getOpers();
@@ -135,6 +135,23 @@ void	Server::addclient(pollfd &clientSocket)
 	_sockets.push_back(newClient->getSocket());
 }
 
+void	Server::disconnectClient(Client *client)
+{
+	info(client->username() + " disconnected");
+
+	for (unsigned int i = 0; i < _sockets.size(); i++)
+	{
+		if (_sockets[i].fd == client->getFd())
+		{
+			close(client->getFd());
+			_clients.erase(client->getFd());
+			_sockets.erase(_sockets.begin() + i);
+			delete client;
+			return ;
+		}
+	}
+}
+
 void	Server::handleNewConnectionRequest(void)
 {
 	sockaddr_in		clientAddr;
@@ -145,30 +162,12 @@ void	Server::handleNewConnectionRequest(void)
 	clientSocket = _makePollfd(clientSocket.fd, POLLIN | POLLHUP | POLLERR, 0);
 	if (clientSocket.fd < 0)
 	{
-		error("New socket creation failed.");
 		close(_sockets[0].fd);
-		return ;
+		return error("New socket creation failed.");
 	}
-	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
+	// sendMSG(clientSocket.fd, "CAP * LS : \r\n");
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
-}
-
-
-void	Server::disconnectClient(Client &client)
-{
-	info(client.username() + " disconnected");
-
-	close(client.getFd());
-	_clients.erase(client.getFd());
-	for (unsigned int i = 0; i < _sockets.size(); i++)
-	{
-		if (_sockets[i].fd == client.getFd())
-		{
-			_sockets.erase(_sockets.begin() + i);
-			break ;
-		}
-	}
 }
 
 void	Server::SIGINTHandler(int signum)
@@ -210,7 +209,7 @@ void	Server::run(void)
 			{
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
-					disconnectClient(*(_clients[_sockets[i].fd]));
+					disconnectClient(_clients[_sockets[i].fd]);
 					serverActivity--;
 				}
 				else if (_sockets[i].revents & POLLIN)

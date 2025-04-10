@@ -4,13 +4,14 @@
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
 
-Client::Client(pollfd &clientSocket)
+Client::Client(pollfd clientSocket)
 {
 	_nickname = "undefined";
 	_username = "undefined";
 	_socket = clientSocket;
 	_isRegistered = false;
 	_isIRCOp = false;
+	msgBuffer = "";
 }
 
 Client::~Client() {}

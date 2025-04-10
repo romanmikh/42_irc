@@ -23,7 +23,7 @@ class Client
 	public:
 
 		/* construcotrs & destructors */
-		Client(pollfd &clientSocket);
+		Client(pollfd clientSocket);
 		~Client(void);
 
 		std::string msgBuffer;

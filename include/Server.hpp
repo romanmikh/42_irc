@@ -42,7 +42,7 @@ class Server
 		void			validatePassword(std::string &password, Client &client);
 		void			validateIRCOp(std::vector<std::string> &msgData, Client &client);
 		void 			addclient(pollfd &clientSocket);
-		void 			disconnectClient(Client &client);
+		void 			disconnectClient(Client *client);
 		void			shutdown();
 
 		/* static members */

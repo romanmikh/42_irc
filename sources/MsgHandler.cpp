@@ -43,25 +43,25 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
 	std::string topic = split(msg, ':').back();
 	std::string channelName = split(msg, ' ').at(1);
-	Channel* chan = _manager.getChanByName(channelName);
+	Channel* channel = _manager.getChanByName(channelName);
 
-	if (!chan) {
+	if (!channel) {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
-	if (!chan->hasClient(&client))
+	if (!channel->hasClient(&client))
 	{
 		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
-	if (chan->isTopicRestricted() && !(chan->isClientChanOp(&client) || client.isIRCOp()))
+	if (channel->isTopicRestricted() && !(channel->isClientChanOp(&client) || client.isIRCOp()))
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
-	chan->setTopic(topic, client.nickname());
-	info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + topic);
-	chan->broadcast(RPL_TOPIC(client, chan->getName(), topic));
+	channel->setTopic(topic, client.nickname());
+	info(client.nickname() + " changed topic of channel " + channel->getName() + " to: " + topic);
+	channel->broadcast(RPL_TOPIC(client, channel->getName(), topic));
 }
 
 void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
@@ -81,7 +81,6 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 		return warning("Channel is empty");
 	channel->broadcastSilent(STD_PREFIX(client) + " " + msg, &client);
 }
-
 
 // void MsgHandler::handleKILL(std::string &msg, Client &killer)
 // {
@@ -140,9 +139,7 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 		int i = 1;
 		while (_server.getClientByNick(nickname))
 		{		
-			std::ostringstream intTag;
-			intTag << i++;
-			nickname = msgData[1] + intTag.str();
+			nickname = msgData[1] + intToString(i);
 		}
 	}
 	else if ((_server.getClientByNick(nickname))) {
@@ -159,7 +156,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	{
 		case PASS: _server.validatePassword(msgData[1], client);
 			break ;
-		case QUIT: _server.disconnectClient(client);
+		case QUIT: _server.disconnectClient(&client);
 			break ;
 		case OPER: _server.validateIRCOp(msgData, client);
 			break ;
@@ -198,7 +195,7 @@ void	MsgHandler::receiveMessage(Client &client)
 	
 	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0) {
-		return _server.disconnectClient(client);
+		return _server.disconnectClient(&client);
 	}
 	buffer[bytes_read] = '\0';
 	std::cout << buffer; // for testing only 
@@ -211,8 +208,10 @@ void	MsgHandler::receiveMessage(Client &client)
 		client.msgBuffer.erase(0, i + 2);
 		if (!client.isRegistered() && split(message, ' ').front() == "NICK")
 		{
+			error("Invalid or no password: client disconnected.");
 			sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-			return _server.disconnectClient(client);
+			_server.disconnectClient(&client);
+			return ;
 		}
 		respond(message, client);
 	}

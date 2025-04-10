@@ -4,7 +4,7 @@
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
 
-ChannelManager::ChannelManager(Server &server) : _server(server) {}
+ChannelManager::ChannelManager(Server &server) : _server(server), _channelCount(0) {}
 
 ChannelManager::~ChannelManager(void)
 {
