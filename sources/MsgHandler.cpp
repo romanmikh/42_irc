@@ -41,9 +41,8 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 
 void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
-	std::vector<std::string> msgData = split(msg, ':');
-	std::string topic = msgData[1];
-	std::string channelName = split(msgData[0], ' ').at(1);
+	std::string topic = split(msg, ':').back();
+	std::string channelName = split(msg, ' ').at(1);
 	Channel* chan = _manager.getChanByName(channelName);
 
 	if (!chan) {
@@ -62,40 +61,58 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	}
 	chan->setTopic(topic, client.nickname());
 	info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + topic);
-	sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
-	chan->broadcastToChannel(RPL_TOPIC(client, chan->getName(), topic), &client);
+	chan->broadcast(RPL_TOPIC(client, chan->getName(), topic));
 }
+
+// void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
+// {
+// 	// const std::vector<Channel*>& clientChannels = client.getClientChannels();
+// 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
+
+// 	// if (clientChannels.empty())
+// 	// 	return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
+
+//     std::vector<std::string> msgData = split(msg, ' ');
+//     if (msgData.size() < 2 || msgData[0] != "PRIVMSG")
+//         return warning("Invalid PRIVMSG format");
+
+//     const std::string& channel = msgData[1];
+//     if (channel.empty() || channel[0] != '#') {
+// 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
+//         return warning("PRIVMSG channel is missing or invalid");
+// 	}
+
+// 	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
+// 	if (it == allChannels.end())
+// 	{
+// 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
+// 		return warning("Channel " + channel + " does not exist in the server");
+// 	}
+// 	Channel* chan = it->second;
+// 	if (chan->isEmpty())
+// 		return warning("Channel is empty");
+
+// 	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg);
+// }
 
 void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 {
-	// const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
+    std::string message = split(msg, ':').back();
+	std::string channelName = split(msg, ' ').at(1);
 
-	// if (clientChannels.empty())
-	// 	return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
-
-    std::vector<std::string> msgData = split(msg, ' ');
-    if (msgData.size() < 2 || msgData[0] != "PRIVMSG")
-        return warning("Invalid PRIVMSG format");
-
-    const std::string& channel = msgData[1];
-    if (channel.empty() || channel[0] != '#') {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
-        return warning("PRIVMSG channel is missing or invalid");
-	}
-
-	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
+	std::map<std::string, Channel*>::iterator it = allChannels.find(channelName);
 	if (it == allChannels.end())
 	{
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
-		return warning("Channel " + channel + " does not exist in the server");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+        return warning("PRIVMSG channel is missing or invalid");
 	}
-	Channel* chan = it->second;
-	if (chan->isEmpty())
+	Channel* channel = it->second;
+	if (channel->isEmpty())
 		return warning("Channel is empty");
-
-	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
+	channel->broadcastSilent(STD_PREFIX(client) + " " + msg, &client);
 }
+
 
 // void MsgHandler::handleKILL(std::string &msg, Client &killer)
 // {
@@ -119,7 +136,7 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 // 		std::vector<Channel*> clientChannels = client->getClientChannels();
 // 		for (size_t i = 0; i < clientChannels.size(); i++)
 // 		{
-// 			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
+// 			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill));
 // 		}
 // 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
 // 		_server.disconnectClient(*client);

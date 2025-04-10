@@ -104,16 +104,13 @@ void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &cli
 		channel->addChanOp(&client);
 	}
 	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
-	if (chanRestrictionsFail(client, channelName, channelKey)) {
+	if (chanRestrictionsFail(client, channelName, channelKey) || channel->hasClient(&client)) {
 		return ;
 	}
-	std::vector<Client *>& clients = channel->getClients();
-	if (std::find(clients.begin(), clients.end(), &client) == clients.end()) {
-		clients.push_back(&client);
-		// client.joinChannel(*this, channelName);
-		client.delChannelInvite(channelName);
-		channel->incClientCount();
-	}
+	channel->getClients().push_back(&client);
+	channel->incClientCount();
+	// client.joinChannel(*this, channelName);
+	client.delChannelInvite(channelName);
 	info(client.username() + " joined channel " + channelName);
 	sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
 	if (channel->getTopic() != "No topic set") {
@@ -137,7 +134,7 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
 	}
     channelClients.erase(clientIt);
     channel->decClientCount();
-    channel->broadcastToChannel(PART(client, channelName), &client); 
+    channel->broadcast(PART(client, channelName)); 
     sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
     info(client.username() + " removed from channel " + channelName);
     // sendMSG(client.getFd(), PART(client, channelName));
@@ -178,8 +175,7 @@ void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 	Client *client = _server.getClientByNick(userToKick);
 	if (client)
 	{
-		sendMSG(client->getFd(), KICK(kicker, channelName, client->nickname(), reason));
-		chan->broadcastToChannel(KICK(kicker, channelName, client->nickname(), reason), &kicker);
+		chan->broadcast(KICK(kicker, channelName, client->nickname(), reason));
 		removeFromChannel(channelName, *client);
 	}
 	info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);

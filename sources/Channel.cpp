@@ -86,7 +86,7 @@ bool	Channel::isEmpty(void) const { return _channelClients.empty(); };
 void	Channel::setModeI(std::string &mode, Client &client)
 {
 	_channelIsInviteOnly = (mode == "+i");
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 	if (mode == "+i")
 		info("Channel " + _channelName + " is now invite only: " + boolToString(_channelIsInviteOnly));
 	else if (mode == "-i")
@@ -105,7 +105,7 @@ void	Channel::setModeT(std::string &mode, Client &client)
 		_channelIsTopicRestricted = false;
 		info("Channel " + _channelName + " is now topic unrestricted");
 	}
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
@@ -125,7 +125,7 @@ void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 		_channelPassword = "";
 	}
 	info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server &server)
@@ -149,7 +149,7 @@ void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server
 		removeChanOp(recipient);	
 		info("Client " + recipient->nickname() + "removed as " + _channelName + " channel Operator by " + client.nickname());
 	}
-	//broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
@@ -173,7 +173,7 @@ void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 		_channelClientLimit = 0;
 	}
 	info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 bool	Channel::hasClient(Client* client) const
@@ -204,7 +204,7 @@ void	Channel::addChanOp(Client* client)
 	if (isClientChanOp(client))
 		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
-	broadcastToChannel(STD_PREFIX((*client)) + " MODE " + _channelName + " +o ", NULL);
+	broadcast(STD_PREFIX((*client)) + " MODE " + _channelName + " +o ");
 	info(client->nickname() + " is now an operator in channel " + _channelName);
 }
 
@@ -220,11 +220,11 @@ void	Channel::removeChanOp(Client* client)
 			return;
 		}
 	}
-	broadcastToChannel(STD_PREFIX((*client)) + " MODE " + _channelName + " -o ", NULL);
+	broadcast(STD_PREFIX((*client)) + " MODE " + _channelName + " -o ");
 	info(client->nickname() + " is no longer an operator in channel " + _channelName);
 }
 
-void	Channel::broadcastToChannel(std::string message, Client* client)
+void	Channel::broadcast(std::string message)
 {
 	if (isEmpty())
 		return warning("Channel is empty");
@@ -232,8 +232,20 @@ void	Channel::broadcastToChannel(std::string message, Client* client)
 		return warning("Empty message");
 	if (message.length() > 512)
 		return warning("Message too long");
-	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
-	{
+	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
+		sendMSG((*it)->getFd(), (message + "\r\n"));
+	}
+}
+
+void	Channel::broadcastSilent(std::string message, Client *client)
+{
+	if (isEmpty())
+		return warning("Channel is empty");
+	if (message.empty())
+		return warning("Empty message");
+	if (message.length() > 512)
+		return warning("Message too long");
+	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
 		if (*it != client)
 			sendMSG((*it)->getFd(), (message + "\r\n"));
 	}

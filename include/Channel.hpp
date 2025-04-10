@@ -58,5 +58,6 @@ class Channel
         void    addChanOp(Client* client);
         void    removeChanOp(Client* client);
         bool    isClientChanOp(Client* client) const;
-        void    broadcastToChannel(std::string message, Client* client);        
+        void    broadcast(std::string message);
+        void    broadcastSilent(std::string message, Client *client);
 };
