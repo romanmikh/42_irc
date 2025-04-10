@@ -84,16 +84,17 @@ void	Channel::setModeI(std::string &mode, Client &client)
 
 void	Channel::setModeT(std::string &mode, Client &client)
 {
-	_channelIsTopicRestricted = (mode == "+t");
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 	if (mode == "+t")
 	{
-		info("Channel " + _channelName + " is now topic restricted: " + boolToString(_channelIsTopicRestricted));
+		_channelIsTopicRestricted = true;
+		info("Channel " + _channelName + " is now topic restricted");
 	}
 	else if (mode == "-t")
 	{
+		_channelIsTopicRestricted = false;
 		info("Channel " + _channelName + " is now topic unrestricted");
 	}
+	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 }
 
 void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)

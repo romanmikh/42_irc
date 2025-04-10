@@ -40,33 +40,29 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 
 void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
-	std::vector<std::string> msgData = split(msg, ' ');
-	Channel* chan = _manager.getChanByName(msgData[1]);
+	std::vector<std::string> msgData = split(msg, ':');
+	std::string topic = msgData[2];
+	std::vector<std::string> channelName = split(msgData[0], ' ');
+	Channel* chan = _manager.getChanByName(channelName[1]);
 
 	if (!chan) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
-		return warning("Channel " + msgData[1] + " does not exist");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName[1]));
+		return warning("Channel " + channelName[1] + " does not exist");
 	}
-	if (msgData.size() > 2)
+	if (!chan->hasClient(&client))
 	{
-		if (chan->isTopicRestricted() && (chan->isClientChanOp(&client) || client.isIRCOp()))
-		{
-			chan->setTopic(msgData[2]);
-			info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + chan->getTopic());
-		}
-		else if (!chan->isTopicRestricted())
-		{
-			chan->setTopic(msgData[2]);
-			info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + chan->getTopic());
-		}
-		else
-		{
-			sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, msgData[1]));
-			warning(client.nickname() + " is not an operator in channel " + msgData[1]);
-		}
+		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName[1]));
+		return warning(client.nickname() + " is not an operator in channel " + channelName[1]);
 	}
-	else
-		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
+	if (chan->isTopicRestricted() && !(chan->isClientChanOp(&client) || client.isIRCOp()))
+	{
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName[1]));
+		return warning(client.nickname() + " is not an operator in channel " + channelName[1]);
+	}
+	chan->setTopic(topic);
+	info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + topic);
+	// sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
+	chan->broadcastToChannel(RPL_TOPIC(client, chan->getName(), topic), &client);
 }
 
 void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
