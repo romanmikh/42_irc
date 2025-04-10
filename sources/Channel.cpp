@@ -119,7 +119,6 @@ void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 
 void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server &server)
 {
-	std::string &channelName = msgData[1];
 	std::string mode = msgData[2];
 
 	if (msgData.size() != 4) {
@@ -138,7 +137,6 @@ void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server
 		removeChanOp(recipient);	
 		info("Client " + recipient->nickname() + "removed as " + _channelName + " channel Operator by " + client.nickname());
 	}
-	sendMSG(recipient->getFd(), SETCHANOP(channelName, mode, (*recipient)));
 	//broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 }
 
@@ -157,7 +155,7 @@ void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 		std::stringstream size(msgData[3]);
 		size >> _channelClientLimit;
 	}
-	else
+	else if(mode[0] == '-') 
 	{
 		_channelIsLimitRestricted = false;
 		_channelClientLimit = 0;
@@ -169,8 +167,7 @@ void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 bool	Channel::hasClient(Client* client) const
 {
 	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
-										   it != _channelClients.end(); ++it)
-										   {
+										   it != _channelClients.end(); ++it) {
 		if (*it == client)
 			return true;
 	}
@@ -190,11 +187,12 @@ bool    Channel::isClientChanOp(Client* client) const
 
 void	Channel::addChanOp(Client* client)
 {
-	if (client->isIRCOp())
-		return warning(client->nickname() + " is a global operator");
+	// if (client->isIRCOp())
+	// 	return warning(client->nickname() + " is a global operator");
 	if (isClientChanOp(client))
 		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
+	broadcastToChannel(SETCHANOP(_channelName, "+o", (*client)), client);
 	info(client->nickname() + " is now an operator in channel " + _channelName);
 }
 
@@ -210,6 +208,7 @@ void	Channel::removeChanOp(Client* client)
 			return;
 		}
 	}
+	broadcastToChannel(SETCHANOP(_channelName, "-o", (*client)), client);
 	info(client->nickname() + " is no longer an operator in channel " + _channelName);
 }
 

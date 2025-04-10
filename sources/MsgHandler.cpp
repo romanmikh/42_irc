@@ -20,6 +20,7 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
 		return warning("Insufficient parameters for MODE command");
 	}
+	// silently ignore user modes
 	if (_server.getClientByNick(msgData[1]))
 		return ;
 
@@ -42,22 +43,22 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ':');
 	std::string topic = msgData[2];
-	std::vector<std::string> channelName = split(msgData[0], ' ');
-	Channel* chan = _manager.getChanByName(channelName[1]);
+	std::string channelName = split(msgData[0], ' ').back();
+	Channel* chan = _manager.getChanByName(channelName);
 
 	if (!chan) {
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName[1]));
-		return warning("Channel " + channelName[1] + " does not exist");
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+		return warning("Channel " + channelName + " does not exist");
 	}
 	if (!chan->hasClient(&client))
 	{
-		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName[1]));
-		return warning(client.nickname() + " is not an operator in channel " + channelName[1]);
+		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 	if (chan->isTopicRestricted() && !(chan->isClientChanOp(&client) || client.isIRCOp()))
 	{
-		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName[1]));
-		return warning(client.nickname() + " is not an operator in channel " + channelName[1]);
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 	chan->setTopic(topic);
 	info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + topic);
@@ -73,14 +74,11 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	// if (clientChannels.empty())
 	// 	return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
 
-	if (msg.empty())
-        return warning("Empty PRIVMSG received");
-
-    std::vector<std::string> tokens = split(msg, ' ');
-    if (tokens.size() < 2 || tokens[0] != "PRIVMSG")
+    std::vector<std::string> msgData = split(msg, ' ');
+    if (msgData.size() < 2 || msgData[0] != "PRIVMSG")
         return warning("Invalid PRIVMSG format");
 
-    const std::string& channel = tokens[1];
+    const std::string& channel = msgData[1];
     if (channel.empty() || channel[0] != '#') {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
         return warning("PRIVMSG channel is missing or invalid");
@@ -210,8 +208,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 
 bool	MsgHandler::badPassword(std::string &message, Client &client)
 {
-	std::vector<std::string> msgData = split(message, ' ');
-	if (msgData[0] == "NICK")
+	if (split(message, ' ').front() == "NICK")
 	{
 		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 		_server.disconnectClient(client);

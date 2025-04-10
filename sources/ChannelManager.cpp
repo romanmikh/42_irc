@@ -122,30 +122,33 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
 {
     Channel* channel = getChanByName(channelName);
 
-	if (!channel)
-	{
+	if (!channel) {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
     }
     std::vector<Client*>& channelClients = channel->getClients();
     std::vector<Client*>::iterator clientIt = std::find(channelClients.begin(), channelClients.end(), &client);
-    if (clientIt != channelClients.end()) 
-    {
-        std::string PARTmsg = STD_PREFIX(client) + " PART " + channelName + " :bye!" + "\r\n";
-        sendMSG(client.getFd(), PARTmsg);
-        
-        if (channel->isClientChanOp(&client))
-            channel->removeChanOp(&client);
-        
-        // client.leaveChannel(*this, channelName);
-        channelClients.erase(clientIt);
-        channel->decClientCount();
-            
-        info(client.username() + " removed from channel " + channelName);
-        sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
-    }
-    if (channel->getClients().empty())
+    if (clientIt == channelClients.end()) {
+		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
+	}
+    channelClients.erase(clientIt);
+    channel->decClientCount();
+    channel->broadcastToChannel(PART(client, channelName), &client); 
+    sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
+    info(client.username() + " removed from channel " + channelName);
+    // sendMSG(client.getFd(), PART(client, channelName));
+    // client.leaveChannel(*this, channelName);
+
+    if (channel->isClientChanOp(&client)) {
+        channel->removeChanOp(&client);
+	}
+    if (channel->getClients().empty()) {
         deleteChannel(channelName);
+	}
+	else if (channel->getOperators().empty()) {
+		channel->addChanOp(channel->getClients().front());
+	}
 }
 
 void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
@@ -164,22 +167,19 @@ void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 		sendMSG(kicker.getFd(), ERR_NOSUCHCHANNEL(kicker, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
-	if (chan->isClientChanOp(&kicker) || kicker.isIRCOp())
-	{
-		info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);
-		Client *client = _server.getClientByNick(userToKick);
-		if (client)
-		{
-			chan->broadcastToChannel(KICK(kicker, channelName, client->nickname(), reason), &kicker);
-			removeFromChannel(channelName, *client);
-			sendMSG(client->getFd(), KICK(kicker, channelName, client->nickname(), reason));
-		}
-	}
-	else 
+	if (!chan->isClientChanOp(&kicker) && !kicker.isIRCOp())
 	{
 		sendMSG(kicker.getFd(), ERR_CHANOPPROVSNEEDED(kicker, channelName));
-		warning(kicker.nickname() + " is not an operator in channel " + channelName);
+		return warning(kicker.nickname() + " is not an operator in channel " + channelName);
 	}
+	Client *client = _server.getClientByNick(userToKick);
+	if (client)
+	{
+		sendMSG(client->getFd(), KICK(kicker, channelName, client->nickname(), reason));
+		chan->broadcastToChannel(KICK(kicker, channelName, client->nickname(), reason), &kicker);
+		removeFromChannel(channelName, *client);
+	}
+	info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);
 }
 
 void	ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
