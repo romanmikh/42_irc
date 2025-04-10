@@ -73,7 +73,7 @@ void	ChannelManager::deleteChannel(const std::string &channelName)
 		warning("Channel " + channelName + " does not exist");
 }
 
-bool ChannelManager::chanPermissionsFail(Client& client, const std::string& channelName, std::string &channelKey)
+bool ChannelManager::chanRestrictionsFail(Client& client, const std::string& channelName, std::string &channelKey)
 {
 	Channel* channel = _channels[channelName];
 
@@ -104,7 +104,7 @@ void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &cli
 		channel->addChanOp(&client);
 	}
 	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
-	if (chanPermissionsFail(client, channelName, channelKey)) {
+	if (chanRestrictionsFail(client, channelName, channelKey)) {
 		return ;
 	}
 	std::vector<Client *>& clients = channel->getClients();
@@ -115,7 +115,10 @@ void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &cli
 		channel->incClientCount();
 	}
 	info(client.username() + " joined channel " + channelName);
-	// sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
+	sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
+	if (channel->getTopic() != "No topic set") {
+		sendMSG(client.getFd(), RPL_TOPICWHOTIME(client, channel->getName(), channel->getTopicSetBy(), channel->getTopicSetAt()));
+	}
 }
 
 void ChannelManager::removeFromChannel(const std::string& channelName, Client& client)
@@ -210,7 +213,7 @@ void	ChannelManager::inviteClient(std::string &nickname, const std::string& chan
 
 void	ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
 {
-	if (msgData.size() < 3 || !strchr("+-", msgData[2][0]) || !strchr("itkol", msgData[2][1]))
+	if (msgData.size() < 3 || msgData[2].size() != 2 || !strchr("+-", msgData[2][0]) || !strchr("itkol", msgData[2][1]))
 	{
 		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, msgData[2]));
 		return warning("Invalid mode: " + msgData[1] + ". +/- {i, t, k, o, l}");

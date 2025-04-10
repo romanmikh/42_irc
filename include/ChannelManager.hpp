@@ -33,7 +33,7 @@ class ChannelManager
         bool        channelExists(const std::string& channelName) const;
         void        inviteClient(std::string &user, const std::string& chan, Client &client);
         void        setChanMode(std::vector<std::string> &msgData, Client &client);
-        bool        chanPermissionsFail(Client& client, const std::string& channelName, std::string &channelKey);
+        bool        chanRestrictionsFail(Client& client, const std::string& channelName, std::string &channelKey);
 
     private:       
 

@@ -6,7 +6,9 @@
 
 Channel::Channel(std::string name) : _channelName(name), 
 									 _channelPassword(""),
-									 _channelTopic("Default"),
+									 _channelTopic("No topic set"),
+									 _channelTopicSetAt(""),
+									 _channelTopicSetBy(""),
 									 _channelIsInviteOnly(false),
 									 _channelIsTopicRestricted(false),
 									 _channelIsKeyProtected(false),
@@ -36,6 +38,10 @@ std::string	Channel::getName(void) const { return _channelName; }
 
 std::string	Channel::getPasskey(void) const { return _channelPassword; }
 
+std::string Channel::getTopicSetAt(void) const { return _channelTopicSetAt; }
+
+std::string	Channel::getTopicSetBy(void) const { return _channelTopicSetBy; }
+
 std::string	Channel::getTopic(void) const { return _channelTopic; }
 
 size_t	Channel::getClientCount(void) const { return _channelClientCount; }
@@ -50,7 +56,12 @@ void	Channel::setName(std::string &name) { _channelName = name; }
 
 void	Channel::setPassword(std::string &password) { _channelPassword = password; }
 
-void	Channel::setTopic(std::string &topic) { _channelTopic = topic; }
+void	Channel::setTopic(std::string &topic, const std::string &nickname)
+{ 
+	_channelTopic = topic;
+	_channelTopicSetAt = intToString(std::time(0));
+	_channelTopicSetBy = nickname;
+}
 
 size_t	Channel::incClientCount(void) { return ++_channelClientCount; }
 
@@ -127,6 +138,7 @@ void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server
 	}
 	Client *recipient = server.getClientByNick(msgData[3]);
 	if (!recipient) {
+		warning("Client with nickname " + msgData[3] + " not found");
 		return sendMSG(client.getFd(), ERR_NOSUCHNICK(client, msgData[3]));
 	}
 	if (mode[0] == '+') {
@@ -192,7 +204,7 @@ void	Channel::addChanOp(Client* client)
 	if (isClientChanOp(client))
 		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
-	broadcastToChannel(SETCHANOP(_channelName, "+o", (*client)), client);
+	broadcastToChannel(STD_PREFIX((*client)) + " MODE " + _channelName + " +o ", NULL);
 	info(client->nickname() + " is now an operator in channel " + _channelName);
 }
 
@@ -208,7 +220,7 @@ void	Channel::removeChanOp(Client* client)
 			return;
 		}
 	}
-	broadcastToChannel(SETCHANOP(_channelName, "-o", (*client)), client);
+	broadcastToChannel(STD_PREFIX((*client)) + " MODE " + _channelName + " -o ", NULL);
 	info(client->nickname() + " is no longer an operator in channel " + _channelName);
 }
 

@@ -62,7 +62,6 @@ Client*	Server::getClientByNick(std::string& nickname) const
 		if (it->second->nickname() == nickname)
 		return (it->second);
 	}
-	warning("Client with nickname " + nickname + " not found");
 	return (NULL);
 }
 

@@ -10,6 +10,8 @@ class Channel
         std::string             	_channelName;
         std::string             	_channelPassword;
         std::string             	_channelTopic;
+        std::string             	_channelTopicSetAt;
+        std::string             	_channelTopicSetBy;
         bool                   	 	_channelIsInviteOnly;
         bool                    	_channelIsTopicRestricted;
         bool                    	_channelIsKeyProtected;
@@ -34,6 +36,8 @@ class Channel
         std::string                 getName(void) const;
         std::string                 getPasskey(void) const;
         std::string                 getTopic(void) const;
+        std::string                 getTopicSetBy(void) const;
+        std::string                 getTopicSetAt(void) const;
         size_t                      getClientLimit(void) const;
         size_t                      getClientCount(void) const;
         size_t                      incClientCount(void);
@@ -41,7 +45,7 @@ class Channel
 
         void                        setName(std::string &name);
         void                        setPassword(std::string &password);
-        void                        setTopic(std::string &topic);
+        void                        setTopic(std::string &topic, const std::string &nickname);
         void                        setModeI(std::string &mode, Client &client);
         void                        setModeT(std::string &mode, Client &client);
         void                        setModeK(std::vector<std::string> &msgData, Client &client);

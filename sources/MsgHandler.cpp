@@ -42,8 +42,8 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ':');
-	std::string topic = msgData[2];
-	std::string channelName = split(msgData[0], ' ').back();
+	std::string topic = msgData[1];
+	std::string channelName = split(msgData[0], ' ').at(1);
 	Channel* chan = _manager.getChanByName(channelName);
 
 	if (!chan) {
@@ -60,9 +60,9 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
-	chan->setTopic(topic);
+	chan->setTopic(topic, client.nickname());
 	info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + topic);
-	// sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
+	sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
 	chan->broadcastToChannel(RPL_TOPIC(client, chan->getName(), topic), &client);
 }
 
