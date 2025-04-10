@@ -29,7 +29,7 @@ class Client
 		std::string msgBuffer;
         
         /* accessors */
-		// std::vector<Channel*>  		getClientChannels() const;
+		std::vector<Channel*>  		getClientChannels() const;
 		std::vector<std::string> 	getChannelInvites() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
@@ -55,8 +55,8 @@ class Client
         bool	        isInvited(const std::string& channelName) const;
 		
 		/* member functions */
-		// void    		joinChannel(ChannelManager& manager, std::string channelName);
-        // void    		leaveChannel(ChannelManager& manager, std::string channelName);
+		void    		joinChannel(ChannelManager& manager, std::string channelName);
+        void    		leaveChannel(ChannelManager& manager, std::string channelName);
 		
 
 };

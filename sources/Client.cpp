@@ -53,7 +53,7 @@ bool	Client::isRegistered() const { return (_isRegistered); }
 
 bool	Client::isIRCOp() const { return _isIRCOp; }
 
-// std::vector<Channel*>	Client::getClientChannels() const { return (_clientChannels); }
+std::vector<Channel*>	Client::getClientChannels() const { return (_clientChannels); }
 
 std::vector<std::string>	Client::getChannelInvites() const { return (_clientChannelInvites); }
 
@@ -75,20 +75,14 @@ void	Client::delChannelInvite(const std::string& channelName)
 //                             Public Functions                               //
 // ************************************************************************** //
 
-// void	Client::joinChannel(ChannelManager& manager, std::string channelName)
-// {
-// 	Channel* chan = manager.getChanByName(channelName);
-// 	_clientChannels.push_back(chan);
-// }
-
-// void	Client::leaveChannel(ChannelManager& manager,std::string channelName)
-// {
-// 	Channel* chan = manager.getChanByName(channelName);
-// 	std::vector<Channel*>::iterator it = std::find(_clientChannels.begin(), 
-// 												   _clientChannels.end(), chan);
-// 	if (it != _clientChannels.end())
-// 		_clientChannels.erase(it);
-// }
+void	Client::leaveChannel(ChannelManager& manager,std::string channelName)
+{
+	Channel* chan = manager.getChanByName(channelName);
+	std::vector<Channel*>::iterator it = std::find(_clientChannels.begin(), 
+												   _clientChannels.end(), chan);
+	if (it != _clientChannels.end())
+		_clientChannels.erase(it);
+}
 
 void	Client::assignUserData(std::string &msg)
 {

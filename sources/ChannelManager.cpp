@@ -109,7 +109,7 @@ void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &cli
 	}
 	channel->getClients().push_back(&client);
 	channel->incClientCount();
-	// client.joinChannel(*this, channelName);
+	client.getClientChannels().push_back(channel);
 	client.delChannelInvite(channelName);
 	info(client.username() + " joined channel " + channelName);
 	sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
@@ -132,13 +132,14 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
 		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
+
     channelClients.erase(clientIt);
     channel->decClientCount();
     channel->broadcast(PART(client, channelName)); 
     sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
     info(client.username() + " removed from channel " + channelName);
     // sendMSG(client.getFd(), PART(client, channelName));
-    // client.leaveChannel(*this, channelName);
+    client.leaveChannel(*this, channelName);
 
     if (channel->isClientChanOp(&client)) {
         channel->removeChanOp(&client);

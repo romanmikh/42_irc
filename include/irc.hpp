@@ -84,7 +84,8 @@
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
 
 #define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " KILL " + victim.nickname() + " :" + reason + " (killed by " + killer.nickname() + ")\r\n"
-#define QUIT(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :Killed by " + killer.nickname() + " (" + reason + ")\r\n"
+#define QUITKILLEDBY(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :Killed by " + killer.nickname() + " (" + reason + ")\r\n"
+#define QUIT(client, message) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :" + message + "\r\n"
 #define DIE(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " DIE: server terminated\r\n"
 #define STD_PREFIX(client) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname()
 #define PONG std::string("PONG ") + SERVER_NAME + "\r\n"
@@ -138,6 +139,7 @@ enum Command
     PRIVMSG,
     PASS,
     UNKNOWN,
+    KILL,
     DIE
 };
 

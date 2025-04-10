@@ -35,6 +35,7 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 	else
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		sendMSG(client.getFd(), SERVER_NAME + " " + client.nickname() + " NOTICE :You are not a channel operator\r\n");
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 }
@@ -82,35 +83,49 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	channel->broadcastSilent(STD_PREFIX(client) + " " + msg, &client);
 }
 
-// void MsgHandler::handleKILL(std::string &msg, Client &killer)
-// {
-// 	if (!killer.isIRCOp())
-// 	{
-// 		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
-// 		return ;
-// 	}
+void MsgHandler::handleKILL(std::string &msg, Client &killer)
+{
+	if (!killer.isIRCOp())
+	{
+		sendMSG(killer.getFd(), ERR_NOPRIVILAGES(killer));
+		return ;
+	}
 
-// 	std::istringstream ss(msg);
-// 	std::string killCommand, userToKill, reasonToKill;
-// 	getline(ss, killCommand, ' ');
-// 	getline(ss, userToKill, ' ');
-// 	getline(ss, reasonToKill);
+	std::istringstream ss(msg);
+	std::string killCommand, userToKill, reasonToKill;
+	getline(ss, killCommand, ' ');
+	getline(ss, userToKill, ' ');
+	getline(ss, reasonToKill);
 
-// 	Client *client = _server.getClientByNick(userToKill);
-// 	if (client)
-// 	{
-// 		Client& victim = *client;
+	Client *client = _server.getClientByNick(userToKill);
+	if (client)
+	{
+		Client& victim = *client;
 
-// 		std::vector<Channel*> clientChannels = client->getClientChannels();
-// 		for (size_t i = 0; i < clientChannels.size(); i++)
-// 		{
-// 			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill));
-// 		}
-// 		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
-// 		_server.disconnectClient(*client);
-// 		return ;
-// 	}
-// }
+		std::vector<Channel*> clientChannels = client->getClientChannels();
+		for (size_t i = 0; i < clientChannels.size(); i++)
+		{
+			clientChannels[i]->broadcast(KILL(killer, victim, clientChannels[i], reasonToKill));
+		}
+		sendMSG(client->getFd(), QUITKILLEDBY((*client), killer, reasonToKill));
+		_server.disconnectClient(client);
+		return ;
+	}
+}
+
+void MsgHandler::handleQUIT(std::string &msg, Client &client)
+{
+	std::string message = split(msg, ':').back();
+	if (message.empty())
+		message = "No reason given";
+
+	std::vector<Channel*> clientChannels = client.getClientChannels();
+	for (size_t i = 0; i < clientChannels.size(); i++)
+	{
+		clientChannels[i]->broadcast(QUIT(client, message));
+	}
+	_server.disconnectClient(&client);
+}
 
 void MsgHandler::handleDIE(Client &client)
 {
@@ -156,8 +171,6 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	{
 		case PASS: _server.validatePassword(msgData[1], client);
 			break ;
-		case QUIT: _server.disconnectClient(&client);
-			break ;
 		case OPER: _server.validateIRCOp(msgData, client);
 			break ;
 		case JOIN: _manager.addToChannel(msgData, client);
@@ -170,14 +183,16 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case USER: client.assignUserData(msg);
 			break ;
+		case QUIT: handleQUIT(msg, client);;
+			break ;
 		case NICK: handleNICK(msgData, client); ;
 			break ;
 		case MODE: handleMODE(msgData, client);
 			break ;
 		case TOPIC: handleTOPIC(msg, client);
 			break ;
-		// case KILL: handleKILL(msg, client);
-		// 	break ;
+		case KILL: handleKILL(msg, client);
+			break ;
 		case DIE: handleDIE(client);
 			break ;
 		case PING: sendMSG(client.getFd(), PONG);
