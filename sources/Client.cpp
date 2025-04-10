@@ -90,15 +90,12 @@ void	Client::delChannelInvite(const std::string& channelName)
 // }
 
 void	Client::assignUserData(std::string &msg)
-
 {
-	std::vector<std::string> names = split(msg, ':');
-	setFullName(names[1]);
-
-	std::vector<std::string> moreNames = split(names[0], ' ');
-	setUsername(moreNames[1]);
-	setHostname(moreNames[2]);
-	setIP(moreNames[3]);
+	std::vector<std::string> names = split(msg, ' ');
+	setUsername(names[1]);
+	setHostname(names[2]);
+	setIP(names[3]);
+	setFullName(split(msg, ':').back());
 
 	sendMSG(this->getFd(), RPL_WELCOME((*this)));
 	sendMSG(this->getFd(), RPL_YOURHOST((*this)));

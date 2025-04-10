@@ -22,8 +22,6 @@ class MsgHandler
 		void handleDIE(Client &client);
 		// void handleKILL(std::string &msg, Client &client);
 		void forwardPrivateMessage(std::string &msg, Client &client);
-		bool badPassword(std::string &message, Client &client);
-
 };
 
 #endif

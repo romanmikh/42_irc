@@ -64,37 +64,6 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	chan->broadcast(RPL_TOPIC(client, chan->getName(), topic));
 }
 
-// void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
-// {
-// 	// const std::vector<Channel*>& clientChannels = client.getClientChannels();
-// 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
-
-// 	// if (clientChannels.empty())
-// 	// 	return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
-
-//     std::vector<std::string> msgData = split(msg, ' ');
-//     if (msgData.size() < 2 || msgData[0] != "PRIVMSG")
-//         return warning("Invalid PRIVMSG format");
-
-//     const std::string& channel = msgData[1];
-//     if (channel.empty() || channel[0] != '#') {
-// 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
-//         return warning("PRIVMSG channel is missing or invalid");
-// 	}
-
-// 	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
-// 	if (it == allChannels.end())
-// 	{
-// 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
-// 		return warning("Channel " + channel + " does not exist in the server");
-// 	}
-// 	Channel* chan = it->second;
-// 	if (chan->isEmpty())
-// 		return warning("Channel is empty");
-
-// 	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg);
-// }
-
 void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 {
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
@@ -223,26 +192,13 @@ void MsgHandler::respond(std::string &msg, Client &client)
 	}
 }
 
-bool	MsgHandler::badPassword(std::string &message, Client &client)
-{
-	if (split(message, ' ').front() == "NICK")
-	{
-		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-		_server.disconnectClient(client);
-		return (true);
-	}
-	return (false);
-}
-
 void	MsgHandler::receiveMessage(Client &client)
 {
 	char		buffer[1024];
 	
 	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
-	if (bytes_read <= 0)
-	{
-		_server.disconnectClient(client);
-		return ;
+	if (bytes_read <= 0) {
+		return _server.disconnectClient(client);
 	}
 	buffer[bytes_read] = '\0';
 	std::cout << buffer; // for testing only 
@@ -253,8 +209,11 @@ void	MsgHandler::receiveMessage(Client &client)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
 		client.msgBuffer.erase(0, i + 2);
-		if (!client.isRegistered() && badPassword(message, client))
-			return ;
+		if (!client.isRegistered() && split(message, ' ').front() == "NICK")
+		{
+			sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+			return _server.disconnectClient(client);
+		}
 		respond(message, client);
 	}
 }
