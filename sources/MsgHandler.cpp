@@ -154,7 +154,7 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 		int i = 1;
 		while (_server.getClientByNick(nickname))
 		{		
-			nickname = msgData[1] + intToString(i);
+			nickname = msgData[1] + intToString(i++);
 		}
 	}
 	else if ((_server.getClientByNick(nickname))) {
@@ -183,9 +183,9 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case USER: client.assignUserData(msg);
 			break ;
-		case QUIT: handleQUIT(msg, client);;
+		case QUIT: handleQUIT(msg, client);
 			break ;
-		case NICK: handleNICK(msgData, client); ;
+		case NICK: handleNICK(msgData, client);
 			break ;
 		case MODE: handleMODE(msgData, client);
 			break ;
