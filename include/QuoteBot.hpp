@@ -28,7 +28,7 @@ class QuoteBot
 		void		setRequesterClient(Client* client);
 		void		setRequesterChannel(std::string channel);
 
-		bool	inititateConnection(Server& server);
+		bool	initiateConnection(Server& server);
 		void	sendQuote(Server& server, std::string quote);
 		void	handleAPIMessage(Server& server);
 		void	processAPIResponse(Server& server);

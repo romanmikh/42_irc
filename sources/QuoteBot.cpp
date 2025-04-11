@@ -5,6 +5,8 @@ QuoteBot::QuoteBot()
 {
 	_apiSocketFd = -1;
 	_isConnecting = false;
+	_isConnected = false;
+	_apiBuffer = "";
 	_requesterClient = NULL;
 	_requesterChannel = "";
 }
@@ -41,15 +43,12 @@ void	QuoteBot::setRequesterChannel(std::string channel)
 		warning("QuoteBot::setRequesterChannel() - channel is empty");
 }
 
-bool	QuoteBot::inititateConnection(Server& server)
+bool	QuoteBot::initiateConnection(Server& server)
 {
-	std::cout << PURPLE << "QuoteBot::inititateConnection()" << RESET << std::endl;
+	std::cout << PURPLE << "QuoteBot::initiateConnection()" << RESET << std::endl;
 
 	if (_apiSocketFd != -1)
-	{
-		warning("QuoteBot is already connected");
-		return false;
-	}
+		return warning("QuoteBot is already connected"), false;
 
 	const char* hostname = "api.forismatic.com";
 	const char* port = "80";
@@ -91,7 +90,7 @@ bool	QuoteBot::inititateConnection(Server& server)
 			_apiSocketFd = socketFd;
 			_isConnecting = true;
 			pollfd apiPollFd = {_apiSocketFd, POLLIN, 0};
-			server.addclient(apiPollFd);
+			server.addApiSocket(apiPollFd);
 			break;
 		}
 		else

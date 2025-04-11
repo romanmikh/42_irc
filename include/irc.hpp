@@ -140,7 +140,6 @@ enum Command
     UNKNOWN,
     KILL,
     DIE,
-    QUOTE
 };
 
 std::map<std::string, Command>  createCommandMap();

@@ -214,16 +214,19 @@ void	Server::SIGINTHandler(int signum)
 	instance->shutdown();
 }
 
+void Server::addApiSocket(pollfd &api_pfd) {
+    _sockets.push_back(api_pfd); 
+    info("API socket fd " + intToString(api_pfd.fd) + " added for polling.");
+}
+
 void	Server::setBot()
 {
 	info("Setting bot...");
 
 	int	sv[2];
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1)
-	{
-		warning("Failed to create socket pair for bot");
-		return;
-	}
+		return warning("Failed to create socket pair for bot");
+
 	this->_internalBotSocket = sv[0];
 	fcntl(sv[0], F_SETFL, O_NONBLOCK);
 	fcntl(sv[1], F_SETFL, O_NONBLOCK);

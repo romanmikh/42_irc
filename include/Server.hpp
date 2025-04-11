@@ -35,6 +35,7 @@ class Server
 		/* accessors*/
 		std::map<std::string,std::string> 	getOpers(void);
 		std::string							getPassword(void);
+		unsigned int						getPort(void);
 		clients_t&							getClients(void);
 		Client*								getClientByUser(std::string& user) const;
 		Client*								getClientByNick(std::string& nick) const;
@@ -49,6 +50,7 @@ class Server
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client &client);
 		void			shutdown();
+		void			addApiSocket(pollfd &api_pfd);
 		void			setBot();
 
 		/* static members */

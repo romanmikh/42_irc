@@ -92,7 +92,6 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
         return warning("PRIVMSG channel is missing or invalid");
 	}
-
 	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
 	if (it == allChannels.end())
 	{
@@ -102,6 +101,9 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	Channel* chan = it->second;
 	if (chan->isEmpty())
 		return warning("Channel is empty");
+
+	if (msg.find("!quote") != std::string::npos)
+		return handleQuote(channel, client);
 
 	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
 }
@@ -180,21 +182,26 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 	client.setNickname(nickname);
 }
 
-void	MsgHandler::handleQuote(std::string& channelTarget, Client& client)
+void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 {
-	std::cout << RED << ""
+	std::cout << RED << "handleQuote called" << RESET << std::endl; //DEBUG
 
 
-	if (_server.getQuoteBot().isConnecting())
-	{
-		sendMSG(client.getFd(), ERR_QUOTEBOTCONNECTING(client));
-		return;
-	}
-	if (!_server.getQuoteBot().inititateConnection(_server))
+	// if (_server.getQuoteBot().isConnecting())
+	// {
+	// 	std::cout << RED << "QuoteBot is already connecting" << RESET << std::endl; //DEBUG
+
+	// 	sendMSG(client.getFd(), ERR_QUOTEBOTCONNECTING(client));
+	// 	return;
+	// }
+	if (!_server.getQuoteBot().initiateConnection(_server))
 	{
 		info("Failed to connect to QuoteBot API");
 		return;
 	}
+
+	std::cout << RED << "QuoteBot connection initiated" << RESET << std::endl; 
+
 	_server.getQuoteBot().setRequesterClient(&client);
 	_server.getQuoteBot().setRequesterChannel(channelTarget);
 }
@@ -235,8 +242,6 @@ void	MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG: forwardPrivateMessage(msg, client);
 			break ;
-		case QUOTE: handleQuote(msgData[1], client);
-			break ;
 		case UNKNOWN:
 			break ;
 	}
@@ -257,10 +262,15 @@ bool	MsgHandler::badPassword(std::string &message, Client &client)
 void	MsgHandler::receiveMessage(Client &client)
 {
 	char		buffer[1024];
+
+
+	std::cout << RED << "receiveMessage called" << RESET << std::endl; //DEBUG
 	
 	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0)
 	{
+		std::cout << RED << "Client disconnected" << RESET << std::endl; //DEBUG
+
 		_server.disconnectClient(client);
 		return ;
 	}
