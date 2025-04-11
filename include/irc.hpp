@@ -67,6 +67,7 @@
 #define ERR_UNKNOWNMODE(client, c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + " " + c + " : is unknown mode char to me\r\n"
 #define ERR_INVITEONLYCHAN(client, channelName) std::string(":") + SERVER_NAME + " 473 " + client.nickname() + " " + channelName + " :Cannot join channel (+i)\r\n"
 #define ERR_BADCHANNELKEY(client, channelName) std::string(":") + SERVER_NAME + " 475 " + client.nickname() + " " + channelName + " :Cannot join channel (+k)\r\n"
+#define ERR_BADCHANMASK(client, channelName) std::string(":") + SERVER_NAME + " 476 " + client.nickname() + " " + channelName + " :Bad Channel Mask\r\n"
 #define ERR_NOPRIVILAGES(client) std::string(":") + SERVER_NAME + " 481 " + client.nickname() + ": :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " : You're not a channel operator\r\n"
 #define ERR_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"

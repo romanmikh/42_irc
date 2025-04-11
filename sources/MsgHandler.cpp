@@ -221,6 +221,9 @@ void	MsgHandler::receiveMessage(Client &client)
 		return _server.disconnectClient(&client);
 	}
 	buffer[bytes_read] = '\0';
+	if (!strcmp(buffer, "\r\n")) {
+		return ;
+	}
 	std::cout << buffer; // for testing only 
 
 	client.msgBuffer += buffer;
@@ -236,6 +239,6 @@ void	MsgHandler::receiveMessage(Client &client)
 			_server.disconnectClient(&client);
 			return ;
 		}
-		respond(message, client);
+		respond(message, client);  // maybe take PASS out of this funciton
 	}
 }

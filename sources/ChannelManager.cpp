@@ -96,6 +96,10 @@ bool ChannelManager::chanRestrictionsFail(Client& client, const std::string& cha
 
 void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &client)
 {
+	if (msgData[1][0] != '#') {
+		sendMSG(client.getFd(), ERR_BADCHANMASK(client, msgData[1]));
+		return warning("Channel " + msgData[1] + " does not exist");
+	}
 	std::string &channelName = msgData[1];
 	Channel	*channel = getChanByName(channelName);
 
