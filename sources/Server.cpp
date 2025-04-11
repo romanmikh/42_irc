@@ -64,7 +64,7 @@ Client*	Server::getClientByNick(std::string& nickname) const
 	for (clients_t::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
 		if (it->second->nickname() == nickname)
-		return (it->second);
+			return (it->second);
 	}
 	return (NULL);
 }
@@ -182,6 +182,11 @@ void	Server::SIGINTHandler(int signum)
 	for (clients_t::iterator it = instance->_clients.begin(); it != instance->_clients.end(); ++it)
 	{
 		Client &c = *it->second;
+		std::vector<Channel *> clientChannels = c.getClientChannels();
+		for (size_t i = 0; i < clientChannels.size();i++)
+		{
+  		  	sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
+		}
 		sendMSG(c.getFd(), DIE(c));
 	}
 	instance->shutdown();

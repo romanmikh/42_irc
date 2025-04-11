@@ -83,6 +83,7 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	channel->broadcastSilent(STD_PREFIX(client) + " " + msg, &client);
 }
 
+
 void MsgHandler::handleKILL(std::string &msg, Client &killer)
 {
 	if (!killer.isIRCOp())
@@ -106,9 +107,10 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
 			clientChannels[i]->broadcast(KILL(killer, victim, clientChannels[i], reasonToKill));
+			_manager.removeFromChannel(clientChannels[i]->getName(), victim);
 		}
-		sendMSG(client->getFd(), QUITKILLEDBY((*client), killer, reasonToKill));
-		_server.disconnectClient(client);
+		sendMSG(victim.getFd(), QUITKILLEDBY(victim, killer, reasonToKill));
+		_server.disconnectClient(&victim);
 		return ;
 	}
 }
@@ -119,10 +121,11 @@ void MsgHandler::handleQUIT(std::string &msg, Client &client)
 	if (message.empty())
 		message = "No reason given";
 
-	std::vector<Channel*> clientChannels = client.getClientChannels();
+	std::vector<Channel*>& clientChannels = client.getClientChannels();
 	for (size_t i = 0; i < clientChannels.size(); i++)
 	{
 		clientChannels[i]->broadcast(QUIT(client, message));
+		_manager.removeFromChannel(clientChannels[i]->getName(), client);
 	}
 	_server.disconnectClient(&client);
 }
@@ -136,6 +139,11 @@ void MsgHandler::handleDIE(Client &client)
 	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it)
 	{
 		Client &c = *it->second;
+		std::vector<Channel *> clientChannels = c.getClientChannels();
+		for (size_t i = 0; i < clientChannels.size();i++)
+		{
+  		  	sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
+		}
 		sendMSG(c.getFd(), DIE(c));
 	}
 	info("DIE command received. Server shutting down...");

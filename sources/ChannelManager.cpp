@@ -138,8 +138,7 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
     channel->broadcast(PART(client, channelName)); 
     sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
     info(client.username() + " removed from channel " + channelName);
-    // sendMSG(client.getFd(), PART(client, channelName));
-    client.leaveChannel(*this, channelName);
+    client.popClientChannel(*this, channelName);
 
     if (channel->isClientChanOp(&client)) {
         channel->removeChanOp(&client);
