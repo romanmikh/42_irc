@@ -36,7 +36,7 @@ void	Client::setFullName(std::string &fullname) { _fullname = fullname; }
 void	Client::setNickname(std::string &nickname)
 {
 	_nickname = nickname;
-	info("Client " + username() + "'s nickname was set to "	+ nickname);
+	info("Client " + this->nickname() + "'s nickname was set to "	+ nickname);
 }
 
 void	Client::setUsername(std::string &username) { _username = username; }
@@ -85,13 +85,12 @@ void	Client::popClientChannel(ChannelManager& manager,std::string channelName)
 	info(_nickname + " has left channel " + channelName);
 }
 
-void	Client::assignUserData(std::string &msg)
+void	Client::assignUserData(std::string &username, std::string &hostname, std::string &IP, std::string &fullName)
 {
-	std::vector<std::string> names = split(msg, ' ');
-	setUsername(names[1]);
-	setHostname(names[2]);
-	setIP(names[3]);
-	setFullName(split(msg, ':').back());
+	setUsername(username);
+	setHostname(hostname);
+	setIP(IP);
+	setFullName(fullName);
 
 	sendMSG(this->getFd(), RPL_WELCOME((*this)));
 	sendMSG(this->getFd(), RPL_YOURHOST((*this)));

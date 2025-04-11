@@ -158,7 +158,7 @@ void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 
 	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3].empty()))
 	{
-		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+		sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
 		return ;
 	}
 	if (mode[0] == '+')
@@ -204,7 +204,7 @@ void	Channel::addChanOp(Client* client)
 	if (isClientChanOp(client))
 		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
-	broadcast(STD_PREFIX((*client)) + " MODE " + _channelName + " +o ");
+	broadcast(client->nickname() + " is now channel operator");
 	info(client->nickname() + " is now an operator in channel " + _channelName);
 }
 
@@ -220,7 +220,7 @@ void	Channel::removeChanOp(Client* client)
 			return;
 		}
 	}
-	broadcast(STD_PREFIX((*client)) + " MODE " + _channelName + " -o ");
+	broadcast(client->nickname() + " has been removed as channel operator");
 	info(client->nickname() + " is no longer an operator in channel " + _channelName);
 }
 

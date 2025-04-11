@@ -17,7 +17,7 @@ MsgHandler::~MsgHandler() {};
 void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 {
 	if (msgData.size() < 2) {
-		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
 		return warning("Insufficient parameters for MODE command");
 	}
 	// silently ignore user modes
@@ -65,24 +65,20 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	channel->broadcast(RPL_TOPIC(client, channel->getName(), topic));
 }
 
-void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
+void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	std::map<std::string, Channel*> allChannels = _manager.getChannels();
-    std::string message = split(msg, ':').back();
-	std::string channelName = split(msg, ' ').at(1);
+	const std::vector<std::string> &trailing = split(msg, ':');
+	const std::vector<std::string> &command = split(trailing[0], ' ');
 
-	std::map<std::string, Channel*>::iterator it = allChannels.find(channelName);
-	if (it == allChannels.end())
-	{
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
-        return warning("PRIVMSG channel is missing or invalid");
+	if (trailing.size() < 2 || command.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "PRIVMSG"));
+		return warning("Insufficient parameters for PRIVMSG command");
 	}
-	Channel* channel = it->second;
-	if (channel->isEmpty())
-		return warning("Channel is empty");
-	channel->broadcastSilent(STD_PREFIX(client) + " " + msg, &client);
-}
+	std::string channelName = command.at(1);
+    std::string message = trailing.at(1);
 
+	_manager.forwardPrivateMessage(channelName, message, client);
+}
 
 void MsgHandler::handleKILL(std::string &msg, Client &killer)
 {
@@ -117,9 +113,12 @@ void MsgHandler::handleKILL(std::string &msg, Client &killer)
 
 void MsgHandler::handleQUIT(std::string &msg, Client &client)
 {
-	std::string message = split(msg, ':').back();
-	if (message.empty())
-		message = "No reason given";
+	std::vector<std::string> msgData = split(msg, ':');
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for JOIN command");
+	}
+	std::string message = (msgData[1].empty()) ? "No reason given" : msgData[1];
 
 	std::vector<Channel*>& clientChannels = client.getClientChannels();
 	for (size_t i = 0; i < clientChannels.size(); i++)
@@ -171,25 +170,112 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 	client.setNickname(nickname);
 }
 
+void MsgHandler::handlePART(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for MODE command");
+	}
+	_manager.removeFromChannel(msgData[1], client);
+}
+
+void MsgHandler::handlePASS(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for MODE command");
+	}
+	_server.validatePassword(msgData[1], client);
+}
+
+void MsgHandler::handleOPER(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 3) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for OPER command");
+	}
+	std::string &nickname = msgData[1];
+	std::string &password = msgData[2];
+
+	_server.validateIRCOp(nickname, password, client);
+}
+
+void MsgHandler::handleJOIN(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for JOIN command");
+	}
+	if (msgData[1][0] != '#') {
+		sendMSG(client.getFd(), ERR_BADCHANMASK(client, msgData[1]));
+		return warning("Channel " + msgData[1] + " does not exist");
+	}
+	std::string &channelName = msgData[1];
+	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
+
+	_manager.addToChannel(channelName, channelKey, client);
+}
+
+void MsgHandler::handleINVITE(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 3) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for INVITE command");
+	}
+	std::string &channelName = msgData[1];
+	std::string &nickname = msgData[2];
+  	
+	_manager.inviteClient(channelName, nickname, client);
+}
+
+void MsgHandler::handleKICK(std::string &msg, Client &client)
+{
+	std::string channelName, userToKick, reason;
+	const std::vector<std::string> &msgData = split(msg, ':');
+	const std::vector<std::string> &names = split(msgData[0], ' ');
+
+	if (msgData.size() < 2 || names.size() < 3) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "KICK"));
+		return warning("Insufficient parameters for KICK command");
+	}
+	channelName = names[1];
+	userToKick = names[2];
+	reason = (msgData.size() > 1) ? msgData[1] : "No reason given";
+
+	_manager.kickFromChannel(channelName, userToKick, reason, client);
+}
+void MsgHandler::handleUSER(std::string &msg, Client &client)
+{
+	std::string username, hostname, IP, fullName;
+	const std::vector<std::string> &msgData = split(msg, ':');
+	const std::vector<std::string> &names = split(msgData[0], ' ');
+
+	if (msgData.size() < 2 || names.size() < 4) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "KICK"));
+		return warning("Insufficient parameters for KICK command");
+	}
+
+	client.assignUserData(username, hostname, IP, fullName);
+}
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
 	switch (getCommandType(msgData[0]))
 	{
-		case PASS: _server.validatePassword(msgData[1], client);
+		case PASS: handlePASS(msgData, client);
 			break ;
-		case OPER: _server.validateIRCOp(msgData, client);
+		case OPER: handleOPER(msgData, client); 
 			break ;
-		case JOIN: _manager.addToChannel(msgData, client);
+		case JOIN: handleJOIN(msgData, client);
 			break ;
-		case PART: _manager.removeFromChannel(msgData[1], client);
+		case PART: handlePART(msgData, client);
 			break ;
-		case INVITE: _manager.inviteClient(msgData[1], msgData[2], client);
+		case INVITE: handleINVITE(msgData, client);
 			break ;
-		case KICK: _manager.kickFromChannel(msg, client);
+		case KICK: handleKICK(msg, client);
 			break ;
-		case USER: client.assignUserData(msg);
+		case USER: handleUSER(msg, client);
 			break ;
 		case QUIT: handleQUIT(msg, client);
 			break ;
@@ -205,7 +291,7 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;
-		case PRIVMSG: forwardPrivateMessage(msg, client);
+		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
 		case UNKNOWN:
 			break ;

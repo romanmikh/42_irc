@@ -61,7 +61,7 @@
 #define ERR_NICKNAMEINUSE(client, newNickname) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " " + newNickname + " :Nickname already in use\r\n"
 #define ERR_NOTONCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channelName + " : You're not in that channel\r\n"
 #define ERR_NOTREGISTERED(client) std::string(":") + SERVER_NAME + " 451 " + client.nickname() + " :You have not registered\r\n"
-#define ERR_NEEDMOREPARAMS(client) std::string(":") + SERVER_NAME + " 461 " + client.nickname() + " :Not enough parameters\r\n"
+#define ERR_NEEDMOREPARAMS(client, command) std::string(":") + SERVER_NAME + " 461 " + client.nickname() + " " + command + " :Not enough parameters\r\n"
 #define ERR_PASSWDMISMATCH(client) std::string(":") + SERVER_NAME + " 464 " + client.nickname() + " :Password incorrect\r\n"
 #define ERR_CHANNELISFULL(client, channelName) std::string(":") + SERVER_NAME + " 471 " + client.nickname() + " " + channelName + " :Cannot join channel (+l)\r\n"
 #define ERR_UNKNOWNMODE(client, c) std::string(":") + SERVER_NAME + " 472 " + client.nickname() + " " + c + " : is unknown mode char to me\r\n"

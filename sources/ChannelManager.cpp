@@ -94,20 +94,14 @@ bool ChannelManager::chanRestrictionsFail(Client& client, const std::string& cha
 	return (false);
 }
 
-void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &client)
+void	ChannelManager::addToChannel(std::string &channelName, std::string &channelKey, Client &client)
 {
-	if (msgData[1][0] != '#') {
-		sendMSG(client.getFd(), ERR_BADCHANMASK(client, msgData[1]));
-		return warning("Channel " + msgData[1] + " does not exist");
-	}
-	std::string &channelName = msgData[1];
 	Channel	*channel = getChanByName(channelName);
 
 	if (!channel) {
 		channel = createChannel(channelName);
 		channel->addChanOp(&client);
 	}
-	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
 	if (chanRestrictionsFail(client, channelName, channelKey) || channel->hasClient(&client)) {
 		return ;
 	}
@@ -115,7 +109,7 @@ void	ChannelManager::addToChannel(std::vector<std::string> &msgData, Client &cli
 	channel->incClientCount();
 	client.getClientChannels().push_back(channel);
 	client.delChannelInvite(channelName);
-	info(client.username() + " joined channel " + channelName);
+	info(client.nickname() + " joined channel " + channelName);
 	sendMSG(client.getFd(), RPL_TOPIC(client, channel->getName(), channel->getTopic()));
 	if (channel->getTopic() != "No topic set") {
 		sendMSG(client.getFd(), RPL_TOPICWHOTIME(client, channel->getName(), channel->getTopicSetBy(), channel->getTopicSetAt()));
@@ -141,7 +135,7 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
     channel->decClientCount();
     channel->broadcast(PART(client, channelName)); 
     sendMSG(client.getFd(), RPL_NOTINCHANNEL(client, channelName));
-    info(client.username() + " removed from channel " + channelName);
+    info(client.nickname() + " removed from channel " + channelName);
     client.popClientChannel(*this, channelName);
 
     if (channel->isClientChanOp(&client)) {
@@ -155,16 +149,8 @@ void ChannelManager::removeFromChannel(const std::string& channelName, Client& c
 	}
 }
 
-void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
+void	ChannelManager::kickFromChannel(std::string &channelName, std::string &userToKick, std::string &reason, Client &kicker)
 {
-	std::string channelName, userToKick, reason;
-	const std::vector<std::string> &msgData = split(msg, ':');
-	reason = (msgData.size() > 1) ? msgData[1] : "No reason given";
-	
-	const std::vector<std::string> &names = split(msgData[0], ' ');
-	channelName = names[1];
-	userToKick = names[2];
-
 	Channel* chan = getChanByName(channelName);
 	if (!chan)
 	{
@@ -185,35 +171,54 @@ void	ChannelManager::kickFromChannel(std::string &msg, Client &kicker)
 	info(kicker.nickname() + " kicked " + userToKick + " from channel " + channelName);
 }
 
-void	ChannelManager::inviteClient(std::string &nickname, const std::string& channelName, Client &client)
+void	ChannelManager::inviteClient(std::string &channelName, std::string &nickname, Client &client)
 {
   	Channel* chan = getChanByName(channelName);
-  	
 	if (!chan)
 	{
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
-	if (chan->isClientChanOp(&client) || client.isIRCOp())
-	{
-		Client* targetClient = _server.getClientByNick(nickname);
-		if (!targetClient)
-			return warning("Client " + nickname + " not found");
-		sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
-		sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
-		targetClient->addChannelInvite(channelName);
-		info(client.username() + " invited " + nickname + " to channel " + channelName);
-	}
-	else
+	if (!chan->isClientChanOp(&client) && !client.isIRCOp())
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
+	Client* targetClient = _server.getClientByNick(nickname);
+	if (!targetClient)
+	{
+		sendMSG(client.getFd(), ERR_NOSUCHNICK(client, channelName));
+		return warning("Client " + nickname + " not found");
+	}
+	sendMSG(targetClient->getFd(), INVITE(client, nickname, channelName));
+	sendMSG(client.getFd(), RPL_INVITING(client, nickname, channelName));
+	targetClient->addChannelInvite(channelName);
+	info(client.nickname() + " invited " + nickname + " to channel " + channelName);
+}
+
+void	ChannelManager::forwardPrivateMessage(std::string &channelName, std::string &message, Client &client)
+{
+	std::map<std::string, Channel*> allChannels = getChannels();
+
+	std::map<std::string, Channel*>::iterator it = allChannels.find(channelName);
+	if (it == allChannels.end())
+	{
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+        return warning("PRIVMSG channel is missing or invalid");
+	}
+	Channel* channel = it->second;
+	if (!channel->hasClient(&client)) {
+		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
+		warning("client" + client.nickname() + " not in channel " + channelName);
+	}
+	if (channel->isEmpty())
+		return warning("Channel is empty");
+	channel->broadcastSilent(STD_PREFIX(client) + " " + message, &client);
 }
 
 void	ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
 {
-	if (msgData.size() < 3 || msgData[2].size() != 2 || !strchr("+-", msgData[2][0]) || !strchr("itkol", msgData[2][1]))
+	if (msgData.size() < 3 || msgData[2].length() != 2 || !strchr("+-", msgData[2][0]) || !strchr("itkol", msgData[2][1]))
 	{
 		sendMSG(client.getFd(), ERR_UNKNOWNMODE(client, msgData[2]));
 		return warning("Invalid mode: " + msgData[1] + ". +/- {i, t, k, o, l}");

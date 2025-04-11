@@ -53,7 +53,7 @@ Client*	Server::getClientByUser(std::string& username) const
 {
 	for (clients_t::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
 	{
-		if (it->second->username() == username)
+		if (it->second->nickname() == username)
 			return (it->second);
 	}
 	return (NULL);
@@ -81,15 +81,11 @@ void	Server::validatePassword(std::string &password, Client &client)
 		sendMSG(client.getFd(), RPL_REGISTERED(client));
 	}
 	else
-	{
 		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-	}
 }
 
-void	Server::validateIRCOp(std::vector<std::string> &msgData, Client &client)
+void	Server::validateIRCOp(std::string &nickname, std::string &password, Client &client)
 {
-	std::string nickname = msgData[1];
-	std::string password = msgData[2];
 	std::map<std::string, std::string> allowedOpers = getOpers();
 	std::map<std::string, std::string>::iterator it = allowedOpers.find(nickname);
 
@@ -137,7 +133,7 @@ void	Server::addclient(pollfd &clientSocket)
 
 void	Server::disconnectClient(Client *client)
 {
-	info(client->username() + " disconnected");
+	info(client->nickname() + " disconnected");
 
 	for (unsigned int i = 0; i < _sockets.size(); i++)
 	{

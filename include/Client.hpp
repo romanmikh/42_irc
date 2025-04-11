@@ -43,7 +43,7 @@ class Client
 		void 			setIRCOp(bool status);
 		void			addChannelInvite(const std::string& channelName);
 		void			delChannelInvite(const std::string& channelName);
-		void 			assignUserData(std::string &msg);
+		void			assignUserData(std::string &username, std::string &hostname, std::string &IP, std::string &fullName);
 
 		std::string 	username(void) const;
 		std::string 	nickname(void) const;
