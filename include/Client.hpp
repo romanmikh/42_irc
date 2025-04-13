@@ -16,6 +16,7 @@ class Client
 
 		bool						_isRegistered;
 		bool 						_isIRCOp;
+		bool						_isBot;
 
 		std::vector<Channel*>   	_clientChannels;
 		std::vector<std::string>   	_clientChannelInvites;
@@ -41,6 +42,7 @@ class Client
 		void 			setHostname(std::string &hostname);
 		void			setRegistered(bool status);
 		void 			setIRCOp(bool status);
+		void			setBot(bool status);
 		void			addClientChannelInvite(const std::string& channelName);
 		void			delClientChannelInvite(const std::string& channelName);
 		void 			assignUserData(std::string &msg);
@@ -53,6 +55,7 @@ class Client
         bool    		isOperator(void) const;
 		bool			isRegistered(void) const;
 		bool 			isIRCOp(void) const;
+		bool			isBot(void) const;
 
 		
 		/* member functions */
