@@ -253,7 +253,7 @@ void	Server::setBot()
 	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
 
 	Client *bot = new Client(botSocket);
-	std::string botNickname = std::string(BCYAN) + "QuoteBot";
+	std::string botNickname = std::string(BCYAN) + "QuoteBot" + GREEN;
 	std::string botUsername = "QuoteBotAPI";
 	std::string botHostname = "api.forismatic.com";
 	bot->setNickname(botNickname);
