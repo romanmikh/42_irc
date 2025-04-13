@@ -1,5 +1,4 @@
 #include "../include/irc.hpp"
-#include "QuoteBot.hpp"
 
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
@@ -8,6 +7,7 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
+	_quoteBot = new QuoteBot();
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -15,7 +15,6 @@ Server::Server(int port, std::string &password)
 	listeningSocket.events = POLLIN;
 	listeningSocket.revents = 0;
 	_sockets.push_back(listeningSocket);
-	_internalBotSocket = -1;
 	
 	sockaddr_in	serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
@@ -34,14 +33,9 @@ Server::~Server()
 	for (unsigned int i = 0; i < _sockets.size(); i++)
 		close(_sockets[i].fd);
 
-	if (_internalBotSocket != -1)
-	{
-		close(_internalBotSocket);
-		_internalBotSocket = -1;
-	}
-	
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
 		delete it->second;
+	delete _quoteBot;
 }
 
 // ************************************************************************** //
@@ -74,12 +68,7 @@ Client*	Server::getClientByNick(std::string& nickname) const
 	return (NULL);
 }
 
-QuoteBot&	Server::getQuoteBot(void)
-{
-	if (_internalBotSocket == -1)
-		warning("QuoteBot not initialized");
-	return (*_quoteBot);
-}
+QuoteBot*	Server::getQuoteBot(void) { return (_quoteBot); }
 
 // ************************************************************************** //
 //                             Private Functions                              //
@@ -215,8 +204,45 @@ void	Server::SIGINTHandler(int signum)
 }
 
 void Server::addApiSocket(pollfd &api_pfd) {
-    _sockets.push_back(api_pfd); 
+    _sockets.push_back(api_pfd);
     info("API socket fd " + intToString(api_pfd.fd) + " added for polling.");
+}
+
+void	Server::removeApiSocket(int fd) {
+	for (size_t i = 0; i < _sockets.size(); ++i) {
+		if (_sockets[i].fd == fd) {
+			_sockets.erase(_sockets.begin() + i);
+			info("API socket fd " + intToString(fd) + " removed from polling.");
+			break;
+		}
+	}
+}
+
+bool	Server::handleApiEvent(pollfd apiFd)
+{
+	std::cout << RED << "Server::handleApiEvent()" << RESET << std::endl; // DEBUG
+	if (apiFd.revents & (POLLHUP | POLLERR | POLLNVAL))
+	{
+		std::cout << PURPLE << "POLLHUP | POLLERR | POLLNVAL on API socket" << RESET << std::endl; // DEBUG
+		_quoteBot->closeApiConnection(*this);
+	}
+	else if ((apiFd.revents & POLLOUT) != 0 && _quoteBot->apiState() != RECEIVING)
+	{
+		std::cout << PURPLE << "API socket is writable" << RESET << std::endl; // DEBUG
+		std::cout << YELLOW << "Quotebot data:\nstate = " << _quoteBot->apiState() << RESET << std::endl; // DEBUG
+		if (_quoteBot->apiState() == CONNECTING)
+			_quoteBot->handleApiConnectionResult(*this);
+		else if (_quoteBot->apiState() == SENDING)
+			_quoteBot->sendHttpRequest(*this);
+	}
+	else if ((apiFd.revents & POLLIN) && _quoteBot->apiState() == RECEIVING)
+		_quoteBot->handleAPIMessage(*this);
+	else if (apiFd.revents != 0)
+	{
+		warning("Unknown event on API socket: " + intToString(apiFd.revents));
+		return false;
+	}
+	return true;
 }
 
 void	Server::setBot()
@@ -227,7 +253,6 @@ void	Server::setBot()
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1)
 		return warning("Failed to create socket pair for bot");
 
-	this->_internalBotSocket = sv[0];
 	fcntl(sv[0], F_SETFL, O_NONBLOCK);
 	fcntl(sv[1], F_SETFL, O_NONBLOCK);
 	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
@@ -256,7 +281,6 @@ void	Server::run(void)
 	info("Running...");
 
 	setBot();
-	QuoteBot	quoteBot;
 	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
@@ -269,15 +293,15 @@ void	Server::run(void)
 			}
 			for (unsigned int i = _sockets.size() - 1; i > 0 && serverActivity > 0; --i)
 			{
-				if (_sockets[i].fd == quoteBot.getApiSocketFd())
+				if (_sockets[i].fd == _quoteBot->getApiSocketFd())
 				{
-					if (_sockets[i].revents & POLLIN)
+					if (handleApiEvent(_sockets[i]) == true)
 					{
-						quoteBot.handleAPIMessage(*this);
 						serverActivity--;
+						continue;
 					}
 				}
-				else if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					disconnectClient(*(_clients[_sockets[i].fd]));
 					serverActivity--;

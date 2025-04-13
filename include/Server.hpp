@@ -20,7 +20,6 @@ class Server
 		std::string				_password;
 		unsigned int			_port;
 		static bool				_running;
-		int						_internalBotSocket;
 		QuoteBot*				_quoteBot;
 
 		std::map<std::string, std::string>	_opers;
@@ -39,7 +38,7 @@ class Server
 		clients_t&							getClients(void);
 		Client*								getClientByUser(std::string& user) const;
 		Client*								getClientByNick(std::string& nick) const;
-		QuoteBot&							getQuoteBot(void);
+		QuoteBot*							getQuoteBot(void);
 		
 		/* member functions*/
 		void 			run(void);
@@ -51,7 +50,9 @@ class Server
 		void 			disconnectClient(Client &client);
 		void			shutdown();
 		void			addApiSocket(pollfd &api_pfd);
+		void			removeApiSocket(int fd);
 		void			setBot();
+		bool			handleApiEvent(pollfd fd);
 
 		/* static members */
 		static Server*  instance;

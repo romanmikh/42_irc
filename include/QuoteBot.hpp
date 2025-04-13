@@ -6,22 +6,29 @@
 class Server;
 class Client;
 
+enum APIState
+{
+	IDLE,
+	CONNECTING,
+	SENDING,
+	RECEIVING,
+	COMPLETE
+};
+
 class QuoteBot
 {
 	private:
 		int			_apiSocketFd;
-		bool		_isConnecting;
-		bool		_isConnected;
+		APIState	_apiState;
 		Client*		_requesterClient;
-		std::string	_apiBuffer;
 		std::string	_requesterChannel;
+		std::string	_apiBuffer;
 
 	public:
 		QuoteBot(void);
 		~QuoteBot(void);
 
-		bool		isConnecting(void) const;
-		bool		isConnected(void) const;
+		APIState	apiState(void) const;
 		int			getApiSocketFd(void) const;
 		Client*		getRequesterClient(void) const;
 		std::string	getRequesterChannel(void) const;
@@ -29,9 +36,12 @@ class QuoteBot
 		void		setRequesterChannel(std::string channel);
 
 		bool	initiateConnection(Server& server);
-		void	sendQuote(Server& server, std::string quote);
+		void	handleApiConnectionResult(Server& server);
+		void	sendHttpRequest(Server& server);
 		void	handleAPIMessage(Server& server);
 		void	processAPIResponse(Server& server);
+		void	sendQuote(Server& server, std::string quote);
+		void	closeApiConnection(Server& server);
 };
 
 #endif
