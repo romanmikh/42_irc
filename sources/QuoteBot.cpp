@@ -4,6 +4,7 @@
 QuoteBot::QuoteBot()
 {
 	_apiSocketFd = -1;
+	_botSocketFd = -1;
 	_apiState = IDLE;
 	_apiBuffer = "";
 	_requesterClient = NULL;
@@ -24,6 +25,8 @@ Client*	QuoteBot::getRequesterClient(void) const { return _requesterClient; }
 
 std::string	QuoteBot::getRequesterChannel(void) const { return _requesterChannel; }
 
+void	QuoteBot::setBotSocketFd(int fd) { _botSocketFd = fd; }
+
 void	QuoteBot::setRequesterClient(Client* client)
 {
 	if (client)
@@ -42,8 +45,6 @@ void	QuoteBot::setRequesterChannel(std::string channel)
 
 bool	QuoteBot::initiateConnection(Server& server)
 {
-	std::cout << RED << "QuoteBot::initiateConnection()" << RESET << std::endl; // DEBUG
-
 	const char* hostname = "api.forismatic.com";
 	const char* port = "80";
 	addrinfo hints, *res = NULL, *p = NULL;
@@ -53,7 +54,6 @@ bool	QuoteBot::initiateConnection(Server& server)
 	hints.ai_socktype = SOCK_STREAM;
 
 	int status = getaddrinfo(hostname, port, &hints, &res);
-	std::cout << PURPLE << "getaddrinfo status: " << status << RESET << std::endl; // DEBUG
 	if (status != 0)
 		return warning(std::string("getaddrinfo: ") + gai_strerror(status)), false;
 
@@ -61,7 +61,6 @@ bool	QuoteBot::initiateConnection(Server& server)
 	for (p = res; p != NULL; p = p->ai_next)
 	{
 		socketFd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-		std::cout << PURPLE << "socket() status: " << socketFd << RESET << std::endl; // DEBUG
 		if (socketFd == -1)
 		{
 			warning("Failed to create socket for QuoteBot");
@@ -73,11 +72,8 @@ bool	QuoteBot::initiateConnection(Server& server)
 			socketFd = -1;
 			continue;
 		}
+
 		status = connect(socketFd, p->ai_addr, p->ai_addrlen);
-		std::cout << YELLOW << "connect() status: " << status << RESET << std::endl; // DEBUG
-		std::cout << YELLOW << "Quotebot data:\n" \
-							<< "state = " << _apiState << RESET << std::endl; // DEBUG
-							
 		if (status == 0)
 		{
 			info("Connected to QuoteBot API in fd " + intToString(socketFd));
@@ -85,8 +81,6 @@ bool	QuoteBot::initiateConnection(Server& server)
 			_apiState = SENDING;
 			pollfd apiPollFd = {_apiSocketFd, POLLIN | POLLOUT, 0};
 			server.addApiSocket(apiPollFd);
-			std::cout << YELLOW << "Quotebot data:\n" \
-				<< "state = " << _apiState << RESET << std::endl; // DEBUG
 			break;
 		}
 		if (status == -1 && errno == EINPROGRESS)
@@ -96,9 +90,6 @@ bool	QuoteBot::initiateConnection(Server& server)
 			_apiState = CONNECTING;
 			pollfd apiPollFd = {_apiSocketFd, POLLIN | POLLOUT, 0};
 			server.addApiSocket(apiPollFd);
-
-			std::cout << YELLOW << "Quotebot data:\n" \
-							<< "state = " << _apiState << RESET << std::endl; // DEBUG
 			break;
 		}
 		else if (status == -1 && errno != EINPROGRESS)
@@ -115,7 +106,6 @@ bool	QuoteBot::initiateConnection(Server& server)
 
 void	QuoteBot::handleApiConnectionResult(Server& server)
 {
-	std::cout << RED << "QuoteBot::handleApiConnectionResult()" << RESET << std::endl; // DEBUG
 
 	int errorCode;
 	socklen_t	len = sizeof(errorCode);
@@ -129,12 +119,10 @@ void	QuoteBot::handleApiConnectionResult(Server& server)
 
 void	QuoteBot::handleAPIMessage(Server& server)
 {
-	std::cout << RED << "QuoteBot::handleAPIMessage()" << RESET << std::endl; // DEBUG
 	char	buffer[1024];
 	while (true)
 	{
 		ssize_t bytes_read = recv(_apiSocketFd, buffer, sizeof(buffer) - 1, 0);
-		std::cout << YELLOW << "recv() status: " << bytes_read << RESET << std::endl; // DEBUG
 		if (bytes_read > 0)
 		{
 			buffer[bytes_read] = '\0';
@@ -161,14 +149,12 @@ void	QuoteBot::handleAPIMessage(Server& server)
 
 void	QuoteBot::processAPIResponse(Server& server)
 {
-	std::cout << RED << "QuoteBot::processAPIResponse()" << RESET << std::endl; // DEBUG
 	std::string	responseOK = "HTTP/1.1 200 OK";
 	if (_apiBuffer.compare(0, responseOK.size(), responseOK) != 0)
 	{
 		closeApiConnection(server);
 		return warning("QuoteBot API returned an error");
 	}
-	// std::cout << BCYAN << "API response: " << _apiBuffer << RESET << std::endl; // DEBUG
 	size_t headerEnd = _apiBuffer.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
 		return closeApiConnection(server);
@@ -212,7 +198,7 @@ void	QuoteBot::processAPIResponse(Server& server)
 			decodeQuote.erase(lastChar + 1);
 		else
 			decodeQuote.clear();
-		sendQuote(server, decodeQuote);
+		sendQuote(decodeQuote);
 	}
 	else
 	{
@@ -237,15 +223,15 @@ void	QuoteBot::sendHttpRequest(Server& server)
 	_apiState = RECEIVING;
 }
 
-void	QuoteBot::sendQuote(Server& server, std::string quote)
+void	QuoteBot::sendQuote(std::string quote)
 {
 	if (_requesterClient == NULL)
 		return warning("No requester client set for QuoteBot");
 	if (_requesterChannel.empty())
 		return warning("No requester channel set for QuoteBot");
-	std::string message = "PRIVMSG " + _requesterChannel + " : " + quote + "\r\n";
-	sendMSG(_requesterClient->getFd(), message);
-	(void)server;
+
+	std::string message = "PRIVMSG " + _requesterChannel + " :" + BYELLOW + quote + "\r\n";
+	send(_botSocketFd, message.c_str(), message.length(), 0);
 }
 
 void	QuoteBot::closeApiConnection(Server& server)

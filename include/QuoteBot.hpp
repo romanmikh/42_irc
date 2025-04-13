@@ -19,6 +19,7 @@ class QuoteBot
 {
 	private:
 		int			_apiSocketFd;
+		int			_botSocketFd;
 		APIState	_apiState;
 		Client*		_requesterClient;
 		std::string	_requesterChannel;
@@ -32,6 +33,7 @@ class QuoteBot
 		int			getApiSocketFd(void) const;
 		Client*		getRequesterClient(void) const;
 		std::string	getRequesterChannel(void) const;
+		void		setBotSocketFd(int fd);
 		void		setRequesterClient(Client* client);
 		void		setRequesterChannel(std::string channel);
 
@@ -40,7 +42,7 @@ class QuoteBot
 		void	sendHttpRequest(Server& server);
 		void	handleAPIMessage(Server& server);
 		void	processAPIResponse(Server& server);
-		void	sendQuote(Server& server, std::string quote);
+		void	sendQuote(std::string quote);
 		void	closeApiConnection(Server& server);
 };
 

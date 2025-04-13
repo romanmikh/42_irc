@@ -220,16 +220,10 @@ void	Server::removeApiSocket(int fd) {
 
 bool	Server::handleApiEvent(pollfd apiFd)
 {
-	std::cout << RED << "Server::handleApiEvent()" << RESET << std::endl; // DEBUG
 	if (apiFd.revents & (POLLHUP | POLLERR | POLLNVAL))
-	{
-		std::cout << PURPLE << "POLLHUP | POLLERR | POLLNVAL on API socket" << RESET << std::endl; // DEBUG
 		_quoteBot->closeApiConnection(*this);
-	}
 	else if ((apiFd.revents & POLLOUT) != 0 && _quoteBot->apiState() != RECEIVING)
 	{
-		std::cout << PURPLE << "API socket is writable" << RESET << std::endl; // DEBUG
-		std::cout << YELLOW << "Quotebot data:\nstate = " << _quoteBot->apiState() << RESET << std::endl; // DEBUG
 		if (_quoteBot->apiState() == CONNECTING)
 			_quoteBot->handleApiConnectionResult(*this);
 		else if (_quoteBot->apiState() == SENDING)
@@ -255,16 +249,18 @@ void	Server::setBot()
 
 	fcntl(sv[0], F_SETFL, O_NONBLOCK);
 	fcntl(sv[1], F_SETFL, O_NONBLOCK);
+	_quoteBot->setBotSocketFd(sv[0]);
 	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
 
 	Client *bot = new Client(botSocket);
-	std::string botNickname = "QuoteBot";
-	std::string botUsername = "QuoteBot";
-	std::string botHostname = "QuoteBot";
+	std::string botNickname = std::string(BCYAN) + "QuoteBot";
+	std::string botUsername = "QuoteBotAPI";
+	std::string botHostname = "api.forismatic.com";
 	bot->setNickname(botNickname);
 	bot->setUsername(botUsername);
 	bot->setHostname(botHostname);
 	bot->setRegistered(true);
+	bot->setBot(true);
 	
 	_sockets.push_back(botSocket);
 	_clients.insert(client_pair_t (sv[1], bot));

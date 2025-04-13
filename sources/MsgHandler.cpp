@@ -76,7 +76,7 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 	const std::vector<Channel*>& clientChannels = client.getClientChannels();
 	std::map<std::string, Channel*> allChannels = _manager.getChannels();
 
-	if (clientChannels.empty())
+	if (clientChannels.empty() && !client.isBot())
 		return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
 
 	if (msg.empty())
@@ -188,7 +188,6 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 
 void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 {
-	std::cout << RED << "MsgHandler::handleQuote called" << RESET << std::endl; //DEBUG
 
 	if (!_server.getQuoteBot()->initiateConnection(_server))
 	{
@@ -199,9 +198,7 @@ void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 	std::cout << PURPLE << "QuoteBot connection initiated" << RESET << std::endl;
 	_server.getQuoteBot()->setRequesterClient(&client);
 
-	std::cout << PURPLE << "requester client = " << _server.getQuoteBot()->getRequesterClient()->nickname() << RESET << std::endl; //DEBUG
 	_server.getQuoteBot()->setRequesterChannel(channelTarget);
-	std::cout << PURPLE << "requester channel = " << _server.getQuoteBot()->getRequesterChannel() << RESET << std::endl; //DEBUG
 }
 
 void	MsgHandler::respond(std::string &msg, Client &client)
