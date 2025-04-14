@@ -77,7 +77,15 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	std::string channelName = command.at(1);
     std::string message = trailing.at(1);
 
+	if (msg.find("!quote") != std::string::npos)
+	{
+		chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
+		handleQuote(channel, client);
+		return;
+	}
+
 	_manager.forwardPrivateMessage(channelName, message, client);
+
 }
 
 void MsgHandler::handleKILL(std::string &msg, Client &killer)
@@ -168,6 +176,22 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 		return sendMSG(client.getFd(), ERR_NICKNAMEINUSE(client, msgData[1]));
 	}
 	client.setNickname(nickname);
+}
+
+
+void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
+{
+
+	if (!_server.getQuoteBot()->initiateConnection(_server))
+	{
+		info("Failed to connect to QuoteBot API");
+		return;
+	}
+
+	std::cout << PURPLE << "QuoteBot connection initiated" << RESET << std::endl;
+	_server.getQuoteBot()->setRequesterClient(&client);
+
+	_server.getQuoteBot()->setRequesterChannel(channelTarget);
 }
 
 void MsgHandler::handlePART(std::vector<std::string> &msgData, Client &client)
@@ -301,7 +325,6 @@ void MsgHandler::respond(std::string &msg, Client &client)
 void	MsgHandler::receiveMessage(Client &client)
 {
 	char		buffer[1024];
-	
 	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
 	if (bytes_read <= 0) {
 		return _server.disconnectClient(&client);

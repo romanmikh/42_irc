@@ -7,6 +7,7 @@ Server::Server(int port, std::string &password)
 {
 	_port = port;
 	_password = password;
+	_quoteBot = new QuoteBot();
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -38,6 +39,7 @@ Server::~Server()
 
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
 		delete it->second;
+	delete _quoteBot;
 }
 
 // ************************************************************************** //
@@ -69,6 +71,21 @@ Client*	Server::getClientByNick(std::string& nickname) const
 	return (NULL);
 }
 
+QuoteBot*	Server::getQuoteBot(void) { return (_quoteBot); }
+
+// ************************************************************************** //
+//                             Private Functions                              //
+// ************************************************************************** //
+
+pollfd	Server::_makePollfd(int fd, short int events, short int revents)
+{
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = events;
+	pfd.revents = revents;
+	return pfd;
+}
+
 // ************************************************************************** //
 //                             Public Functions                               //
 // ************************************************************************** //
@@ -92,7 +109,7 @@ void	Server::validateIRCOp(std::string &nickname, std::string &password, Client 
 	if (it == allowedOpers.end()){
 		return sendMSG(client.getFd(), ERR_NOOPERHOST(client));
 	}
-	if (it->second != password) {
+	if (it->second != password){
 		return sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
 	}
 	info(client.nickname() + " set as operator");
@@ -100,10 +117,7 @@ void	Server::validateIRCOp(std::string &nickname, std::string &password, Client 
 	sendMSG(client.getFd(), RPL_YOUROPER(client));
 }
 
-void	Server::shutdown()
-{
-	_running = false;
-}
+void	Server::shutdown() { _running = false; }
 
 void	Server::parseOpersConfigFile(const char *fileName)
 {
@@ -188,6 +202,70 @@ void	Server::SIGINTHandler(int signum)
 	instance->shutdown();
 }
 
+void Server::addApiSocket(pollfd &api_pfd) {
+    _sockets.push_back(api_pfd);
+    info("API socket fd " + intToString(api_pfd.fd) + " added for polling.");
+}
+
+void	Server::removeApiSocket(int fd) {
+	for (size_t i = 0; i < _sockets.size(); ++i) {
+		if (_sockets[i].fd == fd) {
+			_sockets.erase(_sockets.begin() + i);
+			info("API socket fd " + intToString(fd) + " removed from polling.");
+			break;
+		}
+	}
+}
+
+bool	Server::handleApiEvent(pollfd apiFd)
+{
+	if (apiFd.revents & (POLLHUP | POLLERR | POLLNVAL))
+		_quoteBot->closeApiConnection(*this);
+	else if ((apiFd.revents & POLLOUT) != 0 && _quoteBot->apiState() != RECEIVING)
+	{
+		if (_quoteBot->apiState() == CONNECTING)
+			_quoteBot->handleApiConnectionResult(*this);
+		else if (_quoteBot->apiState() == SENDING)
+			_quoteBot->sendHttpRequest(*this);
+	}
+	else if ((apiFd.revents & POLLIN) && _quoteBot->apiState() == RECEIVING)
+		_quoteBot->handleAPIMessage(*this);
+	else if (apiFd.revents != 0)
+	{
+		warning("Unknown event on API socket: " + intToString(apiFd.revents));
+		return false;
+	}
+	return true;
+}
+
+void	Server::setBot()
+{
+	info("Setting bot...");
+
+	int	sv[2];
+	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1)
+		return warning("Failed to create socket pair for bot");
+
+	fcntl(sv[0], F_SETFL, O_NONBLOCK);
+	fcntl(sv[1], F_SETFL, O_NONBLOCK);
+	_quoteBot->setBotSocketFd(sv[0]);
+	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
+
+	Client *bot = new Client(botSocket);
+	std::string botNickname = std::string(BCYAN) + "QuoteBot" + GREEN;
+	std::string botUsername = "QuoteBotAPI";
+	std::string botHostname = "api.forismatic.com";
+	bot->setNickname(botNickname);
+	bot->setUsername(botUsername);
+	bot->setHostname(botHostname);
+	bot->setRegistered(true);
+	bot->setBot(true);
+	
+	_sockets.push_back(botSocket);
+	_clients.insert(client_pair_t (sv[1], bot));
+	info("Bot " + botNickname + " created with fd: " + intToString(botSocket.fd));
+}
+
 void	Server::run(void)
 {
 	ChannelManager  manager(*this);
@@ -196,6 +274,8 @@ void	Server::run(void)
 	Server::instance = this;
 	signal(SIGINT, SIGINTHandler);
 	info("Running...");
+
+	setBot();
 	while (_running)
 	{
 		int serverActivity = poll(_sockets.data(), _sockets.size(), -1);
@@ -208,6 +288,14 @@ void	Server::run(void)
 			}
 			for (unsigned int i = _sockets.size() - 1; i > 0 && serverActivity > 0; --i)
 			{
+				if (_sockets[i].fd == _quoteBot->getApiSocketFd())
+				{
+					if (handleApiEvent(_sockets[i]) == true)
+					{
+						serverActivity--;
+						continue;
+					}
+				}
 				if (_sockets[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					disconnectClient(_clients[_sockets[i].fd]);
@@ -221,20 +309,6 @@ void	Server::run(void)
 			}
 		}
 	}
-}
-
-
-// ************************************************************************** //
-//                             Private Functions                              //
-// ************************************************************************** //
-
-pollfd	Server::_makePollfd(int fd, short int events, short int revents)
-{
-	struct pollfd pfd;
-	pfd.fd = fd;
-	pfd.events = events;
-	pfd.revents = revents;
-	return pfd;
 }
 
 

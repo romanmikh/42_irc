@@ -415,3 +415,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+valgrind-out.txt
+request
