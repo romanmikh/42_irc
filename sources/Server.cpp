@@ -231,10 +231,7 @@ bool	Server::handleApiEvent(pollfd apiFd)
 	else if ((apiFd.revents & POLLIN) && _quoteBot->apiState() == RECEIVING)
 		_quoteBot->handleAPIMessage(*this);
 	else if (apiFd.revents != 0)
-	{
-		warning("Unknown event on API socket: " + intToString(apiFd.revents));
 		return false;
-	}
 	return true;
 }
 
@@ -252,7 +249,7 @@ void	Server::setBot()
 	pollfd botSocket = _makePollfd(sv[1], POLLIN | POLLHUP | POLLERR, 0);
 
 	Client *bot = new Client(botSocket);
-	std::string botNickname = std::string(BCYAN) + "QuoteBot" + GREEN;
+	std::string botNickname = std::string(CYAN) + "QuoteBot" + GREEN;
 	std::string botUsername = "QuoteBotAPI";
 	std::string botHostname = "api.forismatic.com";
 	bot->setNickname(botNickname);

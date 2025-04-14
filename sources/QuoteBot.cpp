@@ -106,7 +106,6 @@ bool	QuoteBot::initiateConnection(Server& server)
 
 void	QuoteBot::handleApiConnectionResult(Server& server)
 {
-
 	int errorCode;
 	socklen_t	len = sizeof(errorCode);
 	if (getsockopt(_apiSocketFd, SOL_SOCKET, SO_ERROR, &errorCode, &len) == -1)
@@ -201,11 +200,7 @@ void	QuoteBot::processAPIResponse(Server& server)
 		sendQuote(decodeQuote);
 	}
 	else
-	{
 		warning("Malformed chunk in API response: empty quote");
-		closeApiConnection(server);
-		return;
-	}
 	closeApiConnection(server);
 }
 
@@ -230,8 +225,9 @@ void	QuoteBot::sendQuote(std::string quote)
 	if (_requesterChannel.empty())
 		return warning("No requester channel set for QuoteBot");
 
-	std::string message = "PRIVMSG " + _requesterChannel + " :" + BYELLOW + quote + "\r\n";
-	send(_botSocketFd, message.c_str(), message.length(), 0);
+	std::string message = "PRIVMSG " + _requesterChannel + " :" + YELLOW + quote + RESET + "\r\n";
+	if (send(_botSocketFd, message.c_str(), message.length(), MSG_DONTWAIT) == -1)
+		warning("Failed to send message: " + std::string(strerror(errno)));
 }
 
 void	QuoteBot::closeApiConnection(Server& server)
