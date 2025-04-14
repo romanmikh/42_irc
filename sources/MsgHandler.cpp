@@ -85,7 +85,6 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	}
 
 	_manager.forwardPrivateMessage(channelName, message, client);
-
 }
 
 void MsgHandler::handleKILL(std::string &msg, Client &killer)
@@ -181,7 +180,6 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 
 void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 {
-
 	if (!_server.getQuoteBot()->initiateConnection(_server))
 	{
 		info("Failed to connect to QuoteBot API");
@@ -278,10 +276,26 @@ void MsgHandler::handleUSER(std::string &msg, Client &client)
 
 	client.assignUserData(username, hostname, IP, fullName);
 }
+
+void	MsgHandler::handleSENDFILE(std::string &msg, Client& client)
+{
+	const std::vector<std::string> &msgData = split(msg, ' ');
+	(void)client;
+	std::cout << PURPLE << "MsgHandler::handleSENDFILE\nmessage: " << YELLOW << msgData[0] << "\n" << msgData[1] << RESET << std::endl;
+}
+
+void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
+{
+	const std::vector<std::string> &msgData = split(msg, ' ');
+	(void)client;
+	std::cout << PURPLE << "MsgHandler::handleGETFILE\nmessage: " << YELLOW << msgData[0] << "\n" << msgData[1] << RESET << std::endl;
+}
+
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
+	std::cout << PURPLE << "command : " << YELLOW << msgData[0] << RESET << std::endl;
 	switch (getCommandType(msgData[0]))
 	{
 		case PASS: handlePASS(msgData, client);
@@ -314,6 +328,10 @@ void MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
+		case SENDFILE: handleSENDFILE(msg, client);
+			break ;
+		case GETFILE: handleGETFILE(msg, client);
+			break ;
 		case UNKNOWN:
 			break ;
 	}
@@ -330,9 +348,10 @@ void	MsgHandler::receiveMessage(Client &client)
 	if (!strcmp(buffer, "\r\n")) {
 		return ;
 	}
-	std::cout << buffer; // for testing only 
+	std::cout << buffer; // for testing only
 
 	client.msgBuffer += buffer;
+	std::cout << PURPLE << "buffer: " << YELLOW << client.msgBuffer << RESET << std::endl; // DEBUG
 	size_t i;
 	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{

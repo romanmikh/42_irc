@@ -18,6 +18,8 @@ std::map<std::string, Command>  createCommandMap()
     commandMap["PRIVMSG"] = PRIVMSG;
     commandMap["KILL"] = KILL;
     commandMap["DIE"] = DIE;
+    commandMap["SENDFILE"] = SENDFILE;
+    commandMap["GETFILE"] = GETFILE;
     return commandMap;
 }
 

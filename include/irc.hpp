@@ -141,7 +141,9 @@ enum Command
     PASS,
     UNKNOWN,
     KILL,
-    DIE
+    DIE,
+    SENDFILE,
+    GETFILE
 };
 
 std::map<std::string, Command>  createCommandMap();
