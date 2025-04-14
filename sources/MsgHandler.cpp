@@ -79,8 +79,8 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 
 	if (msg.find("!quote") != std::string::npos)
 	{
-		chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
-		handleQuote(channel, client);
+		_manager.forwardPrivateMessage(channelName, msg, client);
+		handleQuote(channelName, client);
 		return;
 	}
 
@@ -187,10 +187,7 @@ void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 		info("Failed to connect to QuoteBot API");
 		return;
 	}
-
-	std::cout << PURPLE << "QuoteBot connection initiated" << RESET << std::endl;
 	_server.getQuoteBot()->setRequesterClient(&client);
-
 	_server.getQuoteBot()->setRequesterChannel(channelTarget);
 }
 
