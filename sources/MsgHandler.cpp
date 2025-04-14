@@ -4,12 +4,10 @@
 // ************************************************************************** //
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
-
 MsgHandler::MsgHandler(Server &server, ChannelManager &manager)
 	: _server(server), _manager(manager) {};
 
 MsgHandler::~MsgHandler() {};
-
 
 // ************************************************************************** //
 //                             Public Functions                               //
@@ -19,14 +17,16 @@ MsgHandler::~MsgHandler() {};
 void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 {
 	if (msgData.size() < 2) {
-		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client));
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
 		return warning("Insufficient parameters for MODE command");
 	}
+	// silently ignore user modes
+	if (_server.getClientByNick(msgData[1]))
+		return ;
 
 	std::string channelName = msgData[1];
 	Channel* chan = _manager.getChanByName(channelName);
-	if (!chan)
-	{
+	if (!chan) {
 		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
 		return warning("Channel " + channelName + " does not exist");
 	}
@@ -35,72 +35,47 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 	else
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		sendMSG(client.getFd(), SERVER_NAME + " " + client.nickname() + " NOTICE :You are not a channel operator\r\n");
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 }
 
-void	MsgHandler::handleTOPIC(std::string &msg, Client &client)
+void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 {
-	std::vector<std::string> msgData = split(msg, ' ');
-	Channel* chan = _manager.getChanByName(msgData[1]);
+	std::string topic = split(msg, ':').back();
+	std::string channelName = split(msg, ' ').at(1);
+	Channel* channel = _manager.getChanByName(channelName);
 
-	if (!chan)
-	{
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, msgData[1]));
-		return warning("Channel " + msgData[1] + " does not exist");
+	if (!channel) {
+		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channelName));
+		return warning("Channel " + channelName + " does not exist");
 	}
-	if (msgData.size() > 2)
+	if (!channel->hasClient(&client))
 	{
-		if (chan->isTopicRestricted() && (chan->isClientChanOp(&client) || client.isIRCOp()))
-		{
-			chan->setTopic(msgData[2]);
-			info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + chan->getTopic());
-		}
-		else if (!chan->isTopicRestricted())
-		{
-			chan->setTopic(msgData[2]);
-			info(client.nickname() + " changed topic of channel " + chan->getName() + " to: " + chan->getTopic());
-		}
-		else
-		{
-			sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, msgData[1]));
-			warning(client.nickname() + " is not an operator in channel " + msgData[1]);
-		}
+		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
-	else
-		sendMSG(client.getFd(), RPL_TOPIC(client, chan->getName(), chan->getTopic()));
+	if (channel->isTopicRestricted() && !(channel->isClientChanOp(&client) || client.isIRCOp()))
+	{
+		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		return warning(client.nickname() + " is not an operator in channel " + channelName);
+	}
+	channel->setTopic(topic, client.nickname());
+	info(client.nickname() + " changed topic of channel " + channel->getName() + " to: " + topic);
+	channel->broadcast(RPL_TOPIC(client, channel->getName(), topic));
 }
 
-void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
+void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 {
-	const std::vector<Channel*>& clientChannels = client.getClientChannels();
-	std::map<std::string, Channel*> allChannels = _manager.getChannels();
+	const std::vector<std::string> &trailing = split(msg, ':');
+	const std::vector<std::string> &command = split(trailing[0], ' ');
 
-	if (clientChannels.empty() && !client.isBot())
-		return error("Client not in any channel, IRSSI applying PRIVMSG incorrectly");
-
-	if (msg.empty())
-        return warning("Empty PRIVMSG received");
-
-    std::vector<std::string> tokens = split(msg, ' ');
-    if (tokens.size() < 2 || tokens[0] != "PRIVMSG")
-        return warning("Invalid PRIVMSG format");
-
-    const std::string& channel = tokens[1];
-    if (channel.empty() || channel[0] != '#')
-	{
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
-        return warning("PRIVMSG channel is missing or invalid");
+	if (trailing.size() < 2 || command.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "PRIVMSG"));
+		return warning("Insufficient parameters for PRIVMSG command");
 	}
-	std::map<std::string, Channel*>::iterator it = allChannels.find(channel);
-	if (it == allChannels.end())
-	{
-		sendMSG(client.getFd(), ERR_NOSUCHCHANNEL(client, channel));
-		return warning("Channel " + channel + " does not exist in the server");
-	}
-	Channel* chan = it->second;
-	if (chan->isEmpty())
-		return warning("Channel is empty");
+	std::string channelName = command.at(1);
+    std::string message = trailing.at(1);
 
 	if (msg.find("!quote") != std::string::npos)
 	{
@@ -109,10 +84,11 @@ void	MsgHandler::forwardPrivateMessage(std::string &msg, Client &client)
 		return;
 	}
 
-	chan->broadcastToChannel(STD_PREFIX(client) + " " + msg, &client);
+	_manager.forwardPrivateMessage(channelName, message, client);
+
 }
 
-void	MsgHandler::handleKILL(std::string &msg, Client &killer)
+void MsgHandler::handleKILL(std::string &msg, Client &killer)
 {
 	if (!killer.isIRCOp())
 	{
@@ -134,16 +110,34 @@ void	MsgHandler::handleKILL(std::string &msg, Client &killer)
 		std::vector<Channel*> clientChannels = client->getClientChannels();
 		for (size_t i = 0; i < clientChannels.size(); i++)
 		{
-			clientChannels[i]->broadcastToChannel(KILL(killer, victim, clientChannels[i], reasonToKill), NULL);
-			sendMSG(client->getFd(), RPL_NOTINCHANNEL((*client), clientChannels[i]->getName()));
+			clientChannels[i]->broadcast(KILL(killer, victim, clientChannels[i], reasonToKill));
+			_manager.removeFromChannel(clientChannels[i]->getName(), victim);
 		}
-		sendMSG(client->getFd(), QUIT((*client), killer, reasonToKill));
-		_server.disconnectClient(*client);
+		sendMSG(victim.getFd(), QUITKILLEDBY(victim, killer, reasonToKill));
+		_server.disconnectClient(&victim);
 		return ;
 	}
 }
 
-void	MsgHandler::handleDIE(Client &client)
+void MsgHandler::handleQUIT(std::string &msg, Client &client)
+{
+	std::vector<std::string> msgData = split(msg, ':');
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for JOIN command");
+	}
+	std::string message = (msgData[1].empty()) ? "No reason given" : msgData[1];
+
+	std::vector<Channel*>& clientChannels = client.getClientChannels();
+	for (size_t i = 0; i < clientChannels.size(); i++)
+	{
+		clientChannels[i]->broadcast(QUIT(client, message));
+		_manager.removeFromChannel(clientChannels[i]->getName(), client);
+	}
+	_server.disconnectClient(&client);
+}
+
+void MsgHandler::handleDIE(Client &client)
 {
 	if (!client.isIRCOp())
 		return sendMSG(client.getFd(), ERR_NOPRIVILAGES(client));
@@ -152,10 +146,10 @@ void	MsgHandler::handleDIE(Client &client)
 	for (clients_t::iterator it = allClients.begin(); it != allClients.end(); ++it)
 	{
 		Client &c = *it->second;
-		std::vector<Channel*> clientChannels = c.getClientChannels();
-		for (size_t i = 0; i < clientChannels.size(); i++)
+		std::vector<Channel *> clientChannels = c.getClientChannels();
+		for (size_t i = 0; i < clientChannels.size();i++)
 		{
-			sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
+  		  	sendMSG(c.getFd(), RPL_NOTINCHANNEL(c, clientChannels[i]->getName()));
 		}
 		sendMSG(c.getFd(), DIE(c));
 	}
@@ -175,9 +169,7 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 		int i = 1;
 		while (_server.getClientByNick(nickname))
 		{		
-			std::ostringstream intTag;
-			intTag << i++;
-			nickname = msgData[1] + intTag.str();
+			nickname = msgData[1] + intToString(i++);
 		}
 	}
 	else if ((_server.getClientByNick(nickname))) {
@@ -185,6 +177,7 @@ void MsgHandler::handleNICK(std::vector<std::string> &msgData, Client &client)
 	}
 	client.setNickname(nickname);
 }
+
 
 void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 {
@@ -201,27 +194,116 @@ void	MsgHandler::handleQuote(const std::string& channelTarget, Client& client)
 	_server.getQuoteBot()->setRequesterChannel(channelTarget);
 }
 
-void	MsgHandler::respond(std::string &msg, Client &client)
+void MsgHandler::handlePART(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for MODE command");
+	}
+	_manager.removeFromChannel(msgData[1], client);
+}
+
+void MsgHandler::handlePASS(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for MODE command");
+	}
+	_server.validatePassword(msgData[1], client);
+}
+
+void MsgHandler::handleOPER(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 3) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for OPER command");
+	}
+	std::string &nickname = msgData[1];
+	std::string &password = msgData[2];
+
+	_server.validateIRCOp(nickname, password, client);
+}
+
+void MsgHandler::handleJOIN(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 2) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for JOIN command");
+	}
+	if (msgData[1][0] != '#') {
+		sendMSG(client.getFd(), ERR_BADCHANMASK(client, msgData[1]));
+		return warning("Channel " + msgData[1] + " does not exist");
+	}
+	std::string &channelName = msgData[1];
+	std::string channelKey = (msgData.size() == 3) ? msgData[2] : "";
+
+	_manager.addToChannel(channelName, channelKey, client);
+}
+
+void MsgHandler::handleINVITE(std::vector<std::string> &msgData, Client &client)
+{
+	if (msgData.size() < 3) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, msgData[0]));
+		return warning("Insufficient parameters for INVITE command");
+	}
+	std::string &channelName = msgData[1];
+	std::string &nickname = msgData[2];
+  	
+	_manager.inviteClient(channelName, nickname, client);
+}
+
+void MsgHandler::handleKICK(std::string &msg, Client &client)
+{
+	std::string channelName, userToKick, reason;
+	const std::vector<std::string> &msgData = split(msg, ':');
+	const std::vector<std::string> &names = split(msgData[0], ' ');
+
+	if (msgData.size() < 2 || names.size() < 3) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "KICK"));
+		return warning("Insufficient parameters for KICK command");
+	}
+	channelName = names[1];
+	userToKick = names[2];
+	reason = (msgData.size() > 1) ? msgData[1] : "No reason given";
+
+	_manager.kickFromChannel(channelName, userToKick, reason, client);
+}
+void MsgHandler::handleUSER(std::string &msg, Client &client)
+{
+	std::string username, hostname, IP, fullName;
+	const std::vector<std::string> &msgData = split(msg, ':');
+	const std::vector<std::string> &names = split(msgData[0], ' ');
+
+	if (msgData.size() < 2 || names.size() < 4) {
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "KICK"));
+		return warning("Insufficient parameters for KICK command");
+	}
+
+	client.assignUserData(username, hostname, IP, fullName);
+}
+void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
 	switch (getCommandType(msgData[0]))
 	{
-		case PASS: _server.validatePassword(msgData[1], client);
+		case PASS: handlePASS(msgData, client);
 			break ;
-		case QUIT: _server.disconnectClient(client);
+		case OPER: handleOPER(msgData, client); 
 			break ;
-		case OPER: _server.validateIRCOp(msgData, client);
+		case JOIN: handleJOIN(msgData, client);
 			break ;
-		case JOIN: _manager.addToChannel(client, msgData[1]);
+		case PART: handlePART(msgData, client);
 			break ;
-		case PART: _manager.removeFromChannel(msgData[1], client);
+		case INVITE: handleINVITE(msgData, client);
 			break ;
-		case INVITE: _manager.inviteClient(msgData[1], msgData[2], client);
+		case KICK: handleKICK(msg, client);
 			break ;
-		case KICK: _manager.kickFromChannel(msg, client);
+		case USER: handleUSER(msg, client);
 			break ;
-		case NICK: handleNICK(msgData, client); ;
+		case QUIT: handleQUIT(msg, client);
+			break ;
+		case NICK: handleNICK(msgData, client);
 			break ;
 		case MODE: handleMODE(msgData, client);
 			break ;
@@ -231,39 +313,26 @@ void	MsgHandler::respond(std::string &msg, Client &client)
 			break ;
 		case DIE: handleDIE(client);
 			break ;
-		case USER: client.assignUserData(msg);
-			break ;
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;
-		case PRIVMSG: forwardPrivateMessage(msg, client);
+		case PRIVMSG: handlePRIVMSG(msg, client);
 			break ;
 		case UNKNOWN:
 			break ;
 	}
 }
 
-bool	MsgHandler::badPassword(std::string &message, Client &client)
-{
-	std::vector<std::string> msgData = split(message, ' ');
-	if (msgData[0] == "NICK")
-	{
-		sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
-		_server.disconnectClient(client);
-		return (true);
-	}
-	return (false);
-}
-
 void	MsgHandler::receiveMessage(Client &client)
 {
 	char		buffer[1024];
 	ssize_t bytes_read = read(client.getFd(), buffer, sizeof(buffer) - 1);
-	if (bytes_read <= 0)
-	{
-		_server.disconnectClient(client);
-		return ;
+	if (bytes_read <= 0) {
+		return _server.disconnectClient(&client);
 	}
 	buffer[bytes_read] = '\0';
+	if (!strcmp(buffer, "\r\n")) {
+		return ;
+	}
 	std::cout << buffer; // for testing only 
 
 	client.msgBuffer += buffer;
@@ -272,8 +341,13 @@ void	MsgHandler::receiveMessage(Client &client)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
 		client.msgBuffer.erase(0, i + 2);
-		if (!client.isRegistered() && badPassword(message, client))
+		if (!client.isRegistered() && split(message, ' ').front() == "NICK")
+		{
+			error("Invalid or no password: client disconnected.");
+			sendMSG(client.getFd(), ERR_PASSWDMISMATCH(client));
+			_server.disconnectClient(&client);
 			return ;
-		respond(message, client);
+		}
+		respond(message, client);  // maybe take PASS out of this funciton
 	}
 }

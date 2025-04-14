@@ -4,7 +4,7 @@
 //                       Constructors & Desctructors                          //
 // ************************************************************************** //
 
-Client::Client(pollfd &clientSocket)
+Client::Client(pollfd clientSocket)
 {
 	_nickname = "undefined";
 	_username = "undefined";
@@ -12,6 +12,7 @@ Client::Client(pollfd &clientSocket)
 	_isRegistered = false;
 	_isIRCOp = false;
 	_isBot = false;
+	msgBuffer = "";
 }
 
 Client::~Client() {}
@@ -36,7 +37,7 @@ void	Client::setFullName(std::string &fullname) { _fullname = fullname; }
 void	Client::setNickname(std::string &nickname)
 {
 	_nickname = nickname;
-	info("Client " + username() + "'s nickname was set to "	+ nickname);
+	info("Client " + this->nickname() + "'s nickname was set to "	+ nickname);
 }
 
 void	Client::setUsername(std::string &username) { _username = username; }
@@ -55,18 +56,19 @@ bool	Client::isRegistered() const { return (_isRegistered); }
 
 bool	Client::isIRCOp() const { return _isIRCOp; }
 
+
 bool	Client::isBot() const { return _isBot; }
+std::vector<Channel*>&	Client::getClientChannels() { return (_clientChannels); }
 
-std::vector<Channel*>	Client::getClientChannels() const { return (_clientChannels); }
 
-std::vector<std::string>	Client::getClientChannelInvites() const { return (_clientChannelInvites); }
+std::vector<std::string>	Client::getChannelInvites() const { return (_clientChannelInvites); }
 
-void	Client::addClientChannelInvite(const std::string& channelName)
+void	Client::addChannelInvite(const std::string& channelName)
 {
 	_clientChannelInvites.push_back(channelName);
 }
 
-void	Client::delClientChannelInvite(const std::string& channelName)
+void	Client::delChannelInvite(const std::string& channelName)
 {
 	std::vector<std::string>::iterator it = std::find(_clientChannelInvites.begin(), 
 										_clientChannelInvites.end(), channelName);
@@ -79,34 +81,31 @@ void	Client::delClientChannelInvite(const std::string& channelName)
 //                             Public Functions                               //
 // ************************************************************************** //
 
-void	Client::joinChannel(ChannelManager& manager, std::string channelName)
-{
-	Channel* chan = manager.getChanByName(channelName);
-	_clientChannels.push_back(chan);
-}
-
-void	Client::leaveChannel(ChannelManager& manager,std::string channelName)
+void	Client::popClientChannel(ChannelManager& manager,std::string channelName)
 {
 	Channel* chan = manager.getChanByName(channelName);
 	std::vector<Channel*>::iterator it = std::find(_clientChannels.begin(), 
 												   _clientChannels.end(), chan);
 	if (it != _clientChannels.end())
 		_clientChannels.erase(it);
+	info(_nickname + " has left channel " + channelName);
 }
 
-void	Client::assignUserData(std::string &msg)
-
+void	Client::assignUserData(std::string &username, std::string &hostname, std::string &IP, std::string &fullName)
 {
-	std::vector<std::string> names = split(msg, ':');
-	setFullName(names[1]);
-
-	std::vector<std::string> moreNames = split(names[0], ' ');
-	setUsername(moreNames[1]);
-	setHostname(moreNames[2]);
-	setIP(moreNames[3]);
+	setUsername(username);
+	setHostname(hostname);
+	setIP(IP);
+	setFullName(fullName);
 
 	sendMSG(this->getFd(), RPL_WELCOME((*this)));
 	sendMSG(this->getFd(), RPL_YOURHOST((*this)));
 	sendMSG(this->getFd(), RPL_CREATED((*this)));
 	sendMSG(this->getFd(), RPL_MYINFO((*this)));
+}
+
+bool	Client::isInvited(const std::string& channelName) const
+{
+	std::vector<std::string>::const_iterator it = std::find(getChannelInvites().begin(), getChannelInvites().end(), channelName);
+	return (it != getChannelInvites().end());
 }

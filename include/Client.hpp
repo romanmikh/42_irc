@@ -24,14 +24,14 @@ class Client
 	public:
 
 		/* construcotrs & destructors */
-		Client(pollfd &clientSocket);
+		Client(pollfd clientSocket);
 		~Client(void);
 
 		std::string msgBuffer;
         
         /* accessors */
-		std::vector<Channel*>  		getClientChannels() const;
-		std::vector<std::string> 	getClientChannelInvites() const;
+		std::vector<Channel*>&  	getClientChannels();
+		std::vector<std::string> 	getChannelInvites() const;
 		int 			getFd(void) const;
 		struct pollfd 	getSocket(void) const;
 		
@@ -42,25 +42,25 @@ class Client
 		void 			setHostname(std::string &hostname);
 		void			setRegistered(bool status);
 		void 			setIRCOp(bool status);
-		void			setBot(bool status);
-		void			addClientChannelInvite(const std::string& channelName);
-		void			delClientChannelInvite(const std::string& channelName);
-		void 			assignUserData(std::string &msg);
 
-		
+		void			setBot(bool status);
+		void			addChannelInvite(const std::string& channelName);
+		void			delChannelInvite(const std::string& channelName);
+		void			assignUserData(std::string &username, std::string &hostname, std::string &IP, std::string &fullName);
+
 		std::string 	username(void) const;
 		std::string 	nickname(void) const;
 		std::string 	hostname(void) const;
 
-        bool    		isOperator(void) const;
 		bool			isRegistered(void) const;
 		bool 			isIRCOp(void) const;
 		bool			isBot(void) const;
-
+		bool 			isChanOp(const std::string &channelName, ChannelManager &manager) const;
+        bool	        isInvited(const std::string& channelName) const;
 		
 		/* member functions */
 		void    		joinChannel(ChannelManager& manager, std::string channelName);
-        void    		leaveChannel(ChannelManager& manager, std::string channelName);
+        void    		popClientChannel(ChannelManager& manager, std::string channelName);
 		
 
 };

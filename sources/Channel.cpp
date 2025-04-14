@@ -6,11 +6,12 @@
 
 Channel::Channel(std::string name) : _channelName(name), 
 									 _channelPassword(""),
-									 _channelTopic("Default"),
+									 _channelTopic("No topic set"),
+									 _channelTopicSetAt(""),
+									 _channelTopicSetBy(""),
 									 _channelIsInviteOnly(false),
 									 _channelIsTopicRestricted(false),
 									 _channelIsKeyProtected(false),
-									 _channelIsOperatorRestricted(false),
 									 _channelIsLimitRestricted(false),
 									 _channelClientCount(0),
 									 _channelClientLimit(0) {}
@@ -31,13 +32,15 @@ bool	Channel::isTopicRestricted(void) const { return _channelIsTopicRestricted; 
 
 bool	Channel::isKeyProtected(void) const { return _channelIsKeyProtected; }
 
-bool	Channel::isOperatorRestricted(void) const { return _channelIsOperatorRestricted; }
-
 bool	Channel::isLimitRestricted(void) const { return _channelIsLimitRestricted; }
 
 std::string	Channel::getName(void) const { return _channelName; }
 
-std::string	Channel::getPassword(void) const { return _channelPassword; }
+std::string	Channel::getPasskey(void) const { return _channelPassword; }
+
+std::string Channel::getTopicSetAt(void) const { return _channelTopicSetAt; }
+
+std::string	Channel::getTopicSetBy(void) const { return _channelTopicSetBy; }
 
 std::string	Channel::getTopic(void) const { return _channelTopic; }
 
@@ -53,7 +56,12 @@ void	Channel::setName(std::string &name) { _channelName = name; }
 
 void	Channel::setPassword(std::string &password) { _channelPassword = password; }
 
-void	Channel::setTopic(std::string &topic) { _channelTopic = topic; }
+void	Channel::setTopic(std::string &topic, const std::string &nickname)
+{ 
+	_channelTopic = topic;
+	_channelTopicSetAt = intToString(std::time(0));
+	_channelTopicSetBy = nickname;
+}
 
 size_t	Channel::incClientCount(void) { return ++_channelClientCount; }
 
@@ -78,7 +86,7 @@ bool	Channel::isEmpty(void) const { return _channelClients.empty(); };
 void	Channel::setModeI(std::string &mode, Client &client)
 {
 	_channelIsInviteOnly = (mode == "+i");
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 	if (mode == "+i")
 		info("Channel " + _channelName + " is now invite only: " + boolToString(_channelIsInviteOnly));
 	else if (mode == "-i")
@@ -87,62 +95,70 @@ void	Channel::setModeI(std::string &mode, Client &client)
 
 void	Channel::setModeT(std::string &mode, Client &client)
 {
-	_channelIsTopicRestricted = (mode == "+t");
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
 	if (mode == "+t")
 	{
-		info("Channel " + _channelName + " is now topic restricted: " + boolToString(_channelIsTopicRestricted));
+		_channelIsTopicRestricted = true;
+		info("Channel " + _channelName + " is now topic restricted");
 	}
 	else if (mode == "-t")
 	{
+		_channelIsTopicRestricted = false;
 		info("Channel " + _channelName + " is now topic unrestricted");
 	}
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 void	Channel::setModeK(std::vector<std::string> &msgData, Client &client)
 {
 	std::string mode = msgData[2];
 
-	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == ""))
-	{
-		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3].empty())) {
+		//sendMSG();
 		return ;
 	}
-	if (mode[0] == '+')
-	{
+	if (mode[0] == '+') {
 		_channelIsKeyProtected = true;
 		_channelPassword = msgData[3];
 	}
-	else
-	{
+	else {
 		_channelIsKeyProtected = false;
 		_channelPassword = "";
 	}
 	info("Channel " + _channelName + " is now key protected: " + boolToString(_channelIsKeyProtected));
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
-void	Channel::setModeO(std::string &mode, Client &client)
+void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server &server)
 {
-	_channelIsOperatorRestricted = (mode == "+o");
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
-	if (mode == "+o")
-	{
-		info("Channel " + _channelName + " is now operator restricted: " + boolToString(_channelIsOperatorRestricted));
+	std::string mode = msgData[2];
+
+	if (msgData.size() != 4) {
+		//sendMSG();
+		return ;
 	}
-	else if (mode == "-o")
-	{
-		info("Channel " + _channelName + " is now operator unrestricted");
+	Client *recipient = server.getClientByNick(msgData[3]);
+	if (!recipient) {
+		warning("Client with nickname " + msgData[3] + " not found");
+		return sendMSG(client.getFd(), ERR_NOSUCHNICK(client, msgData[3]));
 	}
+	if (mode[0] == '+') {
+		addChanOp(recipient);	
+		info("Client " + recipient->nickname() + "added as " + _channelName + " channel Operator by " + client.nickname());
+	}
+	else {
+		removeChanOp(recipient);	
+		info("Client " + recipient->nickname() + "removed as " + _channelName + " channel Operator by " + client.nickname());
+	}
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 {
 	std::string mode = msgData[2];
 
-	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3] == ""))
+	if (mode[0] == '+' && (msgData.size() != 4 || msgData[3].empty()))
 	{
-		//sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
+		sendMSG(client.getFd(), ERR_BADCHANNELKEY(client, _channelName));
 		return ;
 	}
 	if (mode[0] == '+')
@@ -151,20 +167,19 @@ void	Channel::setModeL(std::vector<std::string> &msgData, Client &client)
 		std::stringstream size(msgData[3]);
 		size >> _channelClientLimit;
 	}
-	else
+	else if(mode[0] == '-') 
 	{
 		_channelIsLimitRestricted = false;
 		_channelClientLimit = 0;
 	}
 	info("Channel " + _channelName + " is now limit restricted (currently " + sizeToString(_channelClientCount) + "/" +sizeToString(_channelClientLimit) + "): " + boolToString(_channelIsLimitRestricted));
-	broadcastToChannel(STD_PREFIX(client) + " MODE " + _channelName + " " + mode, NULL);
+	broadcast(STD_PREFIX(client) + " MODE " + _channelName + " " + mode);
 }
 
 bool	Channel::hasClient(Client* client) const
 {
 	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); \
-										   it != _channelClients.end(); ++it)
-										   {
+										   it != _channelClients.end(); ++it) {
 		if (*it == client)
 			return true;
 	}
@@ -184,34 +199,32 @@ bool    Channel::isClientChanOp(Client* client) const
 
 void	Channel::addChanOp(Client* client)
 {
-	//is this check and warning necessary? no but it feels more correct than 
-	// granting rights to a client that is already an op
-	if (client->isIRCOp())
-		return warning(client->username() + " is a global operator");
+	// if (client->isIRCOp())
+	// 	return warning(client->nickname() + " is a global operator");
 	if (isClientChanOp(client))
-		return warning(client->username() + " is already an operator in channel " + _channelName);
+		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
-	info(client->username() + " is now an operator in channel " + _channelName);
+	broadcast(client->nickname() + " is now channel operator");
+	info(client->nickname() + " is now an operator in channel " + _channelName);
 }
 
 void	Channel::removeChanOp(Client* client)
 {
 	if (client->isIRCOp())
-		return warning(client->username() + " is a global operator");
+		return warning(client->nickname() + " is a global operator");
 	if (!isClientChanOp(client))
-		return warning(client->username() + " is not an operator in channel " + _channelName);
-	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it)
-	{
-		if (*it == client)
-		{
+		return warning(client->nickname() + " is not an operator in channel " + _channelName);
+	for (std::vector<Client *>::iterator it = _channelOperators.begin(); it != _channelOperators.end(); ++it) {
+		if (*it == client) {
 			_channelOperators.erase(it);
 			return;
 		}
 	}
-	info(client->username() + " is no longer an operator in channel " + _channelName);
+	broadcast(client->nickname() + " has been removed as channel operator");
+	info(client->nickname() + " is no longer an operator in channel " + _channelName);
 }
 
-void	Channel::broadcastToChannel(std::string message, Client* client)
+void	Channel::broadcast(std::string message)
 {
 	if (isEmpty())
 		return warning("Channel is empty");
@@ -219,8 +232,20 @@ void	Channel::broadcastToChannel(std::string message, Client* client)
 		return warning("Empty message");
 	if (message.length() > 512)
 		return warning("Message too long");
-	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it)
-	{
+	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
+		sendMSG((*it)->getFd(), (message + "\r\n"));
+	}
+}
+
+void	Channel::broadcastSilent(std::string message, Client *client)
+{
+	if (isEmpty())
+		return warning("Channel is empty");
+	if (message.empty())
+		return warning("Empty message");
+	if (message.length() > 512)
+		return warning("Message too long");
+	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
 		if (*it != client)
 			sendMSG((*it)->getFd(), (message + "\r\n"));
 	}

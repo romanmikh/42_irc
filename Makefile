@@ -53,6 +53,6 @@ re: fclean all
 
 # Valgrind rule
 valgrind: $(NAME)
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes --trace-children=yes --num-callers=20 --log-file=valgrind_out.txt ./ircserv 6667 p
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes --trace-children=yes --num-callers=20 --log-file=valgrind_out.txt ./ircserv 6667 abcd
 
 .PHONY: all re clean fclean valgrind

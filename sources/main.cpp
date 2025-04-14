@@ -18,7 +18,6 @@ int main(int ac, char **av)
     if (checkInput(ac, av) != 0)
         return 1;
     
-    (void)ac;
     info("Starting server...");
 
     int port = atoi(av[1]);
