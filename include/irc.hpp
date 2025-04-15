@@ -94,6 +94,7 @@
 #define INVITE(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " INVITE " + nickname + " :" + channel + "\r\n"
 #define JOIN(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " JOIN " + " :" + channel + "\r\n"
 #define PART(client, channelName) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PART " + channelName + "\r\n"
+#define PRIVMSG(client, channelName, message) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PRIVMSG " + channelName + " :" + message + "\r\n"
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;

@@ -246,7 +246,9 @@ void	Channel::broadcastSilent(std::string message, Client *client)
 	if (message.length() > 512)
 		return warning("Message too long");
 	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
-		if (*it != client)
-			sendMSG((*it)->getFd(), (message + "\r\n"));
+		if (*it == client) {
+			continue ;
+		}
+		sendMSG((*it)->getFd(), (message + "\r\n"));
 	}
 }
