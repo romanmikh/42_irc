@@ -295,7 +295,6 @@ void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
 
-	std::cout << PURPLE << "command : " << YELLOW << msgData[0] << RESET << std::endl;
 	switch (getCommandType(msgData[0]))
 	{
 		case PASS: handlePASS(msgData, client);
@@ -351,7 +350,6 @@ void	MsgHandler::receiveMessage(Client &client)
 	std::cout << buffer; // for testing only
 
 	client.msgBuffer += buffer;
-	std::cout << PURPLE << "buffer: " << YELLOW << client.msgBuffer << RESET << std::endl; // DEBUG
 	size_t i;
 	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{

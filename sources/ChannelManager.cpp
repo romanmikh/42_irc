@@ -213,7 +213,7 @@ void	ChannelManager::forwardPrivateMessage(std::string &channelName, std::string
 	}
 	if (channel->isEmpty())
 		return warning("Channel is empty");
-	channel->broadcastSilent(STD_PREFIX(client) + " " + message, &client);
+	channel->broadcastSilent(PRIVMSG(client, channelName, message), &client);
 }
 
 void	ChannelManager::setChanMode(std::vector<std::string> &msgData, Client &client)
