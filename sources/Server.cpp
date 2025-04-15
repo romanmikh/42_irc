@@ -8,6 +8,7 @@ Server::Server(int port, std::string &password)
 	_port = port;
 	_password = password;
 	_quoteBot = new QuoteBot();
+	_file = new File();
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -40,6 +41,7 @@ Server::~Server()
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
 		delete it->second;
 	delete _quoteBot;
+	delete _file;
 }
 
 // ************************************************************************** //

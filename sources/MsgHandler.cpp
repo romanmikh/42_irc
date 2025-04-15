@@ -279,9 +279,30 @@ void MsgHandler::handleUSER(std::string &msg, Client &client)
 
 void	MsgHandler::handleSENDFILE(std::string &msg, Client& client)
 {
-	const std::vector<std::string> &msgData = split(msg, ' ');
-	(void)client;
-	std::cout << PURPLE << "MsgHandler::handleSENDFILE\nmessage: " << YELLOW << msgData[0] << "\n" << msgData[1] << RESET << std::endl;
+	std::istringstream ss(msg);
+	std::string sendFileCommand, recipientUser, fileAddress;
+	getline(ss, sendFileCommand, ' ');
+	getline(ss, recipientUser, ' ');
+	getline(ss, fileAddress);
+	if (recipientUser.empty() || fileAddress.empty())
+	{
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "SENDFILE"));
+		return warning("Insufficient parameters for SENDFILE command");
+	}
+
+	Client *clientToSend = _server.getClientByNick(recipientUser);
+}
+
+void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
+{
+	std::istringstream ss(msg);
+	std::string getFileCommand, senderUser, fileName;
+	getline(ss, getFileCommand, ' ');
+	getline(ss, senderUser, ' ');
+	getline(ss, fileName);
+	_server.
+
+	Client *clientToSend = _server.getClientByNick(senderUser);
 }
 
 void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
