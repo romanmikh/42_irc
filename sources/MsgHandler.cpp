@@ -279,18 +279,46 @@ void MsgHandler::handleUSER(std::string &msg, Client &client)
 
 void	MsgHandler::handleSENDFILE(std::string &msg, Client& client)
 {
+	std::cout << PURPLE << "handleSENDFILE" << RESET << std::endl; // DEBUG
+
 	std::istringstream ss(msg);
-	std::string sendFileCommand, recipientUser, fileAddress;
+	std::string sendFileCommand, recipientUser, filePath;
 	getline(ss, sendFileCommand, ' ');
 	getline(ss, recipientUser, ' ');
-	getline(ss, fileAddress);
-	if (recipientUser.empty() || fileAddress.empty())
+	getline(ss, filePath);
+	if (filePath.empty() || recipientUser.empty())
 	{
 		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "SENDFILE"));
 		return warning("Insufficient parameters for SENDFILE command");
 	}
+	else if (_server.getClientByNick(recipientUser) == NULL || client.nickname() == recipientUser)
+	{
+		sendMSG(client.getFd(), ERR_NOSUCHNICK(client, recipientUser));
+		return warning("Recipient " + recipientUser + " does not exist");
+	}
+	size_t pos = filePath.find_last_of('/');
+	if (pos == std::string::npos)
+	{
+		sendMSG(client.getFd(), ERR_BADFILEPATH(client, filePath));
+		return warning("File " + filePath + " does not exist");
+	}
+	std::string	fileName = filePath.substr(filePath.find_last_of('/') + 1);
 
-	Client *clientToSend = _server.getClientByNick(recipientUser);
+	std::cout << YELLOW << "File name: " << fileName << RESET << std::endl; // DEBUG
+	std::cout << YELLOW << "File path: " << filePath << RESET << std::endl; // DEBUG
+	std::cout << YELLOW << "Recipient: " << recipientUser << RESET << std::endl; // DEBUG
+	std::cout << YELLOW << "Sender: " << client.nickname() << RESET << std::endl; // DEBUG
+
+	std::fstream	file(filePath.c_str());
+	if (file.fail())
+	{
+		sendMSG(client.getFd(), ERR_BADFILEPATH(client, fileName));
+		return warning("File " + filePath + " does not exist");
+	}
+	Client& recipient = *(_server).getClientByNick(recipientUser);
+	_server.setFile(fileName, filePath, client.nickname(), recipientUser);
+
+	sendMSG(recipient.getFd(), NOTICE(recipientUser, client.nickname() + " wants to send you a file"));
 }
 
 void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
@@ -300,16 +328,11 @@ void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
 	getline(ss, getFileCommand, ' ');
 	getline(ss, senderUser, ' ');
 	getline(ss, fileName);
-	_server.
-
-	Client *clientToSend = _server.getClientByNick(senderUser);
-}
-
-void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
-{
-	const std::vector<std::string> &msgData = split(msg, ' ');
-	(void)client;
-	std::cout << PURPLE << "MsgHandler::handleGETFILE\nmessage: " << YELLOW << msgData[0] << "\n" << msgData[1] << RESET << std::endl;
+	if (senderUser.empty() || fileName.empty())
+	{
+		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "GETFILE"));
+		return warning("Insufficient parameters for GETFILE command");
+	}
 }
 
 void MsgHandler::respond(std::string &msg, Client &client)

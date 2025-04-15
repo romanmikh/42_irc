@@ -4,12 +4,12 @@
 #include "QuoteBot.hpp"
 #include "File.hpp"
 
-class Client;
-class QuoteBot;
+class	Client;
+class	QuoteBot;
+class	File;
 
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
-#define SERVER_NAME std::string("42irc.local")
 
 class Server
 {
@@ -55,7 +55,7 @@ class Server
 		void			removeApiSocket(int fd);
 		void			setBot();
 		bool			handleApiEvent(pollfd fd);
-		void			setFile(File* file);
+		void			setFile(std::string fileName, std::string filePath, std::string sender, std::string receiver);
 
 		/* static members */
 		static Server*  instance;

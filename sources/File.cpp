@@ -4,12 +4,10 @@ File::File()
 {
 	_fileName = "";
 	_filePath = "";
-	_Sender = NULL;
-	_Receiver = NULL;
 }
 
-File::File(std::string fileName, std::string filePath, Client* sender, Client* receiver) :
-	_fileName(fileName), _filePath(filePath), _Sender(sender), _Receiver(receiver) {}
+File::File(std::string fileName, std::string filePath, std::string sender, std::string receiver) :
+	_fileName(fileName), _filePath(filePath), _sender(sender), _receiver(receiver) {}
 
 File::~File() {}
 
@@ -17,16 +15,16 @@ std::string	File::getFileName(void) const { return _fileName; };
 
 std::string	File::getFilePath(void) const { return _filePath; };
 
-Client*		File::getSender(void) const { return _Sender; };
+std::string	File::getSender(void) const { return _sender; };
 
-Client*		File::getReceiver(void) const { return _Receiver; };
+std::string	File::getReceiver(void) const { return _receiver; };
 
 void	File::setFileName(std::string fileName) { _fileName = fileName; };
 
 void	File::setFilePath(std::string filePath) { _filePath = filePath; };
 
-void	File::setSender(Client* sender) { _Sender = sender; };
+void	File::setSender(std::string sender) { _sender = sender; };
 
-void	File::setReceiver(Client* receiver) { _Receiver = receiver; };
+void	File::setReceiver(std::string receiver) { _receiver = receiver; };
 
 

@@ -8,7 +8,7 @@ Server::Server(int port, std::string &password)
 	_port = port;
 	_password = password;
 	_quoteBot = new QuoteBot();
-	_file = new File();
+	_file = NULL;
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -177,7 +177,7 @@ void	Server::handleNewConnectionRequest(void)
 		close(_sockets[0].fd);
 		return error("New socket creation failed.");
 	}
-	// sendMSG(clientSocket.fd, "CAP * LS : \r\n");
+	sendMSG(clientSocket.fd, "CAP * LS : \r\n");
 	addclient(clientSocket);
   	info("New client connected with fd: " + intToString(clientSocket.fd));
 }
@@ -235,6 +235,13 @@ bool	Server::handleApiEvent(pollfd apiFd)
 	else if (apiFd.revents != 0)
 		return false;
 	return true;
+}
+
+void	Server::setFile(std::string fileName, std::string filePath, std::string sender, std::string receiver)
+{
+	if (_file != NULL)
+		delete _file;
+	_file = new File(fileName, filePath, sender, receiver);
 }
 
 void	Server::setBot()

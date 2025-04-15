@@ -47,6 +47,7 @@
 /* Macros */
 #define MIN_PORT 1024
 #define MAX_PORT 65535
+#define SERVER_NAME std::string("42irc.local")
 
 /* Error messages */
 #define ERR_USAGE "Usage: ./ircserv <port> <password>"
@@ -56,6 +57,7 @@
 #define ERR_PASSWORD_FORMAT "Password must be between 4-6 characters long"
 #define ERR_NOSUCHNICK(client, nick) std::string(":") + SERVER_NAME + " 401 " + client.nickname() + " " + nick + " :No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 403 " + client.nickname() + " " + channelName + " :No such channel\r\n"
+#define ERR_NORECIPIENT(client, command) std::string(":") + SERVER_NAME + " 411 " + client.nickname() + " :No recipient given (" + command + ")\r\n"   
 #define ERR_NONICKNAMEGIVEN(client) std::string(":") + SERVER_NAME + " 431 " + client.nickname() + " :No nickname given\r\n"
 #define ERR_NICKNAMEINUSE(client, newNickname) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " " + newNickname + " :Nickname already in use\r\n"
 #define ERR_NOTONCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channelName + " : You're not in that channel\r\n"
@@ -71,6 +73,7 @@
 #define ERR_NOPRIVILAGES(client) std::string(":") + SERVER_NAME + " 481 " + client.nickname() + ": :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " : You're not a channel operator\r\n"
 #define ERR_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
+#define ERR_BADFILEPATH(client, fileName) std::string(":") + SERVER_NAME + client.nickname() + " " + fileName + " :Invalid file path\r\n"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
@@ -83,6 +86,7 @@
 #define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
+#define RPL_SENDFILE(client, fileName) client.nickname() + " wants to send you the file: " + fileName
 
 #define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " KILL " + victim.nickname() + " :" + reason + " (killed by " + killer.nickname() + ")\r\n"
 #define QUITKILLEDBY(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :Killed by " + killer.nickname() + " (" + reason + ")\r\n"
@@ -95,7 +99,7 @@
 #define JOIN(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " JOIN " + " :" + channel + "\r\n"
 #define PART(client, channelName) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PART " + channelName + "\r\n"
 #define PRIVMSG(client, channelName, message) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PRIVMSG " + channelName + " :" + message + "\r\n"
-
+#define NOTICE(client, message) std::string(":") + SERVER_NAME + " " + client + " NOTICE : " + message + "\r\n"
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;
