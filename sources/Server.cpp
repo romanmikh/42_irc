@@ -8,7 +8,6 @@ Server::Server(int port, std::string &password)
 	_port = port;
 	_password = password;
 	_quoteBot = new QuoteBot();
-	_file = NULL;
 	parseOpersConfigFile("./include/opers.config");
 	
 	pollfd		listeningSocket;
@@ -41,7 +40,6 @@ Server::~Server()
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
 		delete it->second;
 	delete _quoteBot;
-	delete _file;
 }
 
 // ************************************************************************** //
@@ -235,13 +233,6 @@ bool	Server::handleApiEvent(pollfd apiFd)
 	else if (apiFd.revents != 0)
 		return false;
 	return true;
-}
-
-void	Server::setFile(std::string fileName, std::string filePath, std::string sender, std::string receiver)
-{
-	if (_file != NULL)
-		delete _file;
-	_file = new File(fileName, filePath, sender, receiver);
 }
 
 void	Server::setBot()

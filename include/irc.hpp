@@ -73,7 +73,6 @@
 #define ERR_NOPRIVILAGES(client) std::string(":") + SERVER_NAME + " 481 " + client.nickname() + ": :Permission Denied- You're not an IRC operator\r\n"
 #define ERR_CHANOPPROVSNEEDED(client, channelName) std::string(":") + SERVER_NAME + " 482 " + client.nickname() + " " + channelName + " : You're not a channel operator\r\n"
 #define ERR_NOOPERHOST(client) std::string(":") + SERVER_NAME + " 491 " + client.nickname() + " :No O-lines for your host\r\n"
-#define ERR_BADFILEPATH(client, fileName) std::string(":") + SERVER_NAME + client.nickname() + " " + fileName + " :Invalid file path\r\n"
 
 #define RPL_WELCOME(client) std::string(":") + SERVER_NAME + " 001 " + client.nickname() + " :Welcome to the IRC Network, " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n"
 #define RPL_YOURHOST(client) std::string(":") + SERVER_NAME + " 002 " + client.nickname() + " :Your host is " + SERVER_NAME + ", running version 1.0\r\n"
@@ -86,7 +85,7 @@
 #define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
-#define RPL_SENDFILE(client, fileName) client.nickname() + " wants to send you the file: " + fileName
+#define RPL_QUOTEBOT(client) std::string(":") + SERVER_NAME + " 999 " +  client.nickname() + " :QuoteBot is here to help you! Just type !quote\r\n"
 
 #define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " KILL " + victim.nickname() + " :" + reason + " (killed by " + killer.nickname() + ")\r\n"
 #define QUITKILLEDBY(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :Killed by " + killer.nickname() + " (" + reason + ")\r\n"
@@ -147,9 +146,7 @@ enum Command
     PASS,
     UNKNOWN,
     KILL,
-    DIE,
-    SENDFILE,
-    GETFILE
+    DIE
 };
 
 std::map<std::string, Command>  createCommandMap();

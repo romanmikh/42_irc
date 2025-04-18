@@ -2,11 +2,9 @@
 #define SERVER_HPP
 #include "irc.hpp"
 #include "QuoteBot.hpp"
-#include "File.hpp"
 
 class	Client;
 class	QuoteBot;
-class	File;
 
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
@@ -22,7 +20,6 @@ class Server
 		unsigned int			_port;
 		static bool				_running;
 		QuoteBot*				_quoteBot;
-		File*					_file;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -55,7 +52,6 @@ class Server
 		void			removeApiSocket(int fd);
 		void			setBot();
 		bool			handleApiEvent(pollfd fd);
-		void			setFile(std::string fileName, std::string filePath, std::string sender, std::string receiver);
 
 		/* static members */
 		static Server*  instance;

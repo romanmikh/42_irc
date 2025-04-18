@@ -114,6 +114,7 @@ void	ChannelManager::addToChannel(std::string &channelName, std::string &channel
 	if (channel->getTopic() != "No topic set") {
 		sendMSG(client.getFd(), RPL_TOPICWHOTIME(client, channel->getName(), channel->getTopicSetBy(), channel->getTopicSetAt()));
 	}
+	sendMSG(client.getFd(), RPL_QUOTEBOT(client));
 }
 
 void ChannelManager::removeFromChannel(const std::string& channelName, Client& client)

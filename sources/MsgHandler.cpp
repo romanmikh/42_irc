@@ -277,64 +277,6 @@ void MsgHandler::handleUSER(std::string &msg, Client &client)
 	client.assignUserData(username, hostname, IP, fullName);
 }
 
-void	MsgHandler::handleSENDFILE(std::string &msg, Client& client)
-{
-	std::cout << PURPLE << "handleSENDFILE" << RESET << std::endl; // DEBUG
-
-	std::istringstream ss(msg);
-	std::string sendFileCommand, recipientUser, filePath;
-	getline(ss, sendFileCommand, ' ');
-	getline(ss, recipientUser, ' ');
-	getline(ss, filePath);
-	if (filePath.empty() || recipientUser.empty())
-	{
-		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "SENDFILE"));
-		return warning("Insufficient parameters for SENDFILE command");
-	}
-	else if (_server.getClientByNick(recipientUser) == NULL || client.nickname() == recipientUser)
-	{
-		sendMSG(client.getFd(), ERR_NOSUCHNICK(client, recipientUser));
-		return warning("Recipient " + recipientUser + " does not exist");
-	}
-	size_t pos = filePath.find_last_of('/');
-	if (pos == std::string::npos)
-	{
-		sendMSG(client.getFd(), ERR_BADFILEPATH(client, filePath));
-		return warning("File " + filePath + " does not exist");
-	}
-	std::string	fileName = filePath.substr(filePath.find_last_of('/') + 1);
-
-	std::cout << YELLOW << "File name: " << fileName << RESET << std::endl; // DEBUG
-	std::cout << YELLOW << "File path: " << filePath << RESET << std::endl; // DEBUG
-	std::cout << YELLOW << "Recipient: " << recipientUser << RESET << std::endl; // DEBUG
-	std::cout << YELLOW << "Sender: " << client.nickname() << RESET << std::endl; // DEBUG
-
-	std::fstream	file(filePath.c_str());
-	if (file.fail())
-	{
-		sendMSG(client.getFd(), ERR_BADFILEPATH(client, fileName));
-		return warning("File " + filePath + " does not exist");
-	}
-	Client& recipient = *(_server).getClientByNick(recipientUser);
-	_server.setFile(fileName, filePath, client.nickname(), recipientUser);
-
-	sendMSG(recipient.getFd(), NOTICE(recipientUser, client.nickname() + " wants to send you a file"));
-}
-
-void	MsgHandler::handleGETFILE(std::string &msg, Client& client)
-{
-	std::istringstream ss(msg);
-	std::string getFileCommand, senderUser, fileName;
-	getline(ss, getFileCommand, ' ');
-	getline(ss, senderUser, ' ');
-	getline(ss, fileName);
-	if (senderUser.empty() || fileName.empty())
-	{
-		sendMSG(client.getFd(), ERR_NEEDMOREPARAMS(client, "GETFILE"));
-		return warning("Insufficient parameters for GETFILE command");
-	}
-}
-
 void MsgHandler::respond(std::string &msg, Client &client)
 {
 	std::vector<std::string> msgData = split(msg, ' ');
@@ -370,10 +312,6 @@ void MsgHandler::respond(std::string &msg, Client &client)
 		case PING: sendMSG(client.getFd(), PONG);
 			break ;
 		case PRIVMSG: handlePRIVMSG(msg, client);
-			break ;
-		case SENDFILE: handleSENDFILE(msg, client);
-			break ;
-		case GETFILE: handleGETFILE(msg, client);
 			break ;
 		case UNKNOWN:
 			break ;
