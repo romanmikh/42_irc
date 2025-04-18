@@ -28,8 +28,8 @@ SRCS = $(SRC_PATH)Channel.cpp \
 		$(SRC_PATH)MsgHandler.cpp \
 		$(SRC_PATH)QuoteBot.cpp \
 		$(SRC_PATH)Server.cpp \
-		$(SRC_PATH)utils/command.cpp \
 		$(SRC_PATH)utils/Error.cpp \
+		$(SRC_PATH)utils/command.cpp \
 		$(SRC_PATH)utils/Logger.cpp \
 		$(SRC_PATH)utils/Utils.cpp
 
@@ -45,6 +45,7 @@ $(OBJ_PATH):
 
 # Objects rule
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@ $(INC)
 
 # Project file rule
