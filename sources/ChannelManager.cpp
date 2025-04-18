@@ -213,7 +213,7 @@ void	ChannelManager::forwardPrivateMessage(std::string &channelName, std::string
 		warning("client" + client.nickname() + " not in channel " + channelName);
 	}
 	if (channel->isEmpty())
-		return warning("Channel is empty");
+		return warning("Channel is ");
 	channel->broadcastSilent(PRIVMSG(client, channelName, message), &client);
 }
 
