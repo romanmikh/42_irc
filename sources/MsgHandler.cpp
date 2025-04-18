@@ -330,7 +330,7 @@ void	MsgHandler::receiveMessage(Client &client)
 	if (!strcmp(buffer, "\r\n")) {
 		return ;
 	}
-	std::cout << buffer; // for testing only
+	// std::cout << buffer; // for testing only
 
 	client.msgBuffer += buffer;
 	size_t i;
