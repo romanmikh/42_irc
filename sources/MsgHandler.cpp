@@ -76,6 +76,10 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	}
 	std::string channelName = command.at(1);
     std::string message = trailing.at(1);
+	if (message.size() > 4096) {
+		sendMSG(client.getFd(), ERR_MSGTOOLONG(client, message));
+		return warning("Message is too long");
+	}
 
 	if (msg.find("!quote") != std::string::npos)
 	{
@@ -344,6 +348,6 @@ void	MsgHandler::receiveMessage(Client &client)
 			_server.disconnectClient(&client);
 			return ;
 		}
-		respond(message, client);  // maybe take PASS out of this funciton
+		respond(message, client);
 	}
 }
