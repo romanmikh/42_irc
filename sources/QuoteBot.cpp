@@ -15,6 +15,8 @@ QuoteBot::~QuoteBot(void)
 {
 	if (_apiSocketFd != -1)
 		close(_apiSocketFd);
+	if (_botSocketFd != -1)
+		close(_botSocketFd);
 }
 
 int	QuoteBot::getApiSocketFd(void) const { return _apiSocketFd; }

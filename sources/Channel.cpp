@@ -142,7 +142,9 @@ void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server
 	}
 	if (mode[0] == '+') {
 		addChanOp(recipient);	
-		info("Client " + recipient->nickname() + "added as " + _channelName + " channel Operator by " + client.nickname());
+		broadcast(STD_PREFIX(client) + "Client " + recipient->nickname() + " added as " + _channelName + " channel Operator by " + client.nickname());
+		broadcast(ADDOP(client, recipient->nickname(), _channelName));
+		info("Client " + recipient->nickname() + " added as " + _channelName + " channel Operator by " + client.nickname());
 	}
 	else {
 		removeChanOp(recipient);	

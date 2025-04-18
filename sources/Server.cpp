@@ -39,6 +39,7 @@ Server::~Server()
 
 	for (clients_t::iterator it = _clients.begin(); it != _clients.end(); it++)
 		delete it->second;
+
 	delete _quoteBot;
 }
 
@@ -141,7 +142,7 @@ void	Server::parseOpersConfigFile(const char *fileName)
 void	Server::addclient(pollfd &clientSocket)
 {
 	Client *newClient = new Client(clientSocket);
-	_clients.insert(client_pair_t (clientSocket.fd, newClient));
+	_clients.insert(client_pair_t(clientSocket.fd, newClient));
 	_sockets.push_back(newClient->getSocket());
 }
 
@@ -257,9 +258,9 @@ void	Server::setBot()
 	bot->setHostname(botHostname);
 	bot->setRegistered(true);
 	bot->setBot(true);
-	
 	_sockets.push_back(botSocket);
-	_clients.insert(client_pair_t (sv[1], bot));
+
+	_clients.insert(client_pair_t(sv[1], bot));
 	info("Bot " + botNickname + " created with fd: " + intToString(botSocket.fd));
 }
 

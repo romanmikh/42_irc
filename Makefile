@@ -21,7 +21,18 @@ SRC_PATH 	= ./sources/
 OBJ_PATH	:= ./objects/
 INC_PATH	= ./include/
 
-SRCS = $(shell find $(SRC_PATH) -name '*.cpp') #! Remember to explicity define src
+SRCS = $(SRC_PATH)Channel.cpp \
+		$(SRC_PATH)ChannelManager.cpp \
+		$(SRC_PATH)Client.cpp \
+		$(SRC_PATH)main.cpp \
+		$(SRC_PATH)MsgHandler.cpp \
+		$(SRC_PATH)QuoteBot.cpp \
+		$(SRC_PATH)Server.cpp \
+		$(SRC_PATH)utils/command.cpp \
+		$(SRC_PATH)utils/Error.cpp \
+		$(SRC_PATH)utils/Logger.cpp \
+		$(SRC_PATH)utils/Utils.cpp
+
 OBJS = $(SRCS:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
 INC	= -I $(INC_PATH)
 

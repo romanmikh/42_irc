@@ -86,7 +86,6 @@
 #define RPL_INVITING(client, nickname, channel) std::string(":") + SERVER_NAME + " 341 " + client.nickname() + " " + nickname + " " + channel + "\r\n"
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
-#define RPL_QUOTEBOT(client) std::string(":") + SERVER_NAME + " 999 " +  client.nickname() + " :QuoteBot is here to help you! Just type !quote\r\n"
 #define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " KILL " + victim.nickname() + " :" + reason + " (killed by " + killer.nickname() + ")\r\n"
 #define QUITKILLEDBY(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :Killed by " + killer.nickname() + " (" + reason + ")\r\n"
 #define QUIT(client, message) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :" + message + "\r\n"
@@ -98,7 +97,9 @@
 #define JOIN(client, nickname, channel) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " JOIN " + " :" + channel + "\r\n"
 #define PART(client, channelName) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PART " + channelName + "\r\n"
 #define PRIVMSG(client, channelName, message) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PRIVMSG " + channelName + " :" + message + "\r\n"
+#define ADDOP(client, recipient, channelName) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " PRIVMSG " + channelName + " :" + "Client " + recipient + " added as " + _channelName + " channel Operator by " + client.nickname() + "\r\n"
 #define NOTICE(client, message) std::string(":") + SERVER_NAME + " " + client + " NOTICE : " + message + "\r\n"
+#define QUOTEGREETING(channelName) std::string(":") + "QuoteBotAPI!QuoteBot@api.forismatic.com PRIVMSG " + channelName + " :QuoteBot is here to help you! Just type !quote\r\n"
 
 /* Structures */
 typedef std::pair<int, Client *>	client_pair_t;

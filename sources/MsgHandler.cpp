@@ -35,7 +35,7 @@ void MsgHandler::handleMODE(std::vector<std::string> &msgData, Client &client)
 	else
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
-		sendMSG(client.getFd(), SERVER_NAME + " " + client.nickname() + " NOTICE :You are not a channel operator\r\n");
+		sendMSG(client.getFd(), STD_PREFIX(client) + SERVER_NAME + " " + client.nickname() + " NOTICE :You are not a channel operator\r\n");
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 }
@@ -58,6 +58,7 @@ void MsgHandler::handleTOPIC(std::string &msg, Client &client)
 	if (channel->isTopicRestricted() && !(channel->isClientChanOp(&client) || client.isIRCOp()))
 	{
 		sendMSG(client.getFd(), ERR_CHANOPPROVSNEEDED(client, channelName));
+		sendMSG(client.getFd(), STD_PREFIX(client) + SERVER_NAME + " " + client.nickname() + " NOTICE :You are not a channel operator\r\n");
 		return warning(client.nickname() + " is not an operator in channel " + channelName);
 	}
 	channel->setTopic(topic, client.nickname());
@@ -76,10 +77,6 @@ void MsgHandler::handlePRIVMSG(std::string &msg, Client &client)
 	}
 	std::string channelName = command.at(1);
     std::string message = trailing.at(1);
-	if (message.size() > 4096) {
-		sendMSG(client.getFd(), ERR_MSGTOOLONG(client, message));
-		return warning("Message is too long");
-	}
 
 	if (msg.find("!quote") != std::string::npos)
 	{
@@ -333,10 +330,11 @@ void	MsgHandler::receiveMessage(Client &client)
 	if (!strcmp(buffer, "\r\n")) {
 		return ;
 	}
-	// std::cout << buffer; // for testing only
+	std::cout << buffer; // for testing only
 
 	client.msgBuffer += buffer;
 	size_t i;
+	size_t clientCount = _server.getClients().size();
 	while ((i = client.msgBuffer.find("\r\n")) != std::string::npos)
 	{
 		std::string message = client.msgBuffer.substr(0, i);
@@ -348,6 +346,8 @@ void	MsgHandler::receiveMessage(Client &client)
 			_server.disconnectClient(&client);
 			return ;
 		}
-		respond(message, client);
+		respond(message, client);  // maybe take PASS out of this funciton
+		if (_server.getClients().size() < clientCount)
+			return ;
 	}
 }
