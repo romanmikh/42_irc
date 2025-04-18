@@ -18,7 +18,7 @@ CFLAGS	:= -Werror -Wextra -Wall -g3 -std=c++98
 
 # Build files and directories
 SRC_PATH 	= ./sources/
-OBJ_PATH	:= ./objects/
+OBJ_PATH	= ./objects/
 INC_PATH	= ./include/
 
 SRCS = $(SRC_PATH)Channel.cpp \
@@ -33,7 +33,7 @@ SRCS = $(SRC_PATH)Channel.cpp \
 		$(SRC_PATH)utils/Logger.cpp \
 		$(SRC_PATH)utils/Utils.cpp
 
-OBJS = $(SRCS:$(SRC_PATH)/%.cpp=$(OBJ_PATH)/%.o)
+OBJS = $(SRCS:$(SRC_PATH)%.cpp=$(OBJ_PATH)%.o)
 INC	= -I $(INC_PATH)
 
 # Main rule
