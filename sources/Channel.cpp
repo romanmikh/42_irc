@@ -133,7 +133,6 @@ void	Channel::setModeO(std::vector<std::string> &msgData, Client &client, Server
 	std::string mode = msgData[2];
 
 	if (msgData.size() != 4) {
-		//sendMSG();
 		return ;
 	}
 	Client *recipient = server.getClientByNick(msgData[3]);
@@ -199,8 +198,6 @@ bool    Channel::isClientChanOp(Client* client) const
 
 void	Channel::addChanOp(Client* client)
 {
-	// if (client->isIRCOp())
-	// 	return warning(client->nickname() + " is a global operator");
 	if (isClientChanOp(client))
 		return warning(client->nickname() + " is already an operator in channel " + _channelName);
 	_channelOperators.push_back(client);
@@ -226,12 +223,8 @@ void	Channel::removeChanOp(Client* client)
 
 void	Channel::broadcast(std::string message)
 {
-	if (isEmpty())
-		return warning("Channel is empty");
 	if (message.empty())
 		return warning("Empty message");
-	if (message.length() > 512)
-		return warning("Message too long");
 	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
 		sendMSG((*it)->getFd(), (message + "\r\n"));
 	}
@@ -239,12 +232,8 @@ void	Channel::broadcast(std::string message)
 
 void	Channel::broadcastSilent(std::string message, Client *client)
 {
-	if (isEmpty())
-		return warning("Channel is empty");
 	if (message.empty())
 		return warning("Empty message");
-	if (message.length() > 512)
-		return warning("Message too long");
 	for (std::vector<Client *>::const_iterator it = _channelClients.begin(); it != _channelClients.end(); ++it) {
 		if (*it == client) {
 			continue ;

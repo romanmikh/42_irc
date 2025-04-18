@@ -8,7 +8,6 @@ int checkInput(int ac, char **av)
         return(errMsg("", ERR_PORT_NUMERIC, 1));
     if (!isValidPassword(av[2]))
         return(errMsg("", ERR_PASSWORD_FORMAT, 1));
-    // ...
     return 0;
 }
 

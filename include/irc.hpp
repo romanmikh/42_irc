@@ -58,6 +58,7 @@
 #define ERR_NOSUCHNICK(client, nick) std::string(":") + SERVER_NAME + " 401 " + client.nickname() + " " + nick + " :No such nick\r\n"
 #define ERR_NOSUCHCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 403 " + client.nickname() + " " + channelName + " :No such channel\r\n"
 #define ERR_NORECIPIENT(client, command) std::string(":") + SERVER_NAME + " 411 " + client.nickname() + " :No recipient given (" + command + ")\r\n"   
+#define ERR_MSGTOOLONG(client, message) std::string(":") + SERVER_NAME + " 414 " + client.nickname() + " :Message is too long\r\n"
 #define ERR_NONICKNAMEGIVEN(client) std::string(":") + SERVER_NAME + " 431 " + client.nickname() + " :No nickname given\r\n"
 #define ERR_NICKNAMEINUSE(client, newNickname) std::string(":") + SERVER_NAME + " 433 " + client.nickname() + " " + newNickname + " :Nickname already in use\r\n"
 #define ERR_NOTONCHANNEL(client, channelName) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channelName + " : You're not in that channel\r\n"
@@ -86,7 +87,6 @@
 #define RPL_YOUROPER(client) std::string(":") + SERVER_NAME + " 381 " + client.nickname() + " :You are now an IRC operator\r\n"
 #define RPL_NOTINCHANNEL(client, channel) std::string(":") + SERVER_NAME + " 442 " + client.nickname() + " " + channel + " :You're not on that channel\r\n"
 #define RPL_QUOTEBOT(client) std::string(":") + SERVER_NAME + " 999 " +  client.nickname() + " :QuoteBot is here to help you! Just type !quote\r\n"
-
 #define KILL(killer, victim, channel, reason) std::string(":") + killer.nickname() + " KILL " + victim.nickname() + " :" + reason + " (killed by " + killer.nickname() + ")\r\n"
 #define QUITKILLEDBY(client, killer, reason) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :Killed by " + killer.nickname() + " (" + reason + ")\r\n"
 #define QUIT(client, message) std::string(":") + client.nickname() + "!" + client.username() + "@" + client.hostname() + " QUIT :" + message + "\r\n"
