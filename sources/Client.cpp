@@ -11,6 +11,7 @@ Client::Client(pollfd clientSocket)
 	_socket = clientSocket;
 	_isRegistered = false;
 	_isIRCOp = false;
+	_isBot = false;
 	msgBuffer = "";
 }
 
@@ -49,11 +50,16 @@ void	Client::setIRCOp(bool status) { _isIRCOp = status; }
 
 void	Client::setRegistered(bool status) { _isRegistered = status; }
 
+void	Client::setBot(bool status) { _isBot = status; }
+
 bool	Client::isRegistered() const { return (_isRegistered); }
 
 bool	Client::isIRCOp() const { return _isIRCOp; }
 
+
+bool	Client::isBot() const { return _isBot; }
 std::vector<Channel*>&	Client::getClientChannels() { return (_clientChannels); }
+
 
 std::vector<std::string>	Client::getChannelInvites() const { return (_clientChannelInvites); }
 

@@ -30,7 +30,11 @@ class MsgHandler
 		void handleTOPIC(std::string &msg, Client &client);
 		void handleQUIT(std::string &msg, Client &client);
 		void handleKILL(std::string &msg, Client &client);
+		void handleQuote(const std::string &channelTarget, Client &client);
 		void handleDIE(Client &client);
+		void handleSENDFILE(std::string &msg, Client &client);
+		void handleGETFILE(std::string &msg, Client &client);
+
 };
 
 #endif

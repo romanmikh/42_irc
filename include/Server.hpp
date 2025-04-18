@@ -1,12 +1,13 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 #include "irc.hpp"
+#include "QuoteBot.hpp"
 
-class Client;
+class	Client;
+class	QuoteBot;
 
 typedef std::pair<int, Client *>	client_pair_t;
 typedef std::map<int, Client *>		clients_t;
-#define SERVER_NAME std::string("42irc.local")
 
 class Server
 {
@@ -18,6 +19,7 @@ class Server
 		std::string				_password;
 		unsigned int			_port;
 		static bool				_running;
+		QuoteBot*				_quoteBot;
 
 		std::map<std::string, std::string>	_opers;
 
@@ -31,9 +33,11 @@ class Server
 		/* accessors*/
 		std::map<std::string,std::string> 	getOpers(void);
 		std::string							getPassword(void);
+		unsigned int						getPort(void);
 		clients_t&							getClients(void);
 		Client*								getClientByUser(std::string& user) const;
 		Client*								getClientByNick(std::string& nick) const;
+		QuoteBot*							getQuoteBot(void);
 		
 		/* member functions*/
 		void 			run(void);
@@ -44,6 +48,10 @@ class Server
 		void 			addclient(pollfd &clientSocket);
 		void 			disconnectClient(Client *client);
 		void			shutdown();
+		void			addApiSocket(pollfd &api_pfd);
+		void			removeApiSocket(int fd);
+		void			setBot();
+		bool			handleApiEvent(pollfd fd);
 
 		/* static members */
 		static Server*  instance;

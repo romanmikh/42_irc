@@ -114,6 +114,7 @@ void	ChannelManager::addToChannel(std::string &channelName, std::string &channel
 	if (channel->getTopic() != "No topic set") {
 		sendMSG(client.getFd(), RPL_TOPICWHOTIME(client, channel->getName(), channel->getTopicSetBy(), channel->getTopicSetAt()));
 	}
+	sendMSG(client.getFd(), RPL_QUOTEBOT(client));
 }
 
 void ChannelManager::removeFromChannel(const std::string& channelName, Client& client)
@@ -207,7 +208,7 @@ void	ChannelManager::forwardPrivateMessage(std::string &channelName, std::string
         return warning("PRIVMSG channel is missing or invalid");
 	}
 	Channel* channel = it->second;
-	if (!channel->hasClient(&client)) {
+	if (!channel->hasClient(&client) && !client.isBot()) {
 		sendMSG(client.getFd(), ERR_NOTONCHANNEL(client, channelName));
 		warning("client" + client.nickname() + " not in channel " + channelName);
 	}
