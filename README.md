@@ -81,8 +81,7 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
 
 <h4> ⭐ Additional Features </h4>
 
-- **File transfer support** between clients.
-- **IRC bot** that can automate tasks.
+- **IRC bot** that can automate tasks. QuoteBot send a random quote when called by "!quote"
 
 <h2> 📚 Helpful Resources </h2>
 
