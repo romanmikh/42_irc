@@ -7,7 +7,7 @@
 >This project is about creating your own IRC server using C++ 98. You will use an actual IRC client to connect to your server and test its functionality.
 
 <h2> ✏ About </h2>
-ft_irc is a project that involves developing an IRC server that allows multiple clients to connect, authenticate, and communicate through private and public channels. The implementation follows the IRC protocol using TCP/IP communication.
+ft_irc is a project that involves developing an IRC server that allows multiple clients to connect, authenticate, and communicate through private and public channels. The implementation follows the IRC protocol using TCP/IP communication. 
 
 
 <h2> ⚙ Requirements </h2>
