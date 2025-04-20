@@ -94,4 +94,4 @@ ft_irc is a project that involves developing an IRC server that allows multiple 
 7. [Medium ft_irc](https://medium.com/@afatir.ahmedfatir/small-irc-server-ft-irc-42-network-7cee848de6f9)
 8. [Channels and Command Management](https://medium.com/@mohamedsarda2001/ft-irc-channels-and-command-management-ff1ff3758a0b)
 9. [TCP Server](https://www.youtube.com/watch?v=cNdlrbZSkyQ&list=PLUJCSGGiox1Q-QvHfMMydtoyEa1IEzeLe&index=3) Creating the basic of a TCP server
-10. [Network Programming](https://www.youtube.com/watch?v=gntyAFoZp-E) Sockets
+10. [Network Programming](https://www.youtube.com/watch?v=gntyAFoZp-E) Sockets 
