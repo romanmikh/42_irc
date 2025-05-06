@@ -52,9 +52,9 @@ A small Internet Relay Chat (IRC) server built in C++. It can be used with used 
    ```
 
 ## Helpful Resources
-1. [mIRC]https://www.mirc.co.uk/ the OG app we're recreating
-2. [en.wikipedia.org/wiki/IRC]https://en.wikipedia.org/wiki/IRC
-3. [High-level Guide]https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
-4. [Official IRC Protocol]https://modern.ircdocs.horse/
+1. [mIRC](https://www.mirc.co.uk/) the OG app we're recreating
+2. [en.wikipedia.org/wiki/IRC](https://en.wikipedia.org/wiki/IRC)
+3. [High-level Guide](https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/)
+4. [Official IRC Protocol](https://modern.ircdocs.horse/)
 
 This project was a collaboration between edenjamsalem, romanmikh and kellyhayd.
